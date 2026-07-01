@@ -41,7 +41,7 @@ class AuthVM : ViewModel() {
                     when(data.role){
                         "admin" -> nav.navigate("admin")
                         "master" -> nav.navigate("master")
-                        else -> nav.navigate("user")
+                        else -> nav.navigate("dashboard")
                     }
                 }
 

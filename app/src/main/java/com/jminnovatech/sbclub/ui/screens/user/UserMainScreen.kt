@@ -57,6 +57,7 @@ import com.google.accompanist.swiperefresh.SwipeRefresh
 import com.google.accompanist.swiperefresh.rememberSwipeRefreshState
 import com.jminnovatech.sbclub.data.model.ResultData
 import com.jminnovatech.sbclub.repository.AppRepository
+import com.jminnovatech.sbclub.ui.screens.user.BetScreen
 import com.jminnovatech.sbclub.utils.ApiState
 import com.jminnovatech.sbclub.utils.SessionManager
 import com.jminnovatech.sbclub.viewmodel.AuthVM
@@ -68,7 +69,7 @@ import java.util.Locale
 @RequiresApi(Build.VERSION_CODES.O)
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun UserMainScreen(nav: NavController, context: Context) {
+fun UserMainScreen(nav: NavController, context: Context,gameId:Int) {
     val vm: WalletVM = viewModel(
         factory = WalletVMFactory(AppRepository(context))
     )
@@ -90,6 +91,9 @@ fun UserMainScreen(nav: NavController, context: Context) {
         val res = AppRepository(context).getAppMessage()
         Log.d("MSG_DEBUG", res.message)
 
+    }
+    LaunchedEffect(gameId) {
+        Log.d("GAME_ID", "Game ID = $gameId")
     }
     ModalNavigationDrawer(
 
@@ -302,7 +306,15 @@ fun UserMainScreen(nav: NavController, context: Context) {
 
                     // 🎯 MAIN GAME SCREEN
                     "bet" -> {
-                        com.jminnovatech.sbclub.ui.screens.user.BetScreen(nav, context)
+
+                        when (gameId) {
+
+                            1 -> BetScreen(nav, context)
+
+                            2 -> BetScreen(nav, context)
+
+                            3 -> BetScreen(nav, context)
+                        }
                     }
 
                     "summary" -> Summary(vm)
@@ -595,6 +607,16 @@ fun UserMainScreen(nav: NavController, context: Context) {
             }
         }
     }
+}
+
+@Composable
+fun FiveDigitScreen(x0: NavController, x1: Context) {
+    TODO("Not yet implemented")
+}
+
+@Composable
+fun DoubleDigitScreen(x0: NavController, x1: Context) {
+    TODO("Not yet implemented")
 }
 
 @RequiresApi(Build.VERSION_CODES.O)

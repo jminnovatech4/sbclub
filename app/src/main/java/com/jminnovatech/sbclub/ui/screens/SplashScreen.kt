@@ -74,7 +74,7 @@ fun SplashScreen(nav: NavController, context: Context) {
             "master" -> nav.navigate("master") {
                 popUpTo("splash") { inclusive = true }
             }
-            "user" -> nav.navigate("user") {
+            "user" -> nav.navigate("dashboard") {
                 popUpTo("splash") { inclusive = true }
             }
             else -> nav.navigate("login") {
@@ -114,7 +114,7 @@ fun SplashScreen(nav: NavController, context: Context) {
             Spacer(modifier = Modifier.height(16.dp))
 
             Text(
-                "Shilong Fatafat",
+                "SBCLUB",
                 color = Color.White,
                 style = MaterialTheme.typography.headlineMedium
             )
