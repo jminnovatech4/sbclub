@@ -13,6 +13,7 @@ import com.jminnovatech.sbclub.data.model.admin.PendingResponse
 import com.jminnovatech.sbclub.data.model.admin.Transaction
 import com.jminnovatech.sbclub.data.model.master.MyUsersResponse
 import com.jminnovatech.sbclub.data.model.master.TransferRequest
+import com.jminnovatech.sbclub.data.model.progame.*
 import com.jminnovatech.sbclub.data.model.user.BetItem.BetItem
 import com.jminnovatech.sbclub.data.model.user.BetItem.BetRequest
 
@@ -176,4 +177,36 @@ interface ApiService {
         @Query("from") from: String?,
         @Query("to") to: String?
     ): MasterReportResponse
+
+    /*
+|--------------------------------------------------------------------------
+| PRO GAME
+|--------------------------------------------------------------------------
+*/
+
+    @GET("pro-game/games")
+    suspend fun getGames(): GameListResponse
+
+    @GET("pro-game/games/{gameId}/schedules")
+    suspend fun getSchedules(
+        @Path("gameId") gameId:Int
+    ): ScheduleResponse
+
+    @GET("pro-game/games/{gameId}/current")
+    suspend fun getCurrentSchedule(
+        @Path("gameId") gameId:Int
+    ): CurrentScheduleResponse
+
+    @POST("pro-game/place-bet")
+    suspend fun placeProBet(
+        @Body body: ProBetRequest
+    ): CommonResponse
+
+    @GET("pro-game/history")
+    suspend fun getProHistory(): HistoryResponse
+
+    @GET("pro-game/results")
+    suspend fun getProResults(
+        @Query("game_id") gameId:Int
+    ): ResultResponse
 }
