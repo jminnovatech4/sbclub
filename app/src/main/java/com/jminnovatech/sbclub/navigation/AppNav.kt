@@ -11,7 +11,9 @@ import com.jminnovatech.sbclub.repository.AppRepository
 import com.jminnovatech.sbclub.ui.screens.*
 import com.jminnovatech.sbclub.ui.screens.admin.AdminScreen
 import com.jminnovatech.sbclub.ui.screens.master.MasterScreen
+import com.jminnovatech.sbclub.ui.screens.progame.DashboardScreen
 import com.jminnovatech.sbclub.ui.screens.user.ResultScreen
+import com.jminnovatech.sbclub.ui.screens.user.progame.ProGameScreen
 import com.jminnovatech.sbclub.viewmodel.MasterVM
 import com.jminnovatech.sbclub.viewmodel.WalletVM
 
@@ -63,7 +65,20 @@ fun AppNav(context: Context) {
         composable("dashboard") {
             DashboardScreen(nav, context)
         }
+        composable(
+            route = "pro_game/{gameId}"
+        ) {
 
+            val gameId =
+                it.arguments?.getString("gameId")?.toInt() ?: 1
+
+            ProGameScreen(
+                nav = nav,
+                context = context,
+                gameId = gameId
+            )
+
+        }
 
     }
 }

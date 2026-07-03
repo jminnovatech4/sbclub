@@ -25,7 +25,7 @@ import com.jminnovatech.sbclub.data.model.user.BetItem.BetItem
 import com.jminnovatech.sbclub.data.model.user.BetItem.BetRequest
 import com.jminnovatech.sbclub.model.UserNew
 import com.jminnovatech.sbclub.utils.NetworkErrorHandler
-
+import com.jminnovatech.sbclub.data.model.progame.*
 
 class AppRepository(private val context: Context) {
 
@@ -140,14 +140,7 @@ class AppRepository(private val context: Context) {
         }
     }
 
-    // 📜 RESULT HISTORY
-    suspend fun results(): ApiState<List<ResultItem>> {
-        return try {
-            ApiState.Success(api.results())
-        } catch (e: Exception){
-            ApiState.Error(NetworkErrorHandler.getMessage(e))
-        }
-    }
+
     suspend fun getRounds(): ApiState<List<RoundItemUI>> {
         return try {
 
@@ -537,5 +530,217 @@ class AppRepository(private val context: Context) {
             .getApi(context)
             .masterTeamReport(from, to)
     }
+
+
+//pro game start
+
+
+
+    suspend fun getSchedules(gameId:Int): ApiState<ScheduleResponse> {
+
+        return try {
+
+            val res = api.getSchedules(gameId)
+
+            ApiState.Success(res)
+
+        } catch (e: Exception){
+
+            ApiState.Error(NetworkErrorHandler.getMessage(e))
+
+        }
+
+    }
+
+
+
+    suspend fun placeProBet(
+        body: ProBetRequest
+    ): ApiState<String> {
+
+        return try {
+
+            val res = api.placeProBet(body)
+
+            if(res.status){
+
+                ApiState.Success(res.msg)
+
+            }else{
+
+                ApiState.Error(res.msg)
+
+            }
+
+        } catch (e: Exception){
+
+            ApiState.Error(NetworkErrorHandler.getMessage(e))
+
+        }
+
+    }
+
+
+
+    suspend fun gameResults(
+        gameId:Int
+    ): ApiState<ResultResponse> {
+
+        return try {
+
+            val res = api.getProResults(gameId)
+
+            ApiState.Success(res)
+
+        } catch (e: Exception){
+
+            ApiState.Error(NetworkErrorHandler.getMessage(e))
+
+        }
+
+    }
+
+    suspend fun getProGames(): ApiState<List<Game>> {
+
+        return try {
+
+            val res = api.getGames()
+
+            if (res.status) {
+                ApiState.Success(res.data)
+            } else {
+                ApiState.Error("Game not found")
+            }
+
+        } catch (e: Exception) {
+
+            e.printStackTrace()
+
+            ApiState.Error(NetworkErrorHandler.getMessage(e))
+
+        }
+
+    }
+
+    suspend fun getProSchedules(
+
+        gameId: Int
+
+    ): ApiState<ScheduleResponse> {
+
+        return try {
+
+            val res = api.getSchedules(gameId)
+
+            if (res.status) {
+                ApiState.Success(res)
+            } else {
+                ApiState.Error("Schedule not found")
+            }
+
+        } catch (e: Exception) {
+
+            e.printStackTrace()
+
+            ApiState.Error(NetworkErrorHandler.getMessage(e))
+
+        }
+
+    }
+
+    suspend fun getCurrentProSchedule(
+
+        gameId: Int
+
+    ): ApiState<CurrentScheduleResponse> {
+
+        return try {
+
+            val res = api.getCurrentSchedule(gameId)
+
+            if (res.status) {
+                ApiState.Success(res)
+            } else {
+                ApiState.Error("Game Closed")
+            }
+
+        } catch (e: Exception) {
+
+            e.printStackTrace()
+
+            ApiState.Error(NetworkErrorHandler.getMessage(e))
+
+        }
+
+    }
+
+
+
+    suspend fun getProHistory(
+
+        gameId: Int,
+
+        scheduleId: Int? = null
+
+    ): ApiState<HistoryResponse> {
+
+        return try {
+
+            val res = api.getProHistory(
+
+                gameId,
+
+                scheduleId
+
+            )
+
+            if (res.status) {
+
+                ApiState.Success(res)
+
+            } else {
+
+                ApiState.Error("No History")
+
+            }
+
+        } catch (e: Exception) {
+
+            e.printStackTrace()
+
+            ApiState.Error(NetworkErrorHandler.getMessage(e))
+
+        }
+
+    }
+
+    suspend fun getProResults(
+        gameId: Int
+    ): ApiState<ResultResponse> {
+
+        return try {
+
+            val res = api.getProResults(gameId)
+
+            if (res.status) {
+
+                ApiState.Success(res)
+
+            } else {
+
+                ApiState.Error("No Result")
+
+            }
+
+        } catch (e: Exception) {
+
+            e.printStackTrace()
+
+            ApiState.Error(NetworkErrorHandler.getMessage(e))
+
+        }
+
+    }
+
 }
 

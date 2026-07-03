@@ -202,11 +202,39 @@ interface ApiService {
         @Body body: ProBetRequest
     ): CommonResponse
 
+
+
+
+
+    // ==============================
+// PRO GAME
+// ==============================
+
+
+
+
     @GET("pro-game/history")
-    suspend fun getProHistory(): HistoryResponse
+    suspend fun getProHistory(
+
+        @Query("game_id")
+        gameId:Int,
+
+        @Query("schedule_id")
+        scheduleId:Int? = null,
+
+        @Query("page")
+        page:Int = 1
+
+    ): HistoryResponse
 
     @GET("pro-game/results")
     suspend fun getProResults(
-        @Query("game_id") gameId:Int
+
+        @Query("game_id")
+        gameId:Int,
+
+        @Query("page")
+        page:Int = 1
+
     ): ResultResponse
 }

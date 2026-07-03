@@ -9,7 +9,7 @@ import com.jminnovatech.sbclub.utils.SessionManager
 
 object RetrofitClient {
 
-    private const val BASE_URL = "https://sbclub.live/sf/public/api/"
+    private const val BASE_URL = "https://sbclub.live/sbclub/public/api/"
 
     fun getApi(context: Context): ApiService {
 

@@ -18,7 +18,7 @@ data class Game(
 
     val max_entries:Int,
 
-    val allow_multiple:Boolean,
+    val allow_multiple:Int,
 
     val is_active:Int,
 
