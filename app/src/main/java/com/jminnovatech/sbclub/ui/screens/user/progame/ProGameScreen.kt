@@ -1,21 +1,24 @@
 package com.jminnovatech.sbclub.ui.screens.user.progame
 
 import android.content.Context
-import androidx.compose.foundation.background
-import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
-import androidx.compose.runtime.*
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
-import com.jminnovatech.sbclub.data.model.progame.Schedule
 import com.jminnovatech.sbclub.utils.ApiState
 import com.jminnovatech.sbclub.viewmodel.ProGameVM
 
@@ -27,115 +30,144 @@ fun ProGameScreen(
     vm: ProGameVM = remember { ProGameVM() }
 ) {
 
+    // Screen open হলে একবার API call হবে
     LaunchedEffect(gameId) {
+
+        // Game-এর সব schedule আনবে
         vm.loadSchedules(context, gameId)
+
+        // বর্তমানে কোন schedule চলছে
         vm.loadCurrent(context, gameId)
+
+        // Wallet balance আনবে
+        vm.loadWallet(context)
+
+        // Result list আনবে
+        vm.loadResults(context, gameId)
     }
 
-    Scaffold(
+    when (val state = vm.scheduleState) {
 
-        containerColor = Color(0xFF0F172A)
+        ApiState.Idle,
+        ApiState.Loading -> {
 
-    ) { padding ->
+            Box(
+                modifier = Modifier.fillMaxSize(),
+                contentAlignment = Alignment.Center
+            ) {
+                CircularProgressIndicator()
+            }
 
-        Box(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(padding)
-        ) {
+        }
 
-            when (val state = vm.scheduleState) {
+        is ApiState.Error -> {
 
-                ApiState.Idle -> {}
+            Box(
+                modifier = Modifier.fillMaxSize(),
+                contentAlignment = Alignment.Center
+            ) {
 
-                ApiState.Loading -> {
+                Text(
+                    text = state.message,
+                    color = Color.Red
+                )
 
-                    Box(
-                        modifier = Modifier.fillMaxSize(),
-                        contentAlignment = Alignment.Center
-                    ) {
-                        CircularProgressIndicator()
-                    }
+            }
 
-                }
+        }
 
-                is ApiState.Error -> {
+        is ApiState.Success -> {
 
-                    Box(
-                        modifier = Modifier.fillMaxSize(),
-                        contentAlignment = Alignment.Center
-                    ) {
+            // বর্তমানে running schedule id
+            val currentId =
+                (vm.currentState as? ApiState.Success)
+                    ?.data?.data?.id ?: 0
 
-                        Text(
-                            text = state.message,
-                            color = Color.Red,
-                            style = MaterialTheme.typography.bodyLarge
-                        )
+            Scaffold(
 
-                    }
+                topBar = {
 
-                }
+                    GameTopBar(
 
-                is ApiState.Success -> {
+                        // Game Name
+                        title = state.data.game.game_name,
 
-                    val currentId =
-                        (vm.currentState as? ApiState.Success)
-                            ?.data
-                            ?.data
-                            ?.id ?: 0
+                        // Wallet
+                        wallet = vm.walletBalance,
 
-                    LazyColumn(
-                        modifier = Modifier.fillMaxSize(),
-                        contentPadding = PaddingValues(15.dp),
-                        verticalArrangement = Arrangement.spacedBy(15.dp)
-                    ) {
-
-                        items(state.data.cards) { schedule ->
-
-                            ScheduleCard(
-
-                                gameId = gameId,
-
-                                schedule = schedule,
-
-                                currentId = currentId,
-
-                                wallet = vm.walletBalance,
-
-                                resultNumber = "---",
-
-                                onPlaceBet = { scheduleId, bets ->
-
-                                    vm.placeBet(
-
-                                        context = context,
-
-                                        gameId = gameId,
-
-                                        scheduleId = scheduleId,
-
-                                        bets = bets
-
-                                    )
-
-                                },
-
-                                onHistoryClick = { scheduleId ->
-
-                                    vm.loadHistory(
-
-                                        context,
-
-                                        gameId,
-
-                                        scheduleId
-
-                                    )
-
-                                }
-
-                            )
+                        onBack = {
+                            nav.popBackStack()
                         }
+
+                    )
+
+                }
+
+            ) { padding ->
+
+                LazyColumn(
+
+                    modifier = Modifier.fillMaxSize(),
+
+                    contentPadding = PaddingValues(
+                        top = padding.calculateTopPadding() + 15.dp,
+                        bottom = 15.dp,
+                        start = 15.dp,
+                        end = 15.dp
+                    ),
+
+                    verticalArrangement = Arrangement.spacedBy(15.dp)
+
+                ) {
+
+                    items(state.data.cards) { schedule ->
+
+                        ScheduleCard(
+
+                            gameId = gameId,
+
+                            schedule = schedule,
+
+                            currentId = currentId,
+
+                            wallet = vm.walletBalance,
+
+                            // এখন dummy
+                            resultNumber = "---",
+
+                            // Bet Button
+                            onPlaceBet = { scheduleId, bets ->
+
+                                vm.placeBet(
+
+                                    context,
+
+                                    gameId,
+
+                                    scheduleId,
+
+                                    bets
+
+                                )
+
+                            },
+
+                            // History Expand
+                            onHistoryClick = { scheduleId ->
+
+                                vm.loadHistory(
+
+                                    context,
+
+                                    gameId,
+
+                                    scheduleId
+
+                                )
+
+                            }
+
+                        )
 
                     }
 

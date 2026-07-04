@@ -58,8 +58,37 @@ class ProGameVM : ViewModel() {
     // -------------------------
 
     var walletBalance by mutableDoubleStateOf(0.0)
+// ============================================================
+// Wallet
+// ============================================================
 
-    // ============================================================
+    fun loadWallet(
+        context: Context
+    ) {
+
+        viewModelScope.launch {
+
+            val repo = AppRepository(context)
+
+            when (val state = repo.getProfile()) {
+
+                is ApiState.Success -> {
+
+                    walletBalance =
+                        state.data.wallet.toDoubleOrNull() ?: 0.0
+
+                }
+
+                else -> {
+
+                }
+
+            }
+
+        }
+
+    }
+    // =======================================a=====================
     // Load Games
     // ============================================================
 
@@ -142,23 +171,35 @@ class ProGameVM : ViewModel() {
 
         viewModelScope.launch {
 
+            val repo = AppRepository(context)
+
             betState = ApiState.Loading
 
-            betState =
-                AppRepository(context)
-                    .placeProBet(
+            betState = repo.placeProBet(
 
-                        ProBetRequest(
+                ProBetRequest(
 
-                            game_id = gameId,
+                    game_id = gameId,
 
-                            schedule_id = scheduleId,
+                    schedule_id = scheduleId,
 
-                            bets = bets
+                    bets = bets
 
-                        )
+                )
 
-                    )
+            )
+
+            if (betState is ApiState.Success) {
+
+                loadWallet(context)
+
+                loadCurrent(context, gameId)
+
+                loadResults(context, gameId)
+
+                loadHistory(context, gameId, scheduleId)
+
+            }
 
         }
 
