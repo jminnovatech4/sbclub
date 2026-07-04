@@ -642,8 +642,9 @@ class AppRepository(private val context: Context) {
 
             e.printStackTrace()
 
-            ApiState.Error(NetworkErrorHandler.getMessage(e))
+            android.util.Log.e("PRO_GAME_ERROR", e.stackTraceToString())
 
+            ApiState.Error(e.message ?: "Unknown Error")
         }
 
     }

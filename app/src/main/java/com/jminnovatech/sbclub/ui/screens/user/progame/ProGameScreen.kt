@@ -128,40 +128,39 @@ fun ProGameScreen(
 
                             schedule = schedule,
 
+                            digitLength = state.data.game.digit_length,
+
                             currentId = currentId,
 
                             wallet = vm.walletBalance,
 
-                            // এখন dummy
                             resultNumber = "---",
 
-                            // Bet Button
                             onPlaceBet = { scheduleId, bets ->
 
                                 vm.placeBet(
 
-                                    context,
+                                    context = context,
 
-                                    gameId,
+                                    gameId = gameId,
 
-                                    scheduleId,
+                                    scheduleId = scheduleId,
 
-                                    bets
+                                    bets = bets
 
                                 )
 
                             },
 
-                            // History Expand
                             onHistoryClick = { scheduleId ->
 
                                 vm.loadHistory(
 
-                                    context,
+                                    context = context,
 
-                                    gameId,
+                                    gameId = gameId,
 
-                                    scheduleId
+                                    scheduleId = scheduleId
 
                                 )
 

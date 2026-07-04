@@ -22,14 +22,30 @@ import com.jminnovatech.sbclub.data.model.progame.ProBetItem
 import com.jminnovatech.sbclub.data.model.progame.Schedule
 import com.jminnovatech.sbclub.ui.screens.user.progame.GameTimeUtils.formatTime
 import com.jminnovatech.sbclub.ui.screens.user.progame.GameTimeUtils.formatToAmPm
-
+import androidx.compose.foundation.background
+import androidx.compose.foundation.border
+import androidx.compose.foundation.Canvas
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.interaction.MutableInteractionSource
+import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.material.icons.filled.AccountBalanceWallet
+import androidx.compose.material.icons.filled.KeyboardArrowDown
+import androidx.compose.material.icons.filled.KeyboardArrowUp
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.shadow
+import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.geometry.Size
+import androidx.compose.ui.graphics.Brush
+import androidx.compose.ui.graphics.StrokeCap
+import androidx.compose.ui.graphics.drawscope.Stroke
+import androidx.compose.ui.text.style.TextAlign
 @Composable
 fun ScheduleCard(
 
     gameId: Int,
 
     schedule: Schedule,
-
+    digitLength: Int,
     currentId: Int,
 
     wallet: Double,
@@ -84,21 +100,44 @@ fun ScheduleCard(
 
     Card(
 
-        modifier = Modifier.fillMaxWidth(),
+        modifier = Modifier
+            .fillMaxWidth()
+            .shadow(
+                elevation = 18.dp,
+                shape = RoundedCornerShape(26.dp)
+            ),
 
-        shape = RoundedCornerShape(20.dp),
+        shape = RoundedCornerShape(26.dp),
 
         colors = CardDefaults.cardColors(
 
-            containerColor = Color(0xFF1E293B)
+            containerColor = Color.Transparent
 
         )
 
-    ) {
+    ){
 
         Column(
 
-            modifier = Modifier.padding(16.dp)
+            modifier = Modifier
+
+                .background(
+
+                    Brush.verticalGradient(
+
+                        listOf(
+
+                            Color(0xFF1E293B),
+
+                            Color(0xFF0F172A)
+
+                        )
+
+                    )
+
+                )
+
+                .padding(18.dp)
 
         ) {
 
@@ -110,99 +149,99 @@ fun ScheduleCard(
 
             ) {
 
-                Column(
+                Row(
 
-                    modifier = Modifier.weight(1f)
+                    modifier = Modifier.fillMaxWidth(),
 
-                ) {
+                    verticalAlignment = Alignment.CenterVertically
 
-                    Text(
+                ){
 
-                        text = "Baji ${schedule.baji_no}",
+                    Column(
 
-                        style = MaterialTheme.typography.titleLarge,
+                        modifier = Modifier.weight(1f)
 
-                        color = Color.White,
+                    ){
 
-                        fontWeight = FontWeight.Bold
+                        Text(
 
-                    )
+                            text = "BAJI ${schedule.baji_no}",
 
-                    Spacer(
+                            color = Color.White,
 
-                        Modifier.height(4.dp)
+                            fontWeight = FontWeight.Black
 
-                    )
+                        )
 
-                    Text(
+                        Spacer(Modifier.height(4.dp))
 
-                        text =
+                        Text(
 
-                            formatTime(schedule.start_time)
+                            text =
 
-                                    +
+                                "${formatTime(schedule.start_time)} - ${formatTime(schedule.end_time)}",
 
-                                    " - "
+                            color = Color(0xFFCBD5E1)
 
-                                    +
+                        )
 
-                                    formatTime(schedule.end_time),
+                    }
 
-                        color = Color.LightGray
+                    Surface(
 
-                    )
+                        color = chipColor,
 
-                }
+                        shape = RoundedCornerShape(50)
 
-                AssistChip(
+                    ){
 
-                    onClick = {},
+                        Row(
 
-                    label = {
+                            modifier = Modifier.padding(
 
-                        Text(state)
+                                horizontal = 14.dp,
 
-                    },
+                                vertical = 8.dp
 
-                    leadingIcon = {
+                            ),
 
-                        when (state) {
+                            verticalAlignment = Alignment.CenterVertically
 
-                            "RUNNING" ->
+                        ){
 
-                                Icon(
-                                    Icons.Default.PlayArrow,
-                                    null
-                                )
+                            Icon(
 
-                            "RESULT" ->
+                                when(state){
 
-                                Icon(
-                                    Icons.Default.CheckCircle,
-                                    null
-                                )
+                                    "RUNNING"->Icons.Default.PlayArrow
 
-                            else ->
+                                    "LOCK"->Icons.Default.Lock
 
-                                Icon(
-                                    Icons.Default.Lock,
-                                    null
-                                )
+                                    else->Icons.Default.CheckCircle
+
+                                },
+
+                                null,
+
+                                tint = Color.White
+
+                            )
+
+                            Spacer(Modifier.width(6.dp))
+
+                            Text(
+
+                                state,
+
+                                color = Color.White
+
+                            )
 
                         }
 
-                    },
+                    }
 
-                    colors = AssistChipDefaults.assistChipColors(
-
-                        containerColor = chipColor,
-
-                        labelColor = Color.White
-
-                    )
-
-                )
-
+                }
             }
 
             Spacer(
@@ -211,17 +250,49 @@ fun ScheduleCard(
 
             )
 
-            Text(
+            Card(
 
-                text =
+                colors = CardDefaults.cardColors(
 
-                    "Result : ${resultNumber ?: "---"}",
+                    containerColor = Color(0xFF111827)
 
-                color = Color.White,
+                )
 
-                style = MaterialTheme.typography.bodyLarge
+            ){
 
-            )
+                Row(
+
+                    modifier = Modifier
+
+                        .fillMaxWidth()
+
+                        .padding(14.dp),
+
+                    horizontalArrangement = Arrangement.SpaceBetween
+
+                ){
+
+                    Text(
+
+                        "Winning Number",
+
+                        color = Color.Gray
+
+                    )
+
+                    Text(
+
+                        resultNumber ?: "---",
+
+                        color = Color(0xFF22C55E),
+
+                        fontWeight = FontWeight.Bold
+
+                    )
+
+                }
+
+            }
 
             Spacer(
 
@@ -246,12 +317,100 @@ fun ScheduleCard(
                 )
 
             }
+            Card(
 
+                colors = CardDefaults.cardColors(
+
+                    containerColor = Color(0xFF111827)
+
+                ),
+
+                shape = RoundedCornerShape(20.dp)
+
+            ){
+
+                Row(
+
+                    modifier = Modifier
+
+                        .fillMaxWidth()
+
+                        .padding(16.dp),
+
+                    horizontalArrangement = Arrangement.SpaceEvenly
+
+                ){
+
+                    WalletBox(
+
+                        "Wallet",
+
+                        "₹%.0f".format(wallet),
+
+                        Color(0xFF22C55E)
+
+                    )
+
+                    WalletBox(
+
+                        "Bet",
+
+                        "₹%.0f".format(betList.sumOf{it.amount}),
+
+                        Color(0xFFF59E0B)
+
+                    )
+
+                    WalletBox(
+
+                        "Left",
+
+                        "₹%.0f".format(wallet-betList.sumOf{it.amount}),
+
+                        Color.White
+
+                    )
+
+                }
+
+            }
             Button(
 
-                modifier = Modifier.fillMaxWidth(),
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(58.dp),
 
                 enabled = state != "LOCK",
+
+                shape = RoundedCornerShape(18.dp),
+
+                colors = ButtonDefaults.buttonColors(
+
+                    containerColor = when (state) {
+
+                        "RUNNING" -> Color(0xFF2563EB)
+
+                        "RESULT" -> Color(0xFF0EA5E9)
+
+                        else -> Color(0xFF475569)
+
+                    },
+
+                    disabledContainerColor = Color(0xFF475569),
+
+                    contentColor = Color.White,
+
+                    disabledContentColor = Color.White
+
+                ),
+
+                elevation = ButtonDefaults.buttonElevation(
+
+                    defaultElevation = 8.dp,
+
+                    pressedElevation = 2.dp
+
+                ),
 
                 onClick = {
 
@@ -265,40 +424,56 @@ fun ScheduleCard(
 
             ) {
 
+                Icon(
+
+                    imageVector = when (state) {
+
+                        "RUNNING" -> Icons.Default.PlayArrow
+
+                        "RESULT" -> if (expanded)
+                            Icons.Default.KeyboardArrowUp
+                        else
+                            Icons.Default.KeyboardArrowDown
+
+                        else -> Icons.Default.Lock
+
+                    },
+
+                    contentDescription = null
+
+                )
+
+                Spacer(Modifier.width(10.dp))
+
                 Text(
 
-                    when (state) {
+                    text = when (state) {
 
                         "RUNNING" ->
 
                             if (expanded)
-
-                                "CLOSE GAME"
-
+                                "CLOSE BET PANEL"
                             else
-
-                                "OPEN GAME"
+                                "OPEN BET PANEL"
 
                         "RESULT" ->
 
                             if (expanded)
-
-                                "HIDE HISTORY"
-
+                                "HIDE RESULT HISTORY"
                             else
+                                "VIEW RESULT HISTORY"
 
-                                "VIEW HISTORY"
+                        else -> "GAME LOCKED"
 
-                        else ->
+                    },
 
-                            "LOCKED"
+                    style = MaterialTheme.typography.titleMedium,
 
-                    }
+                    fontWeight = FontWeight.Bold
 
                 )
 
             }
-
             AnimatedVisibility(
 
                 visible = expanded,
@@ -307,83 +482,347 @@ fun ScheduleCard(
 
                 exit = fadeOut() + shrinkVertically()
 
-            ) {                if (state == "RUNNING") {
+            ) {
+                if (state == "RUNNING") {
 
-                Spacer(
-                    Modifier.height(18.dp)
-                )
+                    Spacer(Modifier.height(20.dp))
 
-                Text(
+                    //==============================
+                    // WALLET SUMMARY
+                    //==============================
 
-                    text = "Wallet Balance",
+                    Card(
 
-                    style = MaterialTheme.typography.labelMedium,
+                        modifier = Modifier.fillMaxWidth(),
 
-                    color = Color.LightGray
+                        colors = CardDefaults.cardColors(
 
-                )
+                            containerColor = Color(0xFF111827)
 
-                Spacer(
-                    Modifier.height(4.dp)
-                )
+                        ),
 
-                Text(
+                        shape = RoundedCornerShape(20.dp)
 
-                    text = "₹ %.2f".format(wallet),
+                    ) {
 
-                    style = MaterialTheme.typography.titleLarge,
+                        Row(
 
-                    color = Color(0xFF22C55E),
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(18.dp),
 
-                    fontWeight = FontWeight.Bold
+                            horizontalArrangement = Arrangement.SpaceEvenly,
 
-                )
+                            verticalAlignment = Alignment.CenterVertically
 
-                Spacer(
-                    Modifier.height(20.dp)
-                )
+                        ) {
 
-                BetEntryCard(
+                            WalletBox(
 
-                    onAdd = { number, amount ->
+                                title = "Wallet",
 
-                        betList.add(
+                                value = "₹ %.2f".format(wallet),
 
-                            ProBetItem(
-
-                                number = number,
-
-                                amount = amount
+                                color = Color(0xFF22C55E)
 
                             )
 
-                        )
+                            WalletBox(
 
-                    }
+                                title = "Bet",
 
-                )
+                                value = "₹ %.2f".format(
 
-                Spacer(
-                    Modifier.height(18.dp)
-                )
+                                    betList.sumOf {
 
-                BetListCard(
+                                        it.amount
 
-                    bets = betList,
+                                    }
 
-                    onDelete = { index ->
+                                ),
 
-                        if (index in betList.indices) {
+                                color = Color(0xFFF59E0B)
 
-                            betList.removeAt(index)
+                            )
+
+                            WalletBox(
+
+                                title = "Left",
+
+                                value = "₹ %.2f".format(
+
+                                    wallet -
+
+                                            betList.sumOf {
+
+                                                it.amount
+
+                                            }
+
+                                ),
+
+                                color = Color.White
+
+                            )
 
                         }
 
-                    },
+                    }
 
-                    onPlaceBet = {
+                    Spacer(Modifier.height(18.dp))
 
-                        if (betList.isNotEmpty()) {
+                    //==============================
+                    // ADD BET TITLE
+                    //==============================
+
+                    Text(
+
+                        text = "Add New Bet",
+
+                        style = MaterialTheme.typography.titleMedium,
+
+                        fontWeight = FontWeight.Bold,
+
+                        color = Color.White
+
+                    )
+
+                    Spacer(Modifier.height(12.dp))
+
+                    //==============================
+                    // BET ENTRY
+                    //==============================
+
+
+                    //========================================
+// BETTING PANEL
+//========================================
+
+                    var showBetDialog by remember {
+
+                        mutableStateOf(false)
+
+                    }
+
+                    Card(
+
+                        modifier = Modifier.fillMaxWidth(),
+
+                        colors = CardDefaults.cardColors(
+
+                            containerColor = Color(0xFF111827)
+
+                        ),
+
+                        shape = RoundedCornerShape(22.dp)
+
+                    ){
+
+                        Column(
+
+                            modifier = Modifier.padding(18.dp)
+
+                        ){
+
+                            Text(
+
+                                text = "My Bets",
+
+                                style = MaterialTheme.typography.titleMedium,
+
+                                color = Color.White,
+
+                                fontWeight = FontWeight.Bold
+
+                            )
+
+                            Spacer(Modifier.height(14.dp))
+
+                            if(betList.isEmpty()){
+
+                                Text(
+
+                                    "No Bet Added",
+
+                                    color = Color.Gray
+
+                                )
+
+                            }else{
+
+                                betList.forEachIndexed{ index,bet->
+
+                                    BetRow(
+
+                                        bet = bet,
+
+                                        onDelete ={
+
+                                            betList.removeAt(index)
+
+                                        }
+
+                                    )
+
+                                }
+
+                            }
+
+                            Spacer(Modifier.height(18.dp))
+
+                            FilledTonalButton(
+
+                                modifier = Modifier.fillMaxWidth(),
+
+                                onClick = {
+
+                                    showBetDialog=true
+
+                                }
+
+                            ){
+
+                                Text("ADD BET")
+
+                            }
+
+                            Spacer(Modifier.height(15.dp))
+
+                            val total=
+
+                                betList.sumOf{
+
+                                    it.amount
+
+                                }
+
+                            Button(
+
+                                modifier = Modifier
+
+                                    .fillMaxWidth()
+
+                                    .height(56.dp),
+
+                                enabled =
+
+                                    betList.isNotEmpty()
+
+                                            &&
+
+                                            total<=wallet,
+
+                                onClick ={
+
+                                    onPlaceBet(
+
+                                        schedule.id,
+
+                                        betList.toList()
+
+                                    )
+
+                                    betList.clear()
+
+                                    expanded=false
+
+                                }
+
+                            ){
+
+                                Text(
+
+                                    "PLACE BET  ₹ %.2f".format(total)
+
+                                )
+
+                            }
+
+                        }
+
+                    }
+                    BetEntryDialog(
+
+                        show = showBetDialog,
+
+                        digitLength = 1,
+
+                        wallet = wallet,
+
+                        onDismiss = {
+
+                            showBetDialog = false
+
+                        },
+
+                        onAdd = { number, amount ->
+
+                            val exists = betList.any {
+
+                                it.number == number
+
+                            }
+
+                            if (!exists) {
+
+                                betList.add(
+
+                                    ProBetItem(
+
+                                        number = number,
+
+                                        amount = amount
+
+                                    )
+
+                                )
+
+                            }
+
+                        }
+
+                    )
+                    Spacer(Modifier.height(20.dp))
+
+                    //==============================
+                    // BET LIST
+                    //==============================
+
+                    BetListCard(
+
+                        bets = betList,
+
+                        onDelete = {
+
+                            if (it in betList.indices) {
+
+                                betList.removeAt(it)
+
+                            }
+
+                        },
+
+                        onPlaceBet = {
+
+                            if (betList.isEmpty()) {
+
+                                return@BetListCard
+
+                            }
+
+                            val total =
+
+                                betList.sumOf {
+
+                                    it.amount
+
+                                }
+
+                            if (total > wallet) {
+
+                                return@BetListCard
+
+                            }
 
                             onPlaceBet(
 
@@ -399,35 +838,203 @@ fun ScheduleCard(
 
                         }
 
-                    }
+                    )
+
+                } else {
+
+                    Spacer(Modifier.height(18.dp))
+
+                    ResultHistoryCard(
+
+                        scheduleId = schedule.id,
+
+                        resultNumber = resultNumber,
+
+                        onRefresh = {
+
+                            onHistoryClick(
+
+                                schedule.id
+
+                            )
+
+                        }
+
+                    )
+
+                }
+            }
+
+        }
+
+    }
+
+}
+
+@Composable
+private fun WalletBox(
+
+    title:String,
+
+    value:String,
+
+    color:Color
+
+){
+
+    Column(
+
+        horizontalAlignment = Alignment.CenterHorizontally
+
+    ){
+
+        Text(
+
+            title,
+
+            color = Color.Gray
+
+        )
+
+        Spacer(Modifier.height(5.dp))
+
+        Text(
+
+            value,
+
+            color = color,
+
+            style = MaterialTheme.typography.titleMedium,
+
+            fontWeight = FontWeight.Bold
+
+        )
+
+    }
+
+}
+
+@Composable
+private fun SummaryItem(
+
+    title: String,
+
+    value: String,
+
+    color: Color
+
+) {
+
+    Column(
+
+        horizontalAlignment = Alignment.CenterHorizontally
+
+    ) {
+
+        Text(
+
+            text = title,
+
+            color = Color.Gray,
+
+            style = MaterialTheme.typography.labelMedium
+
+        )
+
+        Spacer(Modifier.height(5.dp))
+
+        Text(
+
+            text = value,
+
+            color = color,
+
+            fontWeight = FontWeight.Bold,
+
+            style = MaterialTheme.typography.titleMedium
+
+        )
+
+    }
+
+}
+
+@Composable
+private fun BetRow(
+
+    bet:ProBetItem,
+
+    onDelete:()->Unit
+
+){
+
+    Card(
+
+        modifier = Modifier
+
+            .fillMaxWidth()
+
+            .padding(bottom=10.dp),
+
+        colors = CardDefaults.cardColors(
+
+            containerColor=Color(0xFF1E293B)
+
+        )
+
+    ){
+
+        Row(
+
+            modifier=Modifier
+
+                .fillMaxWidth()
+
+                .padding(14.dp),
+
+            verticalAlignment=Alignment.CenterVertically
+
+        ){
+
+            Column(
+
+                modifier=Modifier.weight(1f)
+
+            ){
+
+                Text(
+
+                    bet.number,
+
+                    color=Color.White,
+
+                    fontWeight=FontWeight.Bold
 
                 )
 
-            } else {
+                Text(
 
-                Spacer(
-                    Modifier.height(18.dp)
-                )
+                    "₹ %.2f".format(bet.amount),
 
-                ResultHistoryCard(
-
-                    scheduleId = schedule.id,
-
-                    resultNumber = resultNumber,
-
-                    onRefresh = {
-
-                        onHistoryClick(
-
-                            schedule.id
-
-                        )
-
-                    }
+                    color=Color(0xFF22C55E)
 
                 )
 
             }
+
+            TextButton(
+
+                onClick=onDelete
+
+            ){
+
+                Text(
+
+                    "DELETE",
+
+                    color=Color.Red
+
+                )
 
             }
 
