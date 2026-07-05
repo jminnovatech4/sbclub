@@ -14,7 +14,15 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-
+import androidx.compose.foundation.background
+import androidx.compose.foundation.border
+import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.icons.filled.AccountBalanceWallet
+import androidx.compose.material.icons.filled.CurrencyRupee
+import androidx.compose.material.icons.filled.Dialpad
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.graphics.Brush
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun BetEntryDialog(
@@ -46,7 +54,18 @@ fun BetEntryDialog(
 
         onDismissRequest = onDismiss,
 
-        containerColor = Color(0xFF0F172A)
+        containerColor = Color(0xFF101826),
+        dragHandle = {
+            Box(
+                Modifier
+                    .padding(vertical = 12.dp)
+                    .size(width = 60.dp, height = 6.dp)
+                    .background(
+                        Color.White.copy(.35f),
+                        RoundedCornerShape(100)
+                    )
+            )
+        }
 
     ){
 
@@ -59,45 +78,69 @@ fun BetEntryDialog(
         ){
 
             Row(
-
-                modifier=Modifier.fillMaxWidth()
-
+                modifier = Modifier.fillMaxWidth(),
+                verticalAlignment = Alignment.CenterVertically
             ){
 
-                Text(
-
-                    "Add Bet",
-
-                    style=MaterialTheme.typography.headlineSmall,
-
-                    color=Color.White,
-
-                    fontWeight=FontWeight.Bold,
-
-                    modifier=Modifier.weight(1f)
-
-                )
-
-                IconButton(
-
-                    onClick=onDismiss
-
+                Box(
+                    modifier = Modifier
+                        .size(54.dp)
+                        .background(
+                            Brush.linearGradient(
+                                listOf(
+                                    Color(0xFF2563EB),
+                                    Color(0xFF3B82F6)
+                                )
+                            ),
+                            CircleShape
+                        ),
+                    contentAlignment = Alignment.Center
                 ){
 
                     Icon(
-
-                        Icons.Default.Close,
-
+                        Icons.Default.Dialpad,
                         null,
+                        tint = Color.White
+                    )
 
-                        tint=Color.White
+                }
 
+                Spacer(Modifier.width(14.dp))
+
+                Column(
+                    modifier = Modifier.weight(1f)
+                ){
+
+                    Text(
+                        "Add New Bet",
+                        color = Color.White,
+                        fontSize = 22.sp,
+                        fontWeight = FontWeight.Bold
+                    )
+
+                    Text(
+                        gameCode.uppercase(),
+                        color = Color(0xFF60A5FA)
+                    )
+
+                }
+
+                FilledIconButton(
+                    onClick = onDismiss,
+                    colors = IconButtonDefaults.filledIconButtonColors(
+                        containerColor = Color.White.copy(.08f)
+                    )
+                ){
+
+                    Icon(
+                        Icons.Default.Close,
+                        null,
+                        tint = Color.White
                     )
 
                 }
 
             }
-
             Spacer(Modifier.height(20.dp))
 
             OutlinedTextField(
@@ -125,6 +168,17 @@ fun BetEntryDialog(
                     unfocusedLabelColor = Color.White,
                     cursorColor = Color.White
                 )
+            )
+            Spacer(Modifier.height(8.dp))
+
+            Text(
+
+                text = BetValidator.error(gameCode),
+
+                color = Color(0xFF94A3B8),
+
+                fontSize = 12.sp
+
             )
             Spacer(Modifier.height(15.dp))
 
@@ -162,46 +216,97 @@ fun BetEntryDialog(
                     cursorColor = Color.White
                 )
             )
+            Spacer(Modifier.height(8.dp))
 
+            Text(
+
+                text = "Minimum ₹10",
+
+                color = Color(0xFF94A3B8),
+
+                fontSize = 12.sp
+
+            )
             Spacer(Modifier.height(18.dp))
 
             Card(
 
-                colors=CardDefaults.cardColors(
+                modifier = Modifier.fillMaxWidth(),
 
-                    containerColor=Color(0xFF111827)
+                colors = CardDefaults.cardColors(
 
-                )
+                    containerColor = Color(0xFF172033)
+
+                ),
+
+                shape = RoundedCornerShape(22.dp)
 
             ){
 
-                Column(
+                Row(
 
-                    modifier=Modifier.padding(15.dp)
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(20.dp),
+
+                    verticalAlignment = Alignment.CenterVertically
 
                 ){
 
-                    Text(
+                    Box(
 
-                        "Wallet",
+                        modifier = Modifier
+                            .size(55.dp)
+                            .background(
+                                Color(0xFF1D4ED8),
+                                CircleShape
+                            ),
 
-                        color=Color.Gray,
-                        fontSize = 16.sp,
-                        fontWeight = FontWeight.Bold
+                        contentAlignment = Alignment.Center
 
-                    )
+                    ){
 
-                    Text(
+                        Icon(
 
-                        "₹ %.2f".format(wallet),
+                            Icons.Default.AccountBalanceWallet,
 
-                        color=Color(0xFFFFED6F),
+                            null,
 
-                        fontWeight=FontWeight.Bold,
-                        fontSize = 20.sp,
+                            tint = Color.White
 
+                        )
 
-                    )
+                    }
+
+                    Spacer(Modifier.width(16.dp))
+
+                    Column(
+
+                        modifier = Modifier.weight(1f)
+
+                    ){
+
+                        Text(
+
+                            "Available Balance",
+
+                            color = Color.Gray
+
+                        )
+
+                        Text(
+
+                            "₹ %.2f".format(wallet),
+
+                            fontSize = 26.sp,
+
+                            color = Color(0xFF22C55E),
+
+                            fontWeight = FontWeight.Bold
+
+                        )
+
+                    }
 
                 }
 
@@ -225,13 +330,21 @@ fun BetEntryDialog(
 
             Button(
 
-                modifier=Modifier
+                modifier = Modifier
                     .fillMaxWidth()
-                    .height(55.dp),
+                    .height(58.dp),
 
-                onClick={
+                shape = RoundedCornerShape(18.dp),
 
-                    val bet=amount.toDoubleOrNull()
+                colors = ButtonDefaults.buttonColors(
+
+                    containerColor = Color(0xFF2563EB)
+
+                ),
+
+                onClick = {
+
+                    val bet = amount.toDoubleOrNull()
 
                     when {
 
@@ -242,18 +355,11 @@ fun BetEntryDialog(
                         }
 
                         !BetValidator.validate(
-
                             gameCode,
-
                             number
-
                         ) -> {
 
-                            error = BetValidator.error(
-
-                                gameCode
-
-                            )
+                            error = BetValidator.error(gameCode)
 
                         }
 
@@ -271,7 +377,7 @@ fun BetEntryDialog(
 
                         bet > wallet -> {
 
-                            error = "Insufficient Wallet Balance"
+                            error = "Insufficient Wallet"
 
                         }
 
@@ -280,11 +386,8 @@ fun BetEntryDialog(
                             error = ""
 
                             onAdd(
-
                                 number,
-
                                 bet
-
                             )
 
                             onDismiss()
@@ -298,16 +401,21 @@ fun BetEntryDialog(
             ){
 
                 Icon(
-
-                    Icons.Default.Add,
-
+                    Icons.Default.CurrencyRupee,
                     null
-
                 )
 
                 Spacer(Modifier.width(8.dp))
 
-                Text("ADD BET")
+                Text(
+
+                    "ADD BET",
+
+                    fontWeight = FontWeight.Bold,
+
+                    fontSize = 16.sp
+
+                )
 
             }
 
