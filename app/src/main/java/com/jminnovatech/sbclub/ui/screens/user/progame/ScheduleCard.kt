@@ -39,6 +39,29 @@ import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.StrokeCap
 import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.animateColorAsState
+import androidx.compose.animation.core.animateFloatAsState
+import androidx.compose.animation.expandVertically
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
+import androidx.compose.animation.*
+import androidx.compose.animation.shrinkVertically
+import androidx.compose.foundation.BorderStroke
+import androidx.compose.foundation.clickable
+
+import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.material.icons.filled.KeyboardArrowDown
+import androidx.compose.material.icons.filled.KeyboardArrowUp
+import androidx.compose.material.icons.filled.CheckCircle
+import androidx.compose.material.icons.filled.LockClock
+import androidx.compose.material.icons.filled.PlayArrow
+import androidx.compose.ui.draw.rotate
+import androidx.compose.ui.text.TextStyle
+import androidx.compose.ui.text.input.KeyboardType
+import androidx.compose.ui.unit.sp
+
 @Composable
 fun ScheduleCard(
 
@@ -73,6 +96,60 @@ fun ScheduleCard(
 
     }
 
+
+    var number by remember {
+
+        mutableStateOf("")
+
+    }
+
+    var amount by remember {
+
+        mutableStateOf("")
+
+    }
+
+    var error by remember {
+
+        mutableStateOf("")
+
+    }
+
+    var loading by remember {
+
+        mutableStateOf(false)
+
+    }
+
+    var success by remember {
+
+        mutableStateOf(false)
+
+    }
+
+    val rotation by animateFloatAsState(
+
+        targetValue = if (expanded) 180f else 0f,
+
+        label = "rotation"
+
+    )
+
+    val borderColor by animateColorAsState(
+
+        targetValue =
+
+            if (expanded)
+
+                Color(0xFF2563EB)
+
+            else
+
+                Color(0xFF334155),
+
+        label = "border"
+
+    )
     val state = when {
 
         GameTimeUtils.isRunning(
@@ -108,6 +185,14 @@ fun ScheduleCard(
             ),
 
         shape = RoundedCornerShape(26.dp),
+
+        border = BorderStroke(
+
+            1.dp,
+
+            borderColor
+
+        ),
 
         colors = CardDefaults.cardColors(
 
@@ -374,104 +459,91 @@ fun ScheduleCard(
                 }
 
             }
-            Button(
+            Surface(
 
                 modifier = Modifier
+
                     .fillMaxWidth()
-                    .height(58.dp),
 
-                enabled = state != "LOCK",
+                    .clip(RoundedCornerShape(18.dp))
 
-                shape = RoundedCornerShape(18.dp),
+                    .clickable(
 
-                colors = ButtonDefaults.buttonColors(
+                        interactionSource = remember {
 
-                    containerColor = when (state) {
+                            MutableInteractionSource()
 
-                        "RUNNING" -> Color(0xFF2563EB)
+                        },
 
-                        "RESULT" -> Color(0xFF0EA5E9)
+                        indication = null
 
-                        else -> Color(0xFF475569)
+                    ){
+
+                        if(state!="LOCK"){
+
+                            expanded=!expanded
+
+                        }
 
                     },
 
-                    disabledContainerColor = Color(0xFF475569),
+                color = Color(0xFF2563EB)
 
-                    contentColor = Color.White,
+            ){
 
-                    disabledContentColor = Color.White
+                Row(
 
-                ),
+                    modifier = Modifier
 
-                elevation = ButtonDefaults.buttonElevation(
+                        .fillMaxWidth()
 
-                    defaultElevation = 8.dp,
+                        .padding(
 
-                    pressedElevation = 2.dp
+                            vertical = 18.dp
 
-                ),
+                        ),
 
-                onClick = {
+                    horizontalArrangement = Arrangement.Center,
 
-                    if (state != "LOCK") {
+                    verticalAlignment = Alignment.CenterVertically
 
-                        expanded = !expanded
+                ){
 
-                    }
+                    Text(
+
+                        if(expanded)
+
+                            "CLOSE BET PANEL"
+
+                        else
+
+                            "OPEN BET PANEL",
+
+                        color = Color.White,
+
+                        fontWeight = FontWeight.Bold
+
+                    )
+
+                    Spacer(
+
+                        Modifier.width(8.dp)
+
+                    )
+
+                    Icon(
+
+                        Icons.Default.KeyboardArrowDown,
+
+                        null,
+
+                        modifier = Modifier.rotate(rotation),
+
+                        tint = Color.White
+
+                    )
 
                 }
-
-            ) {
-
-                Icon(
-
-                    imageVector = when (state) {
-
-                        "RUNNING" -> Icons.Default.PlayArrow
-
-                        "RESULT" -> if (expanded)
-                            Icons.Default.KeyboardArrowUp
-                        else
-                            Icons.Default.KeyboardArrowDown
-
-                        else -> Icons.Default.Lock
-
-                    },
-
-                    contentDescription = null
-
-                )
-
-                Spacer(Modifier.width(10.dp))
-
-                Text(
-
-                    text = when (state) {
-
-                        "RUNNING" ->
-
-                            if (expanded)
-                                "CLOSE BET PANEL"
-                            else
-                                "OPEN BET PANEL"
-
-                        "RESULT" ->
-
-                            if (expanded)
-                                "HIDE RESULT HISTORY"
-                            else
-                                "VIEW RESULT HISTORY"
-
-                        else -> "GAME LOCKED"
-
-                    },
-
-                    style = MaterialTheme.typography.titleMedium,
-
-                    fontWeight = FontWeight.Bold
-
-                )
 
             }
             AnimatedVisibility(
@@ -575,19 +647,57 @@ fun ScheduleCard(
                     // ADD BET TITLE
                     //==============================
 
-                    Text(
+                    Row(
 
-                        text = "Add New Bet",
+                        modifier = Modifier.fillMaxWidth(),
 
-                        style = MaterialTheme.typography.titleMedium,
+                        verticalAlignment = Alignment.CenterVertically
 
-                        fontWeight = FontWeight.Bold,
+                    ){
 
-                        color = Color.White
+                        Box(
 
-                    )
+                            modifier = Modifier
 
-                    Spacer(Modifier.height(12.dp))
+                                .height(2.dp)
+
+                                .weight(1f)
+
+                                .background(Color(0xFF334155))
+
+                        )
+
+                        Text(
+
+                            text = " ADD BET ",
+
+                            modifier = Modifier.padding(horizontal = 10.dp),
+
+                            color = Color.White,
+
+                            style = MaterialTheme.typography.titleMedium,
+
+                            fontWeight = FontWeight.Bold
+
+                        )
+
+                        Box(
+
+                            modifier = Modifier
+
+                                .height(2.dp)
+
+                                .weight(1f)
+
+                                .background(Color(0xFF334155))
+
+                        )
+
+                    }
+
+                    Spacer(Modifier.height(20.dp))
+
+
 
                     //==============================
                     // BET ENTRY
@@ -670,19 +780,105 @@ fun ScheduleCard(
 
                             Spacer(Modifier.height(18.dp))
 
-                            FilledTonalButton(
+                            Button(
 
-                                modifier = Modifier.fillMaxWidth(),
+                                modifier = Modifier
+
+                                    .fillMaxWidth()
+
+                                    .height(54.dp),
 
                                 onClick = {
 
-                                    showBetDialog=true
+                                    val bet = amount.toDoubleOrNull()
+
+                                    when{
+
+                                        number.isBlank()->{
+
+                                            error="Enter Number"
+
+                                        }
+
+                                        !BetValidator.validate(
+
+                                            gameCode,
+
+                                            number
+
+                                        )->{
+
+                                            error=
+
+                                                BetValidator.error(
+
+                                                    gameCode
+
+                                                )
+
+                                        }
+
+                                        bet==null->{
+
+                                            error="Enter Amount"
+
+                                        }
+
+                                        bet<=0->{
+
+                                            error="Invalid Amount"
+
+                                        }
+
+                                        bet>wallet->{
+
+                                            error="Wallet Low"
+
+                                        }
+
+                                        betList.any{
+
+                                            it.number==number
+
+                                        }->{
+
+                                            error="Number Already Added"
+
+                                        }
+
+                                        else->{
+
+                                            error=""
+
+                                            betList.add(
+
+                                                ProBetItem(
+
+                                                    number,
+
+                                                    bet
+
+                                                )
+
+                                            )
+
+                                            number=""
+
+                                            amount=""
+
+                                        }
+
+                                    }
 
                                 }
 
                             ){
 
-                                Text("ADD BET")
+                                Text(
+
+                                    "ADD TO BET LIST"
+
+                                )
 
                             }
 
@@ -741,6 +937,72 @@ fun ScheduleCard(
                         }
 
                     }
+                    Spacer(Modifier.height(18.dp))
+
+
+                    OutlinedTextField(
+                        value = number,
+                        onValueChange = {
+                            number = it.filter { c -> c.isDigit() }
+                        },
+                        textStyle = TextStyle(
+                            color = Color.White,
+                            fontSize = 18.sp,
+                            fontWeight = FontWeight.Bold
+                        ),
+                        modifier = Modifier.fillMaxWidth(),
+                        singleLine = true,
+                        label = { Text("Number") },
+                        keyboardOptions = KeyboardOptions(
+                            keyboardType = KeyboardType.Number
+                        ),
+                        colors = OutlinedTextFieldDefaults.colors(
+                            focusedContainerColor = Color(0xFF111827),
+                            unfocusedContainerColor = Color(0xFF111827),
+                            focusedBorderColor = Color(0xFF2563EB),
+                            unfocusedBorderColor = Color.Gray,
+                            focusedLabelColor = Color.White,
+                            unfocusedLabelColor = Color.White,
+                            cursorColor = Color.White
+                        )
+                    )
+
+                    Spacer(Modifier.height(14.dp))
+
+                    OutlinedTextField(
+                        value = amount,
+                        onValueChange = {
+                            amount = it
+                        },
+                        modifier = Modifier.fillMaxWidth(),
+                        singleLine = true,
+                        label = {
+                            Text("Amount")
+                        },
+                        textStyle = TextStyle(
+                            color = Color.White,
+                            fontSize = 18.sp,
+                            fontWeight = FontWeight.Bold
+                        ),
+                        keyboardOptions = KeyboardOptions(
+                            keyboardType = KeyboardType.Number
+                        ),
+                        colors = OutlinedTextFieldDefaults.colors(
+                            focusedContainerColor = Color(0xFF111827),
+                            unfocusedContainerColor = Color(0xFF111827),
+
+                            focusedTextColor = Color.White,
+                            unfocusedTextColor = Color.White,
+
+                            focusedBorderColor = Color(0xFF2563EB),
+                            unfocusedBorderColor = Color.Gray,
+
+                            focusedLabelColor = Color.White,
+                            unfocusedLabelColor = Color.White,
+
+                            cursorColor = Color.White
+                        )
+                    )
                     BetEntryDialog(
 
                         show = showBetDialog,
