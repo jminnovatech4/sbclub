@@ -1,61 +1,49 @@
 package com.jminnovatech.sbclub.ui.screens.user.progame
 
 
-object BetValidator {
 
-    fun validate(
-        gameCode: String,
-        number: String
-    ): Boolean {
+    object BetValidator {
 
-        return when (gameCode.lowercase()) {
+        fun validate(
+            gameCode: String,
+            number: String
+        ): Boolean {
 
-            "single" -> validateSingle(number)
+            return when (gameCode.lowercase()) {
 
-            "jodi" -> validateJodi(number)
+                "single" -> number.matches(Regex("^[0-9]{1}$"))
 
-            "patti" -> validatePatti(number)
+                "jodi" -> number.matches(Regex("^[0-9]{2}$"))
 
-            "sp" -> validateSP(number)
+                "patti" -> number.matches(Regex("^[0-9]{3}$"))
 
-            "dp" -> validateDP(number)
+                "cp" -> number.matches(Regex("^[0-9]{5}$"))
 
-            "panel" -> validatePanel(number)
-
-            else -> true
+                else -> true
+            }
         }
-    }
 
-    fun error(
-        gameCode: String
-    ): String {
+        fun error(
+            gameCode: String
+        ): String {
 
-        return when (gameCode.lowercase()) {
+            return when (gameCode.lowercase()) {
 
-            "single" ->
-                "Enter 1 digit (0-9)"
+                "single" -> "Enter 1 digit number"
 
-            "jodi" ->
-                "Enter 2 digit number"
+                "jodi" -> "Enter 2 digit number"
 
-            "patti" ->
-                "Enter 3 digit Patti"
+                "patti" -> "Enter 3 digit number"
 
-            "sp" ->
-                "Enter Single Patti"
+                "cp" -> "Enter 5 digit number"
 
-            "dp" ->
-                "Enter Double Patti"
+                else -> "Invalid Number"
 
-            "panel" ->
-                "Enter valid Panel"
+            }
 
-            else ->
-                "Invalid Number"
         }
 
     }
-
     //========================================
 
     private fun validateSingle(
@@ -136,4 +124,3 @@ object BetValidator {
 
     }
 
-}

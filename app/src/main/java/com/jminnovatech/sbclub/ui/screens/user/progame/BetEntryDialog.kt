@@ -9,9 +9,11 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -99,95 +101,66 @@ fun BetEntryDialog(
             Spacer(Modifier.height(20.dp))
 
             OutlinedTextField(
-
-                value=number,
-
+                value = number,
                 onValueChange = {
-
-                    number = it.filter { c ->
-                        c.isDigit()
-                    }
-
+                    number = it.filter { c -> c.isDigit() }
                 },
-
-                modifier=Modifier.fillMaxWidth(),
-
-                singleLine=true,
-
-                label={
-
-                    Text("Number")
-
-                },
-
-                keyboardOptions= KeyboardOptions(
-
-                    keyboardType=KeyboardType.Number
-
+                textStyle = TextStyle(
+                    color = Color.White,
+                    fontSize = 18.sp,
+                    fontWeight = FontWeight.Bold
                 ),
-
-                colors=OutlinedTextFieldDefaults.colors(
-
-                    focusedContainerColor=Color(0xFF111827),
-
-                    unfocusedContainerColor=Color(0xFF111827),
-
-                    focusedTextColor=Color.White,
-
-                    unfocusedTextColor=Color.White,
-
-                    focusedBorderColor=Color(0xFF2563EB),
-
-                    unfocusedBorderColor=Color.Gray
-
+                modifier = Modifier.fillMaxWidth(),
+                singleLine = true,
+                label = { Text("Number") },
+                keyboardOptions = KeyboardOptions(
+                    keyboardType = KeyboardType.Number
+                ),
+                colors = OutlinedTextFieldDefaults.colors(
+                    focusedContainerColor = Color(0xFF111827),
+                    unfocusedContainerColor = Color(0xFF111827),
+                    focusedBorderColor = Color(0xFF2563EB),
+                    unfocusedBorderColor = Color.Gray,
+                    focusedLabelColor = Color.White,
+                    unfocusedLabelColor = Color.White,
+                    cursorColor = Color.White
                 )
-
             )
-
             Spacer(Modifier.height(15.dp))
 
             OutlinedTextField(
-
-                value=amount,
-
-                onValueChange={
-
-                    amount=it
-
+                value = amount,
+                onValueChange = {
+                    amount = it
                 },
-
-                modifier=Modifier.fillMaxWidth(),
-
-                singleLine=true,
-
-                label={
-
+                modifier = Modifier.fillMaxWidth(),
+                singleLine = true,
+                label = {
                     Text("Amount")
-
                 },
-
-                keyboardOptions=KeyboardOptions(
-
-                    keyboardType=KeyboardType.Number
-
+                textStyle = TextStyle(
+                    color = Color.White,
+                    fontSize = 18.sp,
+                    fontWeight = FontWeight.Bold
                 ),
+                keyboardOptions = KeyboardOptions(
+                    keyboardType = KeyboardType.Number
+                ),
+                colors = OutlinedTextFieldDefaults.colors(
+                    focusedContainerColor = Color(0xFF111827),
+                    unfocusedContainerColor = Color(0xFF111827),
 
-                colors=OutlinedTextFieldDefaults.colors(
+                    focusedTextColor = Color.White,
+                    unfocusedTextColor = Color.White,
 
-                    focusedContainerColor=Color(0xFF111827),
+                    focusedBorderColor = Color(0xFF2563EB),
+                    unfocusedBorderColor = Color.Gray,
 
-                    unfocusedContainerColor=Color(0xFF111827),
+                    focusedLabelColor = Color.White,
+                    unfocusedLabelColor = Color.White,
 
-                    focusedTextColor=Color.White,
-
-                    unfocusedTextColor=Color.White,
-
-                    focusedBorderColor=Color(0xFF2563EB),
-
-                    unfocusedBorderColor=Color.Gray
-
+                    cursorColor = Color.White
                 )
-
             )
 
             Spacer(Modifier.height(18.dp))
@@ -212,7 +185,9 @@ fun BetEntryDialog(
 
                         "Wallet",
 
-                        color=Color.Gray
+                        color=Color.Gray,
+                        fontSize = 16.sp,
+                        fontWeight = FontWeight.Bold
 
                     )
 
@@ -220,9 +195,11 @@ fun BetEntryDialog(
 
                         "₹ %.2f".format(wallet),
 
-                        color=Color(0xFF22C55E),
+                        color=Color(0xFFFFED6F),
 
-                        fontWeight=FontWeight.Bold
+                        fontWeight=FontWeight.Bold,
+                        fontSize = 20.sp,
+
 
                     )
 

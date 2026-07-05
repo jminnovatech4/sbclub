@@ -25,7 +25,8 @@ import androidx.compose.ui.unit.sp
 import kotlinx.coroutines.delay
 import java.text.SimpleDateFormat
 import java.util.*
-
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.ui.geometry.CornerRadius
 @Composable
 fun TimerView(
 
@@ -118,119 +119,73 @@ fun TimerView(
     )
 
     Surface(
-
-        shape = CircleShape,
-
+        modifier = Modifier.fillMaxWidth(),
         color = Color(0xFF111827),
-
-        shadowElevation = 6.dp
-
+        shadowElevation = 6.dp,
+        shape = RoundedCornerShape(12.dp)
     ) {
 
-        Box(
-
-            modifier = Modifier.size(120.dp),
-
-            contentAlignment = Alignment.Center
-
+        Column(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(5.dp)
         ) {
 
-            Canvas(
-
-                modifier = Modifier.fillMaxSize()
-
-            ) {
-
-                drawArc(
-
-                    color = Color.DarkGray,
-
-                    startAngle = -90f,
-
-                    sweepAngle = 360f,
-
-                    useCenter = false,
-
-                    style = Stroke(
-
-                        10f,
-
-                        cap = StrokeCap.Round
-
-                    )
-
-                )
-
-                drawArc(
-
-                    color = Color(0xFF16A34A),
-
-                    startAngle = -90f,
-
-                    sweepAngle = 360 * progress,
-
-                    useCenter = false,
-
-                    style = Stroke(
-
-                        10f,
-
-                        cap = StrokeCap.Round
-
-                    )
-
-                )
-
-            }
-
-            Column(
-
-                horizontalAlignment = Alignment.CenterHorizontally
-
+            Row(
+                verticalAlignment = Alignment.CenterVertically
             ) {
 
                 Icon(
-
-                    Icons.Default.Timer,
-
-                    null,
-
-                    tint = Color.White
-
+                    imageVector = Icons.Default.Timer,
+                    contentDescription = null,
+                    tint = Color(0xFF16A34A),
+                    modifier = Modifier.size(20.dp)
                 )
 
-                Spacer(
+                Spacer(modifier = Modifier.width(3.dp))
 
-                    Modifier.height(5.dp)
+                Column(
+                    modifier = Modifier.weight(1f)
+                ) {
 
-                )
+                    Text(
+                        text = "ENDS IN",
+                        color = Color.Gray,
+                        fontSize = 12.sp
+                    )
 
-                Text(
-
-                    millisToTime(remain),
-
-                    color = Color.White,
-
-                    fontWeight = FontWeight.Bold,
-
-                    fontSize = 18.sp
-
-                )
-
-                Text(
-
-                    "Ends In",
-
-                    color = Color.Gray,
-
-                    fontSize = 11.sp
-
-                )
-
+                    Text(
+                        text = millisToTime(remain),
+                        color = Color.White,
+                        fontSize = 16.sp,
+                        fontWeight = FontWeight.Bold
+                    )
+                }
             }
 
-        }
+            Spacer(modifier = Modifier.height(5.dp))
 
+            Canvas(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(8.dp)
+            ) {
+
+                drawRoundRect(
+                    color = Color.DarkGray,
+                    cornerRadius = androidx.compose.ui.geometry.CornerRadius(20f,20f)
+                )
+
+                drawRoundRect(
+                    color = Color(0xFF16A34A),
+                    size = Size(
+                        width = size.width * progress,
+                        height = size.height
+                    ),
+                    cornerRadius = androidx.compose.ui.geometry.CornerRadius(20f,20f)
+                )
+            }
+        }
     }
 
 }

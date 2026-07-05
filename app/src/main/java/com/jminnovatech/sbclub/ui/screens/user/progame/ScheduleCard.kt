@@ -296,7 +296,7 @@ fun ScheduleCard(
 
             Spacer(
 
-                Modifier.height(15.dp)
+                Modifier.height(5.dp)
 
             )
 
@@ -312,7 +312,7 @@ fun ScheduleCard(
 
                 Spacer(
 
-                    Modifier.height(15.dp)
+                    Modifier.height(5.dp)
 
                 )
 
