@@ -128,8 +128,7 @@ fun ProGameScreen(
 
                             schedule = schedule,
 
-                            digitLength = state.data.game.digit_length,
-
+                            gameCode = state.data.game.game_code,
                             currentId = currentId,
 
                             wallet = vm.walletBalance,

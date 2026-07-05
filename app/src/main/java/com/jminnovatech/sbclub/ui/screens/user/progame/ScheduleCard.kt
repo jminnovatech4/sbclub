@@ -45,9 +45,9 @@ fun ScheduleCard(
     gameId: Int,
 
     schedule: Schedule,
-    digitLength: Int,
-    currentId: Int,
 
+    currentId: Int,
+    gameCode:String,
     wallet: Double,
 
     resultNumber: String? = null,
@@ -745,7 +745,7 @@ fun ScheduleCard(
 
                         show = showBetDialog,
 
-                        digitLength = 1,
+                        gameCode = gameCode,
 
                         wallet = wallet,
 

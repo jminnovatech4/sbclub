@@ -19,7 +19,7 @@ fun BetEntryDialog(
 
     show:Boolean,
 
-    digitLength:Int,
+    gameCode:String,
 
     wallet:Double,
 
@@ -102,12 +102,10 @@ fun BetEntryDialog(
 
                 value=number,
 
-                onValueChange={
+                onValueChange = {
 
-                    if(it.length<=digitLength){
-
-                        number=it
-
+                    number = it.filter { c ->
+                        c.isDigit()
                     }
 
                 },
@@ -258,29 +256,51 @@ fun BetEntryDialog(
 
                     val bet=amount.toDoubleOrNull()
 
-                    when{
+                    when {
 
-                        number.length!=digitLength->{
+                        number.isBlank() -> {
 
-                            error="Enter $digitLength digit number"
-
-                        }
-
-                        bet==null || bet<=0->{
-
-                            error="Invalid Amount"
+                            error = "Enter Number"
 
                         }
 
-                        bet>wallet->{
+                        !BetValidator.validate(
 
-                            error="Insufficient Wallet Balance"
+                            gameCode,
+
+                            number
+
+                        ) -> {
+
+                            error = BetValidator.error(
+
+                                gameCode
+
+                            )
 
                         }
 
-                        else->{
+                        bet == null -> {
 
-                            error=""
+                            error = "Enter Amount"
+
+                        }
+
+                        bet <= 0 -> {
+
+                            error = "Invalid Amount"
+
+                        }
+
+                        bet > wallet -> {
+
+                            error = "Insufficient Wallet Balance"
+
+                        }
+
+                        else -> {
+
+                            error = ""
 
                             onAdd(
 
