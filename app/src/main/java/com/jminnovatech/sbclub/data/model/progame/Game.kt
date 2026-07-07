@@ -102,7 +102,23 @@ data class ProBetRequest(
 
 )
 
+data class BetHistoryResponse(
+    val status: Boolean,
+    val data: List<BetHistory>
+)
 
+data class BetHistory(
+    val id: Int,
+    val status: String,
+    val total_amount: Double,
+    val items: List<BetHistoryItem>
+)
+
+data class BetHistoryItem(
+    val bet_number: String,
+    val amount: Double,
+    val win_amount: Double
+)
 data class HistoryItem(
 
     val id:Int,

@@ -39,6 +39,8 @@ import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.StrokeCap
 import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.text.style.TextAlign
+import com.jminnovatech.sbclub.utils.ApiState
+
 @Composable
 fun ScheduleCard(
 
@@ -56,7 +58,8 @@ fun ScheduleCard(
         scheduleId: Int,
         bets: List<ProBetItem>
     ) -> Unit,
-
+    onBetSuccess: (() -> Unit)? = null,
+    betState: ApiState<String>,
     onHistoryClick: (Int) -> Unit = {}
 
 ) {
@@ -73,6 +76,29 @@ fun ScheduleCard(
 
     }
 
+    LaunchedEffect(betState) {
+
+        if (betState is ApiState.Success) {
+
+            betList.clear()
+
+            expanded = false
+
+        }
+
+    }
+    LaunchedEffect(betState) {
+        android.util.Log.d("CARD", "Bet State = $betState")
+    }
+
+    SideEffect {
+
+        android.util.Log.d(
+            "CARD",
+            "Recompose : ${schedule.id}"
+        )
+
+    }
     val state = when {
 
         GameTimeUtils.isRunning(
@@ -682,7 +708,7 @@ fun ScheduleCard(
 
                             ){
 
-                                Text("ADD BET")
+                                Text("ADD NEW BET")
 
                             }
 
@@ -722,9 +748,9 @@ fun ScheduleCard(
 
                                     )
 
-                                    betList.clear()
-
-                                    expanded=false
+//                                    betList.clear()
+//
+//                                    expanded=false
 
                                 }
 
@@ -788,57 +814,7 @@ fun ScheduleCard(
                     // BET LIST
                     //==============================
 
-                    BetListCard(
 
-                        bets = betList,
-
-                        onDelete = {
-
-                            if (it in betList.indices) {
-
-                                betList.removeAt(it)
-
-                            }
-
-                        },
-
-                        onPlaceBet = {
-
-                            if (betList.isEmpty()) {
-
-                                return@BetListCard
-
-                            }
-
-                            val total =
-
-                                betList.sumOf {
-
-                                    it.amount
-
-                                }
-
-                            if (total > wallet) {
-
-                                return@BetListCard
-
-                            }
-
-                            onPlaceBet(
-
-                                schedule.id,
-
-                                betList.toList()
-
-                            )
-
-                            betList.clear()
-
-                            expanded = false
-
-                        }
-
-                    )
 
                 } else {
 

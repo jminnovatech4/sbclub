@@ -561,7 +561,7 @@ class AppRepository(private val context: Context) {
         return try {
 
             val res = api.placeProBet(body)
-
+            android.util.Log.d("PRO_BET", "status=${res.status}, msg=${res.msg}")
             if(res.status){
 
                 ApiState.Success(res.msg)
@@ -711,6 +711,7 @@ class AppRepository(private val context: Context) {
 
             ApiState.Error(NetworkErrorHandler.getMessage(e))
 
+
         }
 
     }
@@ -741,6 +742,35 @@ class AppRepository(private val context: Context) {
 
         }
 
+    }
+
+    suspend fun getBetHistory(
+        gameId: Int,
+        scheduleId: Int
+    ): ApiState<BetHistoryResponse> {
+
+        return try {
+
+            val res = api.getBetHistory(gameId, scheduleId)
+
+            android.util.Log.d("BET_HISTORY", "status=${res.status}")
+            android.util.Log.d("BET_HISTORY", "data=${res.data}")
+
+            if (res.status) {
+                ApiState.Success(res)
+            } else {
+                ApiState.Error("No Bet History")
+            }
+
+        } catch (e: Exception) {
+
+            android.util.Log.e(
+                "BET_HISTORY",
+                e.stackTraceToString()
+            )
+
+            ApiState.Error(NetworkErrorHandler.getMessage(e))
+        }
     }
 
 }

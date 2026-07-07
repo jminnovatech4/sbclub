@@ -1,6 +1,7 @@
 package com.jminnovatech.sbclub.ui.screens.user.progame
 
 import android.content.Context
+import android.widget.Toast
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.PaddingValues
@@ -45,7 +46,62 @@ fun ProGameScreen(
         // Result list আনবে
         vm.loadResults(context, gameId)
     }
+    LaunchedEffect(vm.betHistoryState) {
 
+        when(val state = vm.betHistoryState){
+
+            is ApiState.Success -> {
+
+                android.util.Log.d(
+                    "BET_HISTORY_SCREEN",
+                    state.data.data.toString()
+                )
+
+            }
+
+            is ApiState.Error -> {
+
+                android.util.Log.e(
+                    "BET_HISTORY_SCREEN",
+                    state.message
+                )
+
+            }
+
+            else -> {}
+        }
+
+    }
+
+    LaunchedEffect(vm.betState) {
+
+        when (val state = vm.betState) {
+
+            is ApiState.Success -> {
+
+                Toast.makeText(
+                    context,
+                    state.data.ifBlank { "Bet Placed Successfully" },
+                    Toast.LENGTH_SHORT
+                ).show()
+
+                vm.clearBetState()
+            }
+
+            is ApiState.Error -> {
+
+                Toast.makeText(
+                    context,
+                    state.message.ifBlank { "Something went wrong" },
+                    Toast.LENGTH_SHORT
+                ).show()
+
+                vm.clearBetState()
+            }
+
+            else -> {}
+        }
+    }
     when (val state = vm.scheduleState) {
 
         ApiState.Idle,
@@ -132,7 +188,7 @@ fun ProGameScreen(
                             currentId = currentId,
 
                             wallet = vm.walletBalance,
-
+                            betState = vm.betState,
                             resultNumber = "---",
 
                             onPlaceBet = { scheduleId, bets ->

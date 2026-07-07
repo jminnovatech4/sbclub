@@ -198,6 +198,11 @@ class ProGameVM : ViewModel() {
                 loadResults(context, gameId)
 
                 loadHistory(context, gameId, scheduleId)
+                loadBetHistory(
+                    context,
+                    gameId,
+                    scheduleId
+                )
 
             }
 
@@ -276,5 +281,26 @@ class ProGameVM : ViewModel() {
         betState = ApiState.Idle
 
     }
+    var betHistoryState by mutableStateOf<ApiState<BetHistoryResponse>>(ApiState.Idle)
+        private set
 
+    fun loadBetHistory(
+        context: Context,
+        gameId: Int,
+        scheduleId: Int
+    ) {
+
+        viewModelScope.launch {
+
+            betHistoryState = ApiState.Loading
+
+            betHistoryState = AppRepository(context)
+                .getBetHistory(gameId, scheduleId)
+
+            android.util.Log.d(
+                "BET_HISTORY_VM",
+                betHistoryState.toString()
+            )
+        }
+    }
 }

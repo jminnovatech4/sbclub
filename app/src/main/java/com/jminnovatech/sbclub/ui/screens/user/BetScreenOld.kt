@@ -38,16 +38,18 @@ import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.text.input.KeyboardType
 import com.jminnovatech.sbclub.R
+import java.util.Calendar
+
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun BetScreen(nav: NavController, context1: Context) {
+fun BetScreen2(nav: NavController, context1: Context) {
     fun getTodayTimeMillis(time: String): Long {
         val parts = time.split(":")
-        val cal = java.util.Calendar.getInstance()
+        val cal = Calendar.getInstance()
 
-        cal.set(java.util.Calendar.HOUR_OF_DAY, parts[0].toInt())
-        cal.set(java.util.Calendar.MINUTE, parts[1].toInt())
-        cal.set(java.util.Calendar.SECOND, 0)
+        cal.set(Calendar.HOUR_OF_DAY, parts[0].toInt())
+        cal.set(Calendar.MINUTE, parts[1].toInt())
+        cal.set(Calendar.SECOND, 0)
 
         return cal.timeInMillis
     }
@@ -817,13 +819,454 @@ fun BetScreen(nav: NavController, context1: Context) {
     }
 
     // 🔥 MODAL INPUT (BEST UX)
+    if (showResultPopup) {
 
+        AlertDialog(
+            onDismissRequest = { showResultPopup = false },
+
+            title = {
+                Text("🎯 Result Declared")
+            },
+
+            text = {
+                Column {
+
+                    Text("Winning Number: $resultNumber")
+
+                    Spacer(Modifier.height(10.dp))
+
+                    Text(
+                        if (isWin) "🎉 You Won!" else "😔 You Lost",
+                        color = if (isWin) Color.Green else Color.Red
+                    )
+                }
+            },
+
+            confirmButton = {
+                Button(onClick = { showResultPopup = false }) {
+                    Text("OK")
+                }
+            }
+        )
+    }
+    if (showDialog && finalBetOpen) {
+
+        val amt = tempAmount.toIntOrNull() ?: 0
+        val win = amt * 9
+
+        AlertDialog(
+            onDismissRequest = { showDialog = false },
+
+            title = { Text("Enter Amount") },
+
+            text = {
+                Column {
+
+                    OutlinedTextField(
+                        value = tempAmount,
+                        keyboardOptions = KeyboardOptions(
+                            keyboardType = KeyboardType.Number
+                        ),
+                        onValueChange = {
+                            if (it.all { ch -> ch.isDigit() }) {
+                                tempAmount = it
+                            }
+                        },
+                        placeholder = { Text("Amount") },
+                        singleLine = true
+                    )
+
+                    Spacer(Modifier.height(10.dp))
+
+                    if (amt > 0) {
+                        Text(
+                            " You Win: 🪙$win",
+                            color = Color(0xFF22C55E),
+                            style = MaterialTheme.typography.titleMedium
+                        )
+                    }
+                }
+            },
+
+            confirmButton = {
+                Button(onClick = {
+
+                    val enteredAmount = tempAmount.toIntOrNull() ?: 0
+                    val previousAmount = amounts[selectedIndex].toIntOrNull() ?: 0
+
+                    val extraNeeded = enteredAmount - previousAmount
+
+                    println("==== BET DEBUG ====")
+                    println("walletBalance = $walletBalance")
+                    println("previousAmount = $previousAmount")
+                    println("enteredAmount = $enteredAmount")
+                    println("extraNeeded = $extraNeeded")
+
+                    if (extraNeeded > walletBalance) {
+                        Toast.makeText(context, "Insufficient Balance", Toast.LENGTH_SHORT).show()
+                        return@Button
+                    }
+
+                    // ✅ update UI
+                    val newList = amounts.toMutableList()
+                    newList[selectedIndex] = tempAmount
+                    amounts = newList
+
+                    // ✅ API call
+                    val bets = listOf(
+                        BetItem(selectedIndex.toString(), enteredAmount)
+                    )
+
+                    vm.placeBet(context, bets)
+
+                    showDialog = false
+
+                }) {
+                    Text("Save")
+                }
+            },
+
+            dismissButton = {
+                TextButton(onClick = { showDialog = false }) {
+                    Text("Cancel")
+                }
+            }
+        )
+    }
+
+
+    if (showResultModal) {
+
+        ModalBottomSheet(
+            onDismissRequest = { showResultModal = false },
+            containerColor = Color(0xFF0F172A)
+        ) {
+
+            Column(Modifier.padding(12.dp)) {
+
+                Text(
+                    "📊 Result History",
+                    color = Color.White,
+                    style = MaterialTheme.typography.titleLarge
+                )
+
+                Spacer(Modifier.height(10.dp))
+
+                when (val state = vm.resultState) {
+
+                    is ApiState.Loading -> {
+                        CircularProgressIndicator()
+                    }
+
+                    is ApiState.Success -> {
+
+                        LazyColumn {
+
+                            items(state.data.data) { item ->   // ✅ correct
+
+                                val num = item.result.toIntOrNull() ?: 0   // ✅ FIX
+
+                                val bgColor = when (num % 5) {
+                                    0 -> Color(0xFF22C55E)
+                                    1 -> Color(0xFF3B82F6)
+                                    2 -> Color(0xFFF97316)
+                                    3 -> Color(0xFF06B6D4)
+                                    else -> Color(0xFFA855F7)
+                                }
+
+                                Card(
+                                    modifier = Modifier
+                                        .fillMaxWidth()
+                                        .padding(vertical = 6.dp),
+                                    colors = CardDefaults.cardColors(
+                                        containerColor = Color(0xFF111827)
+                                    ),
+                                    shape = RoundedCornerShape(16.dp)
+                                ) {
+
+                                    Row(
+                                        Modifier
+                                            .fillMaxWidth()
+                                            .padding(14.dp),
+                                        horizontalArrangement = Arrangement.SpaceBetween,
+                                        verticalAlignment = Alignment.CenterVertically
+                                    ) {
+
+                                        Column {
+
+                                            Text(
+                                                item.result_time,   // ✅ FIX
+                                                color = Color.White,
+                                                fontWeight = FontWeight.Bold,
+                                                fontSize = 15.sp
+                                            )
+                                        }
+
+                                        // 🎴 PATTI
+                                        Box(
+                                            modifier = Modifier
+                                                .background(bgColor, RoundedCornerShape(12.dp))
+                                                .padding(horizontal = 16.dp, vertical = 10.dp)
+                                        ) {
+                                            Text(
+                                                item.patti_result ?: "--",   // ✅ FIX
+                                                color = Color.White,
+                                                fontWeight = FontWeight.Bold
+                                            )
+                                        }
+
+                                        Text("/", color = Color.White)
+
+                                        // 🎯 RESULT
+                                        Box(
+                                            modifier = Modifier
+                                                .background(bgColor, RoundedCornerShape(12.dp))
+                                                .padding(horizontal = 16.dp, vertical = 10.dp)
+                                        ) {
+                                            Text(
+                                                item.result,   // ✅ FIX
+                                                color = Color.White,
+                                                fontWeight = FontWeight.Bold
+                                            )
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+
+                    is ApiState.Error -> {
+                        Text(state.message, color = Color.Red)
+                    }
+
+                    else -> {}
+                }
+            }
+        }
+    }
+
+    if (showPattiDialog && !isLocked) {
+
+        val amt = pattiAmount.toIntOrNull() ?: 0
+        val win = amt * 120
+
+        AlertDialog(
+            onDismissRequest = { showPattiDialog = false },
+
+            title = {
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Text(
+                        "🎴 Patti Bet",
+                        fontWeight = FontWeight.Bold
+                    )
+
+                    // ❌ CLOSE BUTTON
+                    Text(
+                        "✖",
+                        modifier = Modifier
+                            .clickable { showPattiDialog = false },
+                        color = Color.Red,
+                        fontSize = 18.sp
+                    )
+                }
+            },
+
+            text = {
+                Column {
+
+                    // 🔢 NUMBER FIELD (PREMIUM STYLE)
+                    Text(
+                        "Enter Number",
+                        color = Color.Gray,
+                        fontSize = 12.sp
+                    )
+
+                    OutlinedTextField(
+                        value = pattiNumber,
+                        keyboardOptions = KeyboardOptions(
+                            keyboardType = KeyboardType.Number
+                        ),
+                        onValueChange = {
+                            if (it.length <= 3 && it.all { ch -> ch.isDigit() }) {
+                                pattiNumber = it
+                            }
+                        },
+                        supportingText = {
+                            Text("৩ সংখ্যার Patti নম্বর দিন", fontSize = 11.sp)
+                        },
+                        placeholder = { Text("100 - 999") },
+                        singleLine = true,
+                        shape = RoundedCornerShape(12.dp)
+                    )
+
+                    Spacer(Modifier.height(10.dp))
+
+                    //  AMOUNT FIELD
+                    Text(
+                        "Enter Amount",
+                        color = Color.Gray,
+                        fontSize = 12.sp
+                    )
+
+                    OutlinedTextField(
+                        value = pattiAmount,
+                        keyboardOptions = KeyboardOptions(
+                            keyboardType = KeyboardType.Number
+                        ),
+                        onValueChange = {
+                            if (it.all { ch -> ch.isDigit() }) {
+                                pattiAmount = it
+                            }
+                        },
+                        placeholder = { Text("Amount") },
+                        singleLine = true,
+                        shape = RoundedCornerShape(12.dp)
+                    )
+
+                    Spacer(Modifier.height(10.dp))
+
+                    // 🎯 WIN PREVIEW (ATTRACTIVE)
+                    if (amt > 0) {
+                        Box(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .background(
+                                    Color(0xFF1E293B),
+                                    RoundedCornerShape(10.dp)
+                                )
+                                .padding(8.dp),
+                            contentAlignment = Alignment.Center
+                        ) {
+                            Text(
+                                "🎯 Win: 🪙$win",
+                                color = Color(0xFF22C55E),
+                                fontWeight = FontWeight.Bold
+                            )
+                        }
+                    }
+                }
+            },
+
+            confirmButton = {
+                Button(
+                    onClick = {
+
+                        // ❌ MUST BE EXACT 3 DIGIT
+                        if (pattiNumber.length != 3) {
+                            Toast.makeText(
+                                context,
+                                "Patti নম্বর অবশ্যই ৩ সংখ্যার হতে হবে",
+                                Toast.LENGTH_SHORT
+                            ).show()
+                            return@Button
+                        }
+
+                        val amount = pattiAmount.toIntOrNull() ?: 0
+
+                        if (amount <= 0) {
+                            Toast.makeText(
+                                context,
+                                "সঠিক পরিমাণ দিন",
+                                Toast.LENGTH_SHORT
+                            ).show()
+                            return@Button
+                        }
+
+                        // 🔥 DUPLICATE CHECK
+                        val alreadyExists = vm.currentBetsState.let { state ->
+                            if (state is ApiState.Success) {
+                                state.data.any { it.number == pattiNumber }
+                            } else false
+                        }
+
+                        if (alreadyExists) {
+                            Toast.makeText(
+                                context,
+                                "এই নম্বরে ইতিমধ্যে বেট করা হয়েছে",
+                                Toast.LENGTH_SHORT
+                            ).show()
+                            return@Button
+                        }
+
+                        showConfirmDialog = true
+
+                    },
+                    shape = RoundedCornerShape(12.dp)
+                ) {
+                    Text("Proceed")
+                }
+            },
+
+            dismissButton = {
+                TextButton(onClick = { showPattiDialog = false }) {
+                    Text("Cancel")
+                }
+            }
+        )
+    }
+    if (showConfirmDialog) {
+
+        AlertDialog(
+            onDismissRequest = { showConfirmDialog = false },
+
+            title = {
+                Text("Confirm Bet")
+            },
+
+            text = {
+                Column {
+                    Text("Number: $pattiNumber")
+                    Text("Amount: 🪙$pattiAmount")
+
+                    Spacer(Modifier.height(8.dp))
+
+                    Text(
+                        "Are you sure?",
+                        color = Color.Gray
+                    )
+                }
+            },
+
+            confirmButton = {
+                Button(onClick = {
+
+                    val amount = pattiAmount.toIntOrNull() ?: 0
+
+                    pattiBet = pattiNumber to amount
+
+                    vm.placeBet(
+                        context,
+                        listOf(BetItem(pattiNumber, amount)),
+                        gameType = "2no"
+                    )
+
+                    showConfirmDialog = false
+                    showPattiDialog = false
+
+                }) {
+                    Text("Confirm")
+                }
+            },
+
+            dismissButton = {
+                TextButton(onClick = {
+                    showConfirmDialog = false
+                }) {
+                    Text("Cancel")
+                }
+            }
+        )
+    }
 
 }
 
 // ⏳ TIMER
 @Composable
-fun CountdownTimer(endTime: Long) {
+fun CountdownTimer2(endTime: Long) {
 
     var timeLeft by remember { mutableStateOf(0L) }
     var blink by remember { mutableStateOf(true) }

@@ -237,4 +237,11 @@ interface ApiService {
         page:Int = 1
 
     ): ResultResponse
+
+
+    @GET("pro-game/bethistory")
+    suspend fun getBetHistory(
+        @Query("game_id") gameId: Int,
+        @Query("schedule_id") scheduleId: Int
+    ): BetHistoryResponse
 }
