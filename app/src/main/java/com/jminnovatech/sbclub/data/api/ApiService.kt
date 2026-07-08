@@ -244,4 +244,13 @@ interface ApiService {
         @Query("game_id") gameId: Int,
         @Query("schedule_id") scheduleId: Int
     ): BetHistoryResponse
+
+    @GET("running-bets")
+    suspend fun runningBets(
+
+        @Query("game_id") gameId: Int,
+
+        @Query("schedule_id") scheduleId: Int
+
+    ): RunningBetResponse
 }

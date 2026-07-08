@@ -39,10 +39,12 @@ import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.StrokeCap
 import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.text.style.TextAlign
+import androidx.navigation.NavController
 import com.jminnovatech.sbclub.utils.ApiState
 
 @Composable
 fun ScheduleCard(
+    nav: NavController,
 
     gameId: Int,
 
@@ -440,11 +442,11 @@ fun ScheduleCard(
 
                 onClick = {
 
-                    if (state != "LOCK") {
+                    nav.navigate(
 
-                        expanded = !expanded
+                        "play_game/$gameId/${schedule.id}"
 
-                    }
+                    )
 
                 }
 
@@ -935,87 +937,3 @@ private fun SummaryItem(
 
 }
 
-@Composable
-private fun BetRow(
-
-    bet:ProBetItem,
-
-    onDelete:()->Unit
-
-){
-
-    Card(
-
-        modifier = Modifier
-
-            .fillMaxWidth()
-
-            .padding(bottom=10.dp),
-
-        colors = CardDefaults.cardColors(
-
-            containerColor=Color(0xFF1E293B)
-
-        )
-
-    ){
-
-        Row(
-
-            modifier=Modifier
-
-                .fillMaxWidth()
-
-                .padding(14.dp),
-
-            verticalAlignment=Alignment.CenterVertically
-
-        ){
-
-            Column(
-
-                modifier=Modifier.weight(1f)
-
-            ){
-
-                Text(
-
-                    bet.number,
-
-                    color=Color.White,
-
-                    fontWeight=FontWeight.Bold
-
-                )
-
-                Text(
-
-                    "₹ %.2f".format(bet.amount),
-
-                    color=Color(0xFF22C55E)
-
-                )
-
-            }
-
-            TextButton(
-
-                onClick=onDelete
-
-            ){
-
-                Text(
-
-                    "DELETE",
-
-                    color=Color.Red
-
-                )
-
-            }
-
-        }
-
-    }
-
-}

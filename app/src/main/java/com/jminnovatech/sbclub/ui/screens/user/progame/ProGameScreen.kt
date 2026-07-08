@@ -179,7 +179,7 @@ fun ProGameScreen(
                     items(state.data.cards) { schedule ->
 
                         ScheduleCard(
-
+                            nav = nav,
                             gameId = gameId,
 
                             schedule = schedule,

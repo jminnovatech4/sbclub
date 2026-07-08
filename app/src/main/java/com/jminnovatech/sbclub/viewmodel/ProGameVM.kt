@@ -303,4 +303,49 @@ class ProGameVM : ViewModel() {
             )
         }
     }
+
+    var runningBetState by mutableStateOf<ApiState<RunningBetResponse>>(ApiState.Idle)
+    fun loadRunningBets(
+
+        context: Context,
+
+        gameId: Int,
+
+        scheduleId: Int
+
+    ) {
+
+        viewModelScope.launch {
+
+            runningBetState = ApiState.Loading
+
+            try {
+
+                val repo = AppRepository(context)
+
+                val res = repo.runningBets(
+
+                    gameId,
+
+                    scheduleId
+
+                )
+
+                runningBetState = ApiState.Success(res)
+
+            }
+
+            catch (e: Exception) {
+
+                runningBetState = ApiState.Error(
+
+                    e.message ?: "Error"
+
+                )
+
+            }
+
+        }
+
+    }
 }

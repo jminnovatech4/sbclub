@@ -773,5 +773,23 @@ class AppRepository(private val context: Context) {
         }
     }
 
+    suspend fun runningBets(
+
+        gameId: Int,
+
+        scheduleId: Int
+
+    ): RunningBetResponse {
+
+        return api.runningBets(
+
+            gameId,
+
+            scheduleId
+
+        )
+
+    }
+
 }
 

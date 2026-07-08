@@ -58,6 +58,7 @@ import com.google.accompanist.swiperefresh.rememberSwipeRefreshState
 import com.jminnovatech.sbclub.data.model.ResultData
 import com.jminnovatech.sbclub.repository.AppRepository
 import com.jminnovatech.sbclub.ui.screens.user.BetScreen
+import com.jminnovatech.sbclub.ui.screens.user.progame.ProGameScreen
 import com.jminnovatech.sbclub.utils.ApiState
 import com.jminnovatech.sbclub.utils.SessionManager
 import com.jminnovatech.sbclub.viewmodel.AuthVM
@@ -307,14 +308,12 @@ fun UserMainScreen(nav: NavController, context: Context,gameId:Int) {
                     // 🎯 MAIN GAME SCREEN
                     "bet" -> {
 
-                        when (gameId) {
+                        ProGameScreen(
+                            nav = nav,
+                            context = context,
+                            gameId = gameId
+                        )
 
-                            1 -> BetScreen(nav, context)
-
-                            2 -> BetScreen(nav, context)
-
-                            3 -> BetScreen(nav, context)
-                        }
                     }
 
                     "summary" -> Summary(vm)

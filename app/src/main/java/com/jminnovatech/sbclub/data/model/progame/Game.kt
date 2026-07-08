@@ -211,3 +211,23 @@ data class ResultPage(
     val total:Int
 
 )
+
+data class RunningBet(
+
+    val id: Int,
+
+    val bet_number: String,
+
+    val amount: Double,
+
+    val win_amount: Double
+
+)
+
+data class RunningBetResponse(
+
+    val status: Boolean,
+
+    val data: List<RunningBet>
+
+)

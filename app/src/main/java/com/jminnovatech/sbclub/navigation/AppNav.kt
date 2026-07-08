@@ -13,6 +13,7 @@ import com.jminnovatech.sbclub.ui.screens.admin.AdminScreen
 import com.jminnovatech.sbclub.ui.screens.master.MasterScreen
 import com.jminnovatech.sbclub.ui.screens.progame.DashboardScreen
 import com.jminnovatech.sbclub.ui.screens.user.ResultScreen
+import com.jminnovatech.sbclub.ui.screens.user.progame.PlayGameScreen
 import com.jminnovatech.sbclub.ui.screens.user.progame.ProGameScreen
 import com.jminnovatech.sbclub.viewmodel.MasterVM
 import com.jminnovatech.sbclub.viewmodel.WalletVM
@@ -79,6 +80,32 @@ fun AppNav(context: Context) {
             )
 
         }
+        composable(
 
+            "play_game/{gameId}/{scheduleId}"
+
+        ) {
+
+            val gameId =
+
+                it.arguments?.getString("gameId")!!.toInt()
+
+            val scheduleId =
+
+                it.arguments?.getString("scheduleId")!!.toInt()
+
+            PlayGameScreen(
+
+                nav = nav,
+
+                context = context,
+
+                gameId = gameId,
+
+                scheduleId = scheduleId
+
+            )
+
+        }
     }
 }
