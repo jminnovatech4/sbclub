@@ -18,7 +18,10 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.Alignment
 import com.jminnovatech.sbclub.viewmodel.ProGameVM
 import com.jminnovatech.sbclub.utils.ApiState
-
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.PaddingValues
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun PlayGameScreen(
@@ -210,124 +213,100 @@ fun PlayGameScreen(
 
     ) { padding ->
 
-        Column(
+        LazyColumn(
 
             modifier = Modifier
                 .fillMaxSize()
-                .padding(padding)
-                .padding(16.dp)
+                .padding(padding),
+
+            contentPadding = PaddingValues(16.dp),
+
+            verticalArrangement = Arrangement.spacedBy(16.dp)
 
         ) {
 
-            WalletSummary(
+            item {
 
-                wallet = wallet,
+                WalletSummary(
 
-                bet = betList.sumOf {
+                    wallet = wallet,
 
-                    it.amount
+                    bet = betList.sumOf {
 
-                }
+                        it.amount
 
-            )
+                    }
 
-            Spacer(Modifier.height(20.dp))
+                )
 
-            BetPanel(
+            }
 
-                gameCode = gameCode,
+            item {
 
-                wallet = wallet,
+                BetPanel(
 
-                betList = betList,
+                    gameCode = gameCode,
 
-                onPlaceBet = {
+                    wallet = wallet,
 
-                    vm.placeBet(
+                    betList = betList,
 
-                        context = context,
+                    onPlaceBet = {
 
-                        gameId = gameId,
+                        vm.placeBet(
 
-                        scheduleId = schedule.id,
+                            context = context,
 
-                        bets = betList.toList()
+                            gameId = gameId,
+
+                            scheduleId = schedule.id,
+
+                            bets = betList.toList()
+
+                        )
+
+                    }
+
+                )
+
+            }
+
+            val history =
+
+                (vm.betHistoryState as? ApiState.Success)
+
+                    ?.data
+
+                    ?.data
+
+                    ?: emptyList()
+
+            if(history.isNotEmpty()){
+
+                item{
+
+                    Text(
+
+                        "Your Running Bets",
+
+                        style = MaterialTheme.typography.titleMedium
 
                     )
 
                 }
 
-            )
-            Spacer(Modifier.height(20.dp))
+                items(history){ bet ->
 
-            val history = (vm.betHistoryState as? ApiState.Success)
-                ?.data
-                ?.data
-                ?: emptyList()
+                    RunningBetCard(
 
-            if (history.isNotEmpty()) {
+                        bet = bet
 
-                Text(
-
-                    text = "Your Running Bets",
-
-                    style = MaterialTheme.typography.titleMedium
-
-                )
-
-                Spacer(Modifier.height(10.dp))
-
-                history.forEach { bet ->
-
-                    Card(
-
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(bottom = 10.dp)
-
-                    ) {
-
-                        Column(
-
-                            Modifier.padding(15.dp)
-
-                        ) {
-
-                            Text(
-
-                                "Status : ${bet.status}",
-
-                                style = MaterialTheme.typography.titleSmall
-
-                            )
-
-                            Spacer(Modifier.height(8.dp))
-
-                            bet.items.forEach { item ->
-
-                                Row(
-
-                                    Modifier.fillMaxWidth(),
-
-                                    horizontalArrangement = Arrangement.SpaceBetween
-
-                                ) {
-
-                                    Text(item.bet_number)
-
-                                    Text("₹ ${item.amount}")
-
-                                }
-
-                            }
-
-                        }
-
-                    }
+                    )
 
                 }
 
             }
+
         }
 
     }

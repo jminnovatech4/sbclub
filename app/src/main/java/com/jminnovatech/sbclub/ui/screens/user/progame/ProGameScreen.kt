@@ -1,7 +1,9 @@
 package com.jminnovatech.sbclub.ui.screens.user.progame
 
 import android.content.Context
+import android.os.Build
 import android.widget.Toast
+import androidx.annotation.RequiresApi
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.PaddingValues
@@ -23,6 +25,7 @@ import androidx.navigation.NavController
 import com.jminnovatech.sbclub.utils.ApiState
 import com.jminnovatech.sbclub.viewmodel.ProGameVM
 
+@RequiresApi(Build.VERSION_CODES.O)
 @Composable
 fun ProGameScreen(
     nav: NavController,

@@ -1,8 +1,10 @@
 package com.jminnovatech.sbclub.ui.screens.user.progame
 
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
@@ -31,9 +33,9 @@ fun BetPanel(
     Card(
 
         modifier = Modifier.fillMaxWidth(),
-
+        shape = RoundedCornerShape(22.dp),
+        elevation = CardDefaults.cardElevation(8.dp),
         colors = CardDefaults.cardColors(
-
             containerColor = Color(0xFF111827)
 
         )
@@ -42,33 +44,71 @@ fun BetPanel(
 
         Column(
 
-            modifier = Modifier.padding(18.dp)
+            modifier = Modifier.padding(15.dp)
 
         ) {
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
 
-            Text(
+                Text(
+                    "My Bets",
+                    style = MaterialTheme.typography.titleMedium,
+                    color = Color.White,
+                    fontWeight = FontWeight.Bold
+                )
 
-                "My Bets",
+                Spacer(Modifier.weight(1f))
 
-                style = MaterialTheme.typography.titleMedium,
+                Surface(
+                    color = Color(0x2222C55E),
+                    shape = RoundedCornerShape(50)
+                ) {
 
-                color = Color.White,
+                    Text(
+                        "${betList.size} Bets",
+                        modifier = Modifier.padding(
+                            horizontal = 12.dp,
+                            vertical = 5.dp
+                        ),
+                        color = Color(0xFF22C55E)
+                    )
 
-                fontWeight = FontWeight.Bold
+                }
 
-            )
+            }
 
             Spacer(Modifier.height(16.dp))
 
             if (betList.isEmpty()) {
 
-                Text(
+                Column(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(vertical = 18.dp),
+                    horizontalAlignment = Alignment.CenterHorizontally
+                ) {
 
-                    "No Bet Added",
+                    Text(
+                        "🎯",
+                        style = MaterialTheme.typography.headlineMedium
+                    )
 
-                    color = Color.Gray
+                    Spacer(Modifier.height(8.dp))
 
-                )
+                    Text(
+                        "No Bets Added Yet",
+                        color = Color.Gray
+                    )
+
+                    Text(
+                        "Tap below to add your first bet",
+                        color = Color.DarkGray,
+                        style = MaterialTheme.typography.bodySmall
+                    )
+
+                }
 
             } else {
 
@@ -92,19 +132,25 @@ fun BetPanel(
 
             Spacer(Modifier.height(16.dp))
 
-            FilledTonalButton(
+            Button(
 
-                modifier = Modifier.fillMaxWidth(),
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(52.dp),
+
+                colors = ButtonDefaults.buttonColors(
+                    containerColor = Color(0xFF2563EB)
+                ),
 
                 onClick = {
-
                     showBetDialog = true
-
                 }
 
             ) {
 
-                Text("ADD NEW BET")
+                Text(
+                    "＋ ADD NEW BET"
+                )
 
             }
 
@@ -115,7 +161,40 @@ fun BetPanel(
                 it.amount
 
             }
+            HorizontalDivider(
+                modifier = Modifier.padding(vertical = 12.dp),
+                color = Color(0xFF293548)
+            )
 
+            Row(
+                modifier = Modifier.fillMaxWidth()
+            ) {
+
+                Text(
+                    "Total Bet",
+                    color = Color.Gray
+                )
+
+                Spacer(Modifier.weight(1f))
+
+                Text(
+                    "₹ %.2f".format(total),
+                    color = Color(0xFF22C55E),
+                    fontWeight = FontWeight.Bold
+                )
+
+            }
+            if (total > wallet) {
+
+                Spacer(Modifier.height(10.dp))
+
+                Text(
+                    text = "⚠ Insufficient Wallet Balance",
+                    color = Color.Red,
+                    style = MaterialTheme.typography.bodySmall
+                )
+            }
+            Spacer(Modifier.height(5.dp))
             Button(
 
                 modifier = Modifier

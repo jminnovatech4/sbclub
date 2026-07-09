@@ -1,5 +1,7 @@
 package com.jminnovatech.sbclub.ui.screens.user.progame
 
+import android.os.Build
+import androidx.annotation.RequiresApi
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.expandVertically
 import androidx.compose.animation.fadeIn
@@ -42,6 +44,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.navigation.NavController
 import com.jminnovatech.sbclub.utils.ApiState
 
+@RequiresApi(Build.VERSION_CODES.O)
 @Composable
 fun ScheduleCard(
     nav: NavController,
@@ -331,11 +334,7 @@ fun ScheduleCard(
             if (state == "RUNNING") {
 
                 TimerView(
-
-                    endTime =
-
-                        formatToAmPm(schedule.end_time)
-
+                    endTime = schedule.end_time
                 )
 
                 Spacer(

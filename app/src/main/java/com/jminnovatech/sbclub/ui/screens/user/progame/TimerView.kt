@@ -1,5 +1,10 @@
 package com.jminnovatech.sbclub.ui.screens.user.progame
-
+import android.os.Build
+import androidx.annotation.RequiresApi
+import java.time.LocalTime
+import java.time.Duration
+import java.time.LocalDate
+import java.time.ZoneId
 import androidx.compose.animation.core.LinearEasing
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.tween
@@ -27,6 +32,7 @@ import java.text.SimpleDateFormat
 import java.util.*
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.ui.geometry.CornerRadius
+@RequiresApi(Build.VERSION_CODES.O)
 @Composable
 fun TimerView(
 
@@ -52,46 +58,23 @@ fun TimerView(
 
             try {
 
-                val now = Calendar.getInstance()
+                val end = LocalTime.parse(endTime)   // "HH:mm:ss"
 
-                val end = Calendar.getInstance()
+                val now = LocalTime.now()
 
-                val d = formatter.parse(endTime)
+                var duration = Duration.between(now, end)
 
-                if (d != null) {
-
-                    end.set(
-
-                        Calendar.HOUR_OF_DAY,
-
-                        d.hours
-
-                    )
-
-                    end.set(
-
-                        Calendar.MINUTE,
-
-                        d.minutes
-
-                    )
-
-                    end.set(
-
-                        Calendar.SECOND,
-
-                        d.seconds
-
-                    )
-
+                // যদি next day হয়
+                if (duration.isNegative) {
+                    duration = duration.plusHours(24)
                 }
 
-                remain =
+                remain = duration.toMillis()
 
-                    (end.timeInMillis - now.timeInMillis)
-                        .coerceAtLeast(0)
+            } catch (e: Exception) {
 
-            } catch (_: Exception) {
+                remain = 0
+
             }
 
             delay(1000)
