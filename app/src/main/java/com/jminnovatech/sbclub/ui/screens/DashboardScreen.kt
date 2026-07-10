@@ -1,6 +1,8 @@
 package com.jminnovatech.sbclub.ui.screens.progame
 
 import android.content.Context
+import android.os.Build
+import androidx.annotation.RequiresApi
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -9,7 +11,10 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Casino
+import androidx.compose.material.icons.filled.Close
+import androidx.compose.material.icons.filled.Menu
+import androidx.compose.material.icons.filled.Visibility
+import androidx.compose.material.icons.filled.VisibilityOff
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -24,87 +29,335 @@ import androidx.navigation.NavController
 import com.jminnovatech.sbclub.data.model.progame.Game
 import com.jminnovatech.sbclub.utils.ApiState
 import com.jminnovatech.sbclub.viewmodel.ProGameVM
+import kotlinx.coroutines.launch
+import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.ui.text.input.PasswordVisualTransformation
+import androidx.compose.ui.text.input.VisualTransformation
+import androidx.compose.ui.window.Dialog
+import androidx.lifecycle.ViewModel
+import androidx.lifecycle.viewmodel.compose.viewModel
+import com.jminnovatech.sbclub.ui.screens.Transactions
+import com.jminnovatech.sbclub.viewmodel.WalletVM
+import com.jminnovatech.sbclub.repository.AppRepository
 
+import com.jminnovatech.sbclub.utils.SessionManager
+import com.jminnovatech.sbclub.viewmodel.AuthVM
+
+@RequiresApi(Build.VERSION_CODES.O)
 @Composable
 fun DashboardScreen(
     nav: NavController,
     context: Context,
     vm: ProGameVM = remember { ProGameVM() }
 ) {
+    val drawerState = rememberDrawerState(DrawerValue.Closed)
+    var showTransactions by remember { mutableStateOf(false) }
+    val walletVM = remember {
 
+        WalletVM(
+
+            AppRepository(context)
+
+        )
+
+    }
+    var showLogoutDialog by remember {
+
+        mutableStateOf(false)
+
+    }
+    var showChangePass by remember { mutableStateOf(false) }
+    var showChangePassword by remember { mutableStateOf(false) }
+    val scope = rememberCoroutineScope()
     LaunchedEffect(Unit) {
         vm.loadGames(context)
     }
+    ModalNavigationDrawer(
 
-    Column(
-        modifier = Modifier
-            .fillMaxSize()
-            .background(
-                Brush.verticalGradient(
-                    listOf(
-                        Color(0xFF0F172A),
-                        Color(0xFF1E293B)
+        drawerState = drawerState,
+
+        drawerContent = {
+
+            ModalDrawerSheet {
+
+                Spacer(Modifier.height(20.dp))
+
+                Text(
+
+                    text = "SB CLUB",
+
+                    modifier = Modifier.padding(20.dp),
+
+                    style = MaterialTheme.typography.titleLarge,
+
+                    fontWeight = FontWeight.Bold
+
+                )
+
+                HorizontalDivider()
+
+                NavigationDrawerItem(
+
+                    label = { Text("🎯 Play Game") },
+
+                    selected = false,
+
+                    onClick = {
+
+                        scope.launch {
+
+                            drawerState.close()
+
+                        }
+
+                    }
+
+                )
+
+//                NavigationDrawerItem(
+//
+//                    label = { Text("📊 Summary") },
+//
+//                    selected = false,
+//
+//                    onClick = {
+//
+//                        scope.launch {
+//
+//                            drawerState.close()
+//
+//                        }
+//
+//                    }
+//
+//                )
+
+//                NavigationDrawerItem(
+//
+//                    label = { Text("🏆 Bet History") },
+//
+//                    selected = false,
+//
+//                    onClick = {
+//
+//                        scope.launch {
+//
+//                            drawerState.close()
+//
+//                        }
+//
+//                    }
+//
+//                )
+
+                NavigationDrawerItem(
+
+                    label = { Text("📜 Transactions") },
+
+                    selected = false,
+
+                    onClick = {
+
+                        showTransactions = true
+
+                        scope.launch {
+
+                            drawerState.close()
+
+                        }
+
+                    }
+
+                )
+
+                NavigationDrawerItem(
+
+                    label = { Text("💸 Withdrawal") },
+
+                    selected = false,
+
+                    onClick = {
+
+                        nav.navigate("withdraw")
+
+                    }
+
+                )
+
+                NavigationDrawerItem(
+
+                    label = { Text("🔐 Change Password") },
+
+                    selected = false,
+
+                    onClick = {
+
+                        showChangePass = true
+
+                        scope.launch {
+
+                            drawerState.close()
+
+                        }
+
+                    }
+                )
+
+                Spacer(Modifier.weight(1f))
+
+                HorizontalDivider()
+
+                NavigationDrawerItem(
+
+                    label = {
+
+                        Text(
+
+                            "🚪 Logout",
+
+                            color = Color.Red
+
+                        )
+
+                    },
+
+                    selected = false,
+
+                    onClick = {
+
+                        showLogoutDialog = true
+
+                        scope.launch {
+
+                            drawerState.close()
+
+                        }
+
+                    }
+
+                )
+
+            }
+
+        }
+
+    ) {
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .background(
+                    Brush.verticalGradient(
+                        listOf(
+                            Color(0xFF0F172A),
+                            Color(0xFF1E293B)
+                        )
                     )
                 )
-            )
-            .padding(16.dp)
-    ) {
+                .padding(16.dp)
+        ) {
 
-        Spacer(Modifier.height(20.dp))
+            Spacer(Modifier.height(20.dp))
 
-        Text(
-            "SB CLUB",
-            color = Color.White,
-            fontSize = 30.sp,
-            fontWeight = FontWeight.Bold
-        )
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
 
-        Spacer(Modifier.height(6.dp))
+                IconButton(
 
-        Text(
-            "Select Game",
-            color = Color.LightGray
-        )
+                    onClick = {
 
-        Spacer(Modifier.height(20.dp))
+                        scope.launch {
 
-        when(val state = vm.gamesState){
+                            drawerState.open()
 
-            ApiState.Idle -> {}
+                        }
 
-            ApiState.Loading -> {
+                    }
 
-                Box(
-                    Modifier.fillMaxSize(),
-                    contentAlignment = Alignment.Center
-                ){
-                    CircularProgressIndicator()
+                ) {
+
+                    Icon(
+
+                        Icons.Default.Menu,
+
+                        contentDescription = null,
+
+                        tint = Color.White
+
+                    )
+
+                }
+
+                Spacer(Modifier.width(8.dp))
+
+                Column {
+
+                    Text(
+
+                        text = "SB CLUB",
+
+                        color = Color.White,
+
+                        fontSize = 30.sp,
+
+                        fontWeight = FontWeight.Bold
+
+                    )
+
+                    Text(
+
+                        text = "Select Game",
+
+                        color = Color.LightGray
+
+                    )
+
                 }
 
             }
 
-            is ApiState.Error -> {
+            Spacer(Modifier.height(20.dp))
 
-                Text(
-                    state.message,
-                    color = Color.Red
-                )
+            when (val state = vm.gamesState) {
 
-            }
+                ApiState.Idle -> {}
 
-            is ApiState.Success -> {
+                ApiState.Loading -> {
 
-                LazyColumn {
+                    Box(
+                        Modifier.fillMaxSize(),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        CircularProgressIndicator()
+                    }
 
-                    items(state.data){ game ->
+                }
 
-                        GameCard(game){
+                is ApiState.Error -> {
 
-                            nav.navigate("pro_game/${game.id}")
+                    Text(
+                        state.message,
+                        color = Color.Red
+                    )
+
+                }
+
+                is ApiState.Success -> {
+
+                    LazyColumn {
+
+                        items(state.data) { game ->
+
+                            GameCard(game) {
+
+                                nav.navigate("pro_game/${game.id}")
+
+                            }
+
+                            Spacer(Modifier.height(15.dp))
 
                         }
-
-                        Spacer(Modifier.height(15.dp))
 
                     }
 
@@ -113,6 +366,368 @@ fun DashboardScreen(
             }
 
         }
+    }
+    if (showTransactions) {
+
+        Dialog(
+
+            onDismissRequest = {
+
+                showTransactions = false
+
+            }
+
+        ) {
+
+            Surface(
+
+                modifier = Modifier.fillMaxSize(),
+
+                color = Color(0xFFF5F5F5)
+
+            ) {
+
+                Column(
+
+                    modifier = Modifier.fillMaxSize()
+
+                ) {
+
+                    Surface(
+
+                        modifier = Modifier.fillMaxWidth(),
+
+                        color = Color(0xFF2563EB),
+
+                        shadowElevation = 8.dp
+
+                    ) {
+
+                        Row(
+
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(
+                                    horizontal = 10.dp,
+                                    vertical = 12.dp
+                                ),
+
+                            verticalAlignment = Alignment.CenterVertically
+
+                        ) {
+
+                            Text(
+
+                                text = "Transactions",
+
+                                modifier = Modifier.weight(1f),
+
+                                color = Color.White,
+
+                                style = MaterialTheme.typography.titleLarge
+
+                            )
+
+                            IconButton(
+
+                                onClick = {
+
+                                    showTransactions = false
+
+                                }
+
+                            ) {
+
+                                Icon(
+
+                                    Icons.Default.Close,
+
+                                    contentDescription = null,
+
+                                    tint = Color.White
+
+                                )
+
+                            }
+
+                        }
+
+                    }
+
+                    Box(
+
+                        modifier = Modifier
+                            .fillMaxSize()
+
+                    ) {
+
+                        Transactions(walletVM)
+
+                    }
+
+                }
+
+            }
+
+        }
+
+    }
+    if (showChangePass) {
+
+        val vm: AuthVM.ProfileVM = viewModel(
+            factory = object : androidx.lifecycle.ViewModelProvider.Factory {
+                override fun <T : ViewModel> create(modelClass: Class<T>): T {
+                    return AuthVM.ProfileVM(AppRepository(context)) as T
+                }
+            }
+        )
+
+        val session = SessionManager(context)
+
+        var oldPass by remember { mutableStateOf("") }
+        var newPass by remember { mutableStateOf("") }
+
+        var confirmPass by remember { mutableStateOf("") }
+        var showOld by remember { mutableStateOf(false) }
+        var showNew by remember { mutableStateOf(false) }
+        var showConfirm by remember { mutableStateOf(false) }
+
+        fun passwordStrength(pass: String): String {
+            return when {
+                pass.length < 6 -> "Weak"
+                pass.length in 6..8 -> "Medium"
+                pass.length > 8 -> "Strong"
+                else -> ""
+            }
+        }
+
+        Dialog(onDismissRequest = { showChangePass = false }) {
+
+            Surface(
+                shape = RoundedCornerShape(16.dp),
+                color = Color.White
+            ) {
+
+                Column(Modifier.padding(20.dp)) {
+
+                    Text("🔐 Change Password",
+                        style = MaterialTheme.typography.titleLarge)
+
+                    Spacer(Modifier.height(16.dp))
+
+                    // OLD PASSWORD
+                    OutlinedTextField(
+                        value = oldPass,
+                        onValueChange = { oldPass = it },
+                        label = { Text("Old Password") },
+                        modifier = Modifier.fillMaxWidth(),
+                        visualTransformation = if (showOld) VisualTransformation.None else PasswordVisualTransformation(),
+                        trailingIcon = {
+                            IconButton(onClick = { showOld = !showOld }) {
+                                Icon(
+                                    if (showOld) Icons.Default.VisibilityOff else Icons.Default.Visibility,
+                                    contentDescription = null
+                                )
+                            }
+                        }
+                    )
+
+                    Spacer(Modifier.height(10.dp))
+
+                    // NEW PASSWORD
+                    OutlinedTextField(
+                        value = newPass,
+                        onValueChange = { newPass = it },
+                        label = { Text("New Password") },
+                        modifier = Modifier.fillMaxWidth(),
+                        visualTransformation = if (showNew) VisualTransformation.None else PasswordVisualTransformation(),
+                        trailingIcon = {
+                            IconButton(onClick = { showNew = !showNew }) {
+                                Icon(
+                                    if (showNew) Icons.Default.VisibilityOff else Icons.Default.Visibility,
+                                    contentDescription = null
+                                )
+                            }
+                        }
+                    )
+
+                    // 🔥 Strength
+                    Text(
+                        "Strength: ${passwordStrength(newPass)}",
+                        color = when (passwordStrength(newPass)) {
+                            "Weak" -> Color.Red
+                            "Medium" -> Color(0xFFFFA500)
+                            "Strong" -> Color.Green
+                            else -> Color.Gray
+                        },
+                        fontSize = 12.sp
+                    )
+
+                    Spacer(Modifier.height(10.dp))
+
+                    // CONFIRM PASSWORD
+                    OutlinedTextField(
+                        value = confirmPass,
+                        onValueChange = { confirmPass = it },
+                        label = { Text("Confirm Password") },
+                        modifier = Modifier.fillMaxWidth(),
+                        visualTransformation = if (showConfirm) VisualTransformation.None else PasswordVisualTransformation(),
+                        trailingIcon = {
+                            IconButton(onClick = { showConfirm = !showConfirm }) {
+                                Icon(
+                                    if (showConfirm) Icons.Default.VisibilityOff else Icons.Default.Visibility,
+                                    contentDescription = null
+                                )
+                            }
+                        }
+                    )
+
+                    Spacer(Modifier.height(20.dp))
+
+                    Button(
+                        onClick = {
+
+                            // 🔴 VALIDATION
+                            if (newPass != confirmPass) {
+                                vm.state = ApiState.Error("Password mismatch")
+                                return@Button
+                            }
+
+                            if (newPass.length < 6) {
+                                vm.state = ApiState.Error("Password too short")
+                                return@Button
+                            }
+
+                            vm.changePassword(oldPass, newPass)
+                        },
+                        modifier = Modifier.fillMaxWidth()
+                    ) {
+                        Text("Update Password")
+                    }
+
+                    Spacer(Modifier.height(10.dp))
+
+                    when (val state = vm.state) {
+
+                        is ApiState.Loading -> {
+                            CircularProgressIndicator()
+                        }
+
+                        is ApiState.Success -> {
+
+                            Text(state.data, color = Color.Green)
+
+                            // 🔥 SHOW MESSAGE → THEN LOGOUT
+                            LaunchedEffect(Unit) {
+
+                                kotlinx.coroutines.delay(1500)
+
+                                // logout
+                                val session = SessionManager(context)
+                                session.clear()
+
+                                nav.navigate("login") {
+                                    popUpTo(0) { inclusive = true }
+                                }
+                            }
+                        }
+
+                        is ApiState.Error -> {
+                            Text(state.message, color = Color.Red)
+                        }
+
+                        else -> {}
+                    }
+                }
+            }
+        }
+    }
+    if (showLogoutDialog) {
+
+        AlertDialog(
+
+            onDismissRequest = {
+
+                showLogoutDialog = false
+
+            },
+
+            icon = {
+
+                Text(
+                    "🚪",
+                    style = MaterialTheme.typography.headlineMedium
+                )
+
+            },
+
+            title = {
+
+                Text(
+                    "Logout"
+                )
+
+            },
+
+            text = {
+
+                Text(
+                    "Are you sure you want to logout?"
+                )
+
+            },
+
+            confirmButton = {
+
+                Button(
+
+                    onClick = {
+
+                        showLogoutDialog = false
+
+                        val session = SessionManager(context)
+
+                        session.clear()
+
+                        nav.navigate("login") {
+
+                            popUpTo(0) {
+
+                                inclusive = true
+
+                            }
+
+                        }
+
+                    }
+
+                ) {
+
+                    Text("Logout")
+
+                }
+
+            },
+
+            dismissButton = {
+
+                OutlinedButton(
+
+                    onClick = {
+
+                        showLogoutDialog = false
+
+                    }
+
+                ) {
+
+                    Text("Cancel")
+
+                }
+
+            }
+
+        )
 
     }
 

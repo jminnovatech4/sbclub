@@ -57,7 +57,6 @@ import com.google.accompanist.swiperefresh.SwipeRefresh
 import com.google.accompanist.swiperefresh.rememberSwipeRefreshState
 import com.jminnovatech.sbclub.data.model.ResultData
 import com.jminnovatech.sbclub.repository.AppRepository
-import com.jminnovatech.sbclub.ui.screens.user.BetScreen
 import com.jminnovatech.sbclub.ui.screens.user.progame.ProGameScreen
 import com.jminnovatech.sbclub.utils.ApiState
 import com.jminnovatech.sbclub.utils.SessionManager
