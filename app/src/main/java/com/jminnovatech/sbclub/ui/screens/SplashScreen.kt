@@ -98,7 +98,7 @@ fun SplashScreen(nav: NavController, context: Context) {
 
             // 🔥 LOGO (NO CROP NEEDED)
             Image(
-                painter = painterResource(id = R.drawable.logo),
+                painter = painterResource(id = R.drawable.sbclub),
                 contentDescription = "Logo",
                 modifier = Modifier
                     .fillMaxWidth(0.8f)

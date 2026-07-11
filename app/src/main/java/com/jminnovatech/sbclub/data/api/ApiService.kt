@@ -11,6 +11,13 @@ import com.jminnovatech.sbclub.data.model.WithdrawResponse
 import com.jminnovatech.sbclub.data.model.admin.MasterReportResponse
 import com.jminnovatech.sbclub.data.model.admin.PendingResponse
 import com.jminnovatech.sbclub.data.model.admin.Transaction
+import com.jminnovatech.sbclub.data.model.admin.game.AdminGameResponse
+import com.jminnovatech.sbclub.data.model.admin.game.AdminScheduleResponse
+import com.jminnovatech.sbclub.data.model.admin.game.*
+import com.jminnovatech.sbclub.data.model.admin.game.PublishResultRequest
+
+import com.jminnovatech.sbclub.data.model.admin.game.UpdateRateRequest
+import com.jminnovatech.sbclub.data.model.admin.game.UpdateScheduleRequest
 import com.jminnovatech.sbclub.data.model.master.MyUsersResponse
 import com.jminnovatech.sbclub.data.model.master.TransferRequest
 import com.jminnovatech.sbclub.data.model.progame.*
@@ -253,4 +260,39 @@ interface ApiService {
         @Query("schedule_id") scheduleId: Int
 
     ): RunningBetResponse
+
+// ==============================
+// ADMIN GAME
+// ==============================
+
+    @GET("admin/game/dashboard")
+    suspend fun adminGameDashboard(): AdminDashboardResponse
+
+    @GET("admin/game/games")
+    suspend fun adminGames(): AdminGamesResponse
+
+    @GET("admin/game/schedules/{gameId}")
+    suspend fun adminSchedules(
+        @Path("gameId") gameId:Int
+    ): AdminScheduleResponse
+
+    @GET("admin/game/rates/{gameId}")
+    suspend fun adminRates(
+        @Path("gameId") gameId:Int
+    ): AdminRateResponse
+
+    @POST("admin/game/update-schedule")
+    suspend fun updateSchedule(
+        @Body body:UpdateScheduleRequest
+    ): AdminGameResponse
+
+    @POST("admin/game/update-rate")
+    suspend fun updateRate(
+        @Body body:UpdateRateRequest
+    ): AdminGameResponse
+
+    @POST("admin/game/result")
+    suspend fun publishResult(
+        @Body body:PublishResultRequest
+    ): AdminGameResponse
 }

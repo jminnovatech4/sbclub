@@ -18,6 +18,13 @@ import com.jminnovatech.sbclub.data.model.WithdrawItem
 import com.jminnovatech.sbclub.data.model.admin.MasterReportResponse
 import com.jminnovatech.sbclub.data.model.admin.PendingResponse
 import com.jminnovatech.sbclub.data.model.admin.Transaction
+import com.jminnovatech.sbclub.data.model.admin.game.AdminDashboardResponse
+import com.jminnovatech.sbclub.data.model.admin.game.AdminGameItem
+import com.jminnovatech.sbclub.data.model.admin.game.AdminRateResponse
+import com.jminnovatech.sbclub.data.model.admin.game.AdminScheduleResponse
+import com.jminnovatech.sbclub.data.model.admin.game.PublishResultRequest
+import com.jminnovatech.sbclub.data.model.admin.game.UpdateRateRequest
+import com.jminnovatech.sbclub.data.model.admin.game.UpdateScheduleRequest
 import com.jminnovatech.sbclub.data.model.master.MasterUser
 import com.jminnovatech.sbclub.data.model.master.TransferRequest
 
@@ -788,6 +795,309 @@ class AppRepository(private val context: Context) {
             scheduleId
 
         )
+
+    }
+
+    // ==============================
+// ADMIN GAME
+// ==============================
+
+    suspend fun adminGameDashboard(): ApiState<AdminDashboardResponse> {
+
+        return try {
+
+            android.util.Log.d(
+                "ADMIN_GAME_API",
+                "GET -> admin/game/dashboard"
+            )
+
+            val res = api.adminGameDashboard()
+
+            android.util.Log.d(
+                "ADMIN_GAME_API",
+                "Dashboard Response = $res"
+            )
+
+            ApiState.Success(res)
+
+        } catch (e: Exception) {
+
+            android.util.Log.e(
+                "ADMIN_GAME_API",
+                e.stackTraceToString()
+            )
+
+            ApiState.Error(NetworkErrorHandler.getMessage(e))
+
+        }
+    }
+
+    suspend fun adminGames(): ApiState<List<AdminGameItem>> {
+
+        return try {
+
+            android.util.Log.d(
+                "ADMIN_GAME_API",
+                "GET -> admin/game/games"
+            )
+
+            val res = api.adminGames()
+
+            android.util.Log.d(
+                "ADMIN_GAME_API",
+                "Games Response = $res"
+            )
+
+            if(res.status){
+
+                ApiState.Success(res.games)
+
+            }else{
+
+                ApiState.Error("No Games")
+
+            }
+
+        }catch(e:Exception){
+
+            android.util.Log.e(
+                "ADMIN_GAME_API",
+                e.stackTraceToString()
+            )
+
+            ApiState.Error(NetworkErrorHandler.getMessage(e))
+
+        }
+
+    }
+
+    suspend fun adminSchedules(
+        gameId:Int
+    ):ApiState<AdminScheduleResponse>{
+
+        return try{
+
+            android.util.Log.d(
+                "ADMIN_GAME_API",
+                "GET -> admin/game/schedules"
+            )
+
+            android.util.Log.d(
+                "ADMIN_GAME_API",
+                "gameId=$gameId"
+            )
+
+            val res = api.adminSchedules(gameId)
+
+            android.util.Log.d(
+                "ADMIN_GAME_API",
+                "Schedule Response=$res"
+            )
+
+            if(res.status){
+
+                ApiState.Success(res)
+
+            }else{
+
+                ApiState.Error("No Schedule")
+
+            }
+
+        }catch(e:Exception){
+
+            android.util.Log.e(
+                "ADMIN_GAME_API",
+                e.stackTraceToString()
+            )
+
+            ApiState.Error(NetworkErrorHandler.getMessage(e))
+
+        }
+
+    }
+
+    suspend fun adminRates(
+        gameId:Int
+    ):ApiState<AdminRateResponse>{
+
+        return try{
+
+            android.util.Log.d(
+                "ADMIN_GAME_API",
+                "GET -> admin/game/rates"
+            )
+
+            android.util.Log.d(
+                "ADMIN_GAME_API",
+                "gameId=$gameId"
+            )
+
+            val res = api.adminRates(gameId)
+
+            android.util.Log.d(
+                "ADMIN_GAME_API",
+                "Rate Response=$res"
+            )
+
+            if(res.status){
+
+                ApiState.Success(res)
+
+            }else{
+
+                ApiState.Error("No Rates")
+
+            }
+
+        }catch(e:Exception){
+
+            android.util.Log.e(
+                "ADMIN_GAME_API",
+                e.stackTraceToString()
+            )
+
+            ApiState.Error(NetworkErrorHandler.getMessage(e))
+
+        }
+
+    }
+
+    suspend fun updateSchedule(
+        body: UpdateScheduleRequest
+    ):ApiState<String>{
+
+        return try{
+
+            android.util.Log.d(
+                "ADMIN_GAME_API",
+                "POST -> admin/game/update-schedule"
+            )
+
+            android.util.Log.d(
+                "ADMIN_GAME_API",
+                body.toString()
+            )
+
+            val res = api.updateSchedule(body)
+
+            android.util.Log.d(
+                "ADMIN_GAME_API",
+                "Response=$res"
+            )
+
+            if(res.status){
+
+                ApiState.Success(res.msg)
+
+            }else{
+
+                ApiState.Error(res.msg)
+
+            }
+
+        }catch(e:Exception){
+
+            android.util.Log.e(
+                "ADMIN_GAME_API",
+                e.stackTraceToString()
+            )
+
+            ApiState.Error(NetworkErrorHandler.getMessage(e))
+
+        }
+
+    }
+
+    suspend fun updateRate(
+        body: UpdateRateRequest
+    ):ApiState<String>{
+
+        return try{
+
+            android.util.Log.d(
+                "ADMIN_GAME_API",
+                "POST -> admin/game/update-rate"
+            )
+
+            android.util.Log.d(
+                "ADMIN_GAME_API",
+                body.toString()
+            )
+
+            val res = api.updateRate(body)
+
+            android.util.Log.d(
+                "ADMIN_GAME_API",
+                "Response=$res"
+            )
+
+            if(res.status){
+
+                ApiState.Success(res.msg)
+
+            }else{
+
+                ApiState.Error(res.msg)
+
+            }
+
+        }catch(e:Exception){
+
+            android.util.Log.e(
+                "ADMIN_GAME_API",
+                e.stackTraceToString()
+            )
+
+            ApiState.Error(NetworkErrorHandler.getMessage(e))
+
+        }
+
+    }
+
+    suspend fun publishResult(
+        body: PublishResultRequest
+    ):ApiState<String>{
+
+        return try{
+
+            android.util.Log.d(
+                "ADMIN_GAME_API",
+                "POST -> admin/game/result"
+            )
+
+            android.util.Log.d(
+                "ADMIN_GAME_API",
+                body.toString()
+            )
+
+            val res = api.publishResult(body)
+
+            android.util.Log.d(
+                "ADMIN_GAME_API",
+                "Response=$res"
+            )
+
+            if(res.status){
+
+                ApiState.Success(res.msg)
+
+            }else{
+
+                ApiState.Error(res.msg)
+
+            }
+
+        }catch(e:Exception){
+
+            android.util.Log.e(
+                "ADMIN_GAME_API",
+                e.stackTraceToString()
+            )
+
+            ApiState.Error(NetworkErrorHandler.getMessage(e))
+
+        }
 
     }
 

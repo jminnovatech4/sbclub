@@ -16,9 +16,16 @@ import com.jminnovatech.sbclub.data.model.RoundItemUI
 import com.jminnovatech.sbclub.data.model.admin.MasterReportResponse
 import com.jminnovatech.sbclub.data.model.admin.PendingResponse
 import com.jminnovatech.sbclub.data.model.admin.Transaction
+import com.jminnovatech.sbclub.data.model.admin.game.AdminScheduleResponse
+
+
+
+import com.jminnovatech.sbclub.data.model.admin.game.UpdateScheduleRequest
+import com.jminnovatech.sbclub.data.model.admin.game.UpdateRateRequest
+import com.jminnovatech.sbclub.data.model.admin.game.PublishResultRequest
 
 import com.jminnovatech.sbclub.model.UserNew
-
+import com.jminnovatech.sbclub.data.model.admin.game.*
 class AdminVM : ViewModel() {
 
     // 🔐 CREATE MASTER
@@ -80,14 +87,7 @@ class AdminVM : ViewModel() {
     var roundsState by mutableStateOf<ApiState<List<RoundItemUI>>>(ApiState.Loading)
     var selectedRound by mutableStateOf<RoundItemUI?>(null)
 
-    fun loadRounds(context: Context){
-        val repo = AppRepository(context)
 
-        viewModelScope.launch {
-            roundsState = ApiState.Loading
-            roundsState = repo.getRounds()
-        }
-    }
     var previewState by mutableStateOf<ApiState<CurrentPreviewResponse>?>(null)
 
     fun loadCurrentPreview(context: Context){
@@ -98,9 +98,7 @@ class AdminVM : ViewModel() {
             previewState = repo.currentPreview()
         }
     }
-    fun clearPreview(){
-        previewState = null
-    }
+
     var currentRoundState by mutableStateOf<ApiState<RoundItem>>(ApiState.Idle)
 
     fun loadCurrentRound(context: Context) {
@@ -158,25 +156,12 @@ class AdminVM : ViewModel() {
         }
     }
 
-    fun manualPattiResult(context: Context, number:String){
-        val repo = AppRepository(context)
 
-        viewModelScope.launch {
-            manualState = ApiState.Loading
-            manualState = repo.manualPattiResult(number)
-        }
-    }
     fun resetWalletState() {
         walletAddState = null
     }
     var profitListState by mutableStateOf<ApiState<List<ProfitDay>>>(ApiState.Idle)
 
-    fun loadProfitList(context: Context, from:String?=null, to:String?=null){
-        viewModelScope.launch {
-            profitListState = ApiState.Loading
-            profitListState = AppRepository(context).getProfitList(from, to)
-        }
-    }
     var updateState by mutableStateOf<ApiState<String>?>(null)
 
     fun updateMessage(context: Context, msg: String) {
@@ -189,48 +174,116 @@ class AdminVM : ViewModel() {
     var masterReportState by mutableStateOf<ApiState<MasterReportResponse>>(
         ApiState.Idle
     )
+// ==============================
+// ADMIN GAME
+// ==============================
+var gameDashboardState by mutableStateOf<ApiState<AdminDashboardResponse>>(ApiState.Idle)
 
-    fun loadMasterReport(
+    var gameListState by mutableStateOf<ApiState<List<AdminGameItem>>>(ApiState.Idle)
+
+    var scheduleState by mutableStateOf<ApiState<AdminScheduleResponse>>(ApiState.Idle)
+
+    var rateState by mutableStateOf<ApiState<AdminRateResponse>>(ApiState.Idle)
+
+    var gameActionState by mutableStateOf<ApiState<String>>(ApiState.Idle)
+    fun loadGameDashboard(context: Context) {
+
+        viewModelScope.launch {
+
+            gameDashboardState = ApiState.Loading
+
+            gameDashboardState =
+                AppRepository(context).adminGameDashboard()
+        }
+
+    }
+
+    fun loadGames(context: Context) {
+
+        viewModelScope.launch {
+
+            gameListState = ApiState.Loading
+
+            gameListState =
+                AppRepository(context).adminGames()
+        }
+
+    }
+
+    fun loadSchedules(
         context: Context,
-        from: String? = null,
-        to: String? = null
+        gameId: Int
     ) {
 
         viewModelScope.launch {
 
-            masterReportState = ApiState.Loading
+            scheduleState = ApiState.Loading
 
-            try {
-
-                // 🔥 ADD THIS
-                Log.d(
-                    "MASTER_REPORT_API",
-                    "FROM = $from TO = $to"
-                )
-
-                val response =
-                    AppRepository(context)
-                        .masterTeamReport(from, to)
-
-                // 🔥 ADD THIS
-                Log.d(
-                    "MASTER_REPORT_SUCCESS",
-                    response.toString()
-                )
-
-                masterReportState =
-                    ApiState.Success(response)
-
-            } catch (e: Exception) {
-
-                // 🔥 ADD THIS
-                Log.d(
-                    "MASTER_REPORT_ERROR",
-                    e.toString()
-                )
-
-                ApiState.Error(e.message ?: "Error")
-            }
+            scheduleState =
+                AppRepository(context).adminSchedules(gameId)
         }
+
     }
+
+    fun loadRates(
+        context: Context,
+        gameId: Int
+    ) {
+
+        viewModelScope.launch {
+
+            rateState = ApiState.Loading
+
+            rateState =
+                AppRepository(context).adminRates(gameId)
+        }
+
+    }
+
+    fun updateSchedule(
+        context: Context,
+        body: UpdateScheduleRequest
+    ) {
+
+        viewModelScope.launch {
+
+            gameActionState = ApiState.Loading
+
+            gameActionState =
+                AppRepository(context).updateSchedule(body)
+        }
+
+    }
+
+    fun updateRate(
+        context: Context,
+        body: UpdateRateRequest
+    ) {
+
+        viewModelScope.launch {
+
+            gameActionState = ApiState.Loading
+
+            gameActionState =
+                AppRepository(context).updateRate(body)
+        }
+
+    }
+
+    fun publishResult(
+        context: Context,
+        body: PublishResultRequest
+    ) {
+
+        viewModelScope.launch {
+
+            gameActionState = ApiState.Loading
+
+            gameActionState =
+                AppRepository(context).publishResult(body)
+        }
+
+    }
+
+
 }

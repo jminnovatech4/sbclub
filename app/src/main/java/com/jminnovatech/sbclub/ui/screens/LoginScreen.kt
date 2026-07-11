@@ -4,6 +4,7 @@ import android.content.Context
 import android.net.ConnectivityManager
 import android.net.NetworkCapabilities
 import androidx.compose.animation.*
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.text.KeyboardOptions
@@ -12,6 +13,7 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.*
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
@@ -19,7 +21,10 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import com.jminnovatech.sbclub.viewmodel.AuthVM
 import com.jminnovatech.sbclub.utils.ApiState
-
+import androidx.compose.foundation.Image
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.ui.res.painterResource
+import com.jminnovatech.sbclub.R
 fun isInternetAvailable(context: Context): Boolean {
     val cm = context.getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager
     val network = cm.activeNetwork ?: return false
@@ -51,14 +56,39 @@ fun LoginScreen(nav: NavController, context: Context) {
             modifier = Modifier
                 .align(Alignment.Center)
                 .padding(20.dp),
-            elevation = CardDefaults.cardElevation(10.dp)
+            elevation = CardDefaults.cardElevation(12.dp),
+            shape = RoundedCornerShape(24.dp),
+            colors = CardDefaults.cardColors(
+                containerColor = Color.White
+            )
         ) {
 
             Column(
                 Modifier.padding(20.dp),
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
+                Image(
+                    painter = painterResource(R.drawable.sbclub),
+                    contentDescription = null,
+                    modifier = Modifier
+                        .size(120.dp)
+                )
 
+                Spacer(Modifier.height(12.dp))
+
+                Text(
+                    text = "SB CLUB",
+                    style = MaterialTheme.typography.headlineMedium,
+                    color = Color(0xFF2563EB)
+                )
+
+                Text(
+                    text = "Play • Win • Repeat",
+                    color = Color.Gray,
+                    style = MaterialTheme.typography.bodyMedium
+                )
+
+                Spacer(Modifier.height(20.dp))
                 Text("🎯 Welcome Back", style = MaterialTheme.typography.titleLarge)
 
                 Spacer(Modifier.height(20.dp))

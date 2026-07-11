@@ -3,14 +3,11 @@ import android.os.Build
 import androidx.annotation.RequiresApi
 import java.time.LocalTime
 import java.time.Duration
-import java.time.LocalDate
-import java.time.ZoneId
 import androidx.compose.animation.core.LinearEasing
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Timer
 import androidx.compose.material3.Icon
@@ -19,11 +16,8 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.StrokeCap
-import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -31,12 +25,13 @@ import kotlinx.coroutines.delay
 import java.text.SimpleDateFormat
 import java.util.*
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.ui.geometry.CornerRadius
+
 @RequiresApi(Build.VERSION_CODES.O)
 @Composable
 fun TimerView(
 
-    endTime: String
+    endTime: String,
+    startTime: String
 
 ) {
 
@@ -83,7 +78,17 @@ fun TimerView(
 
     }
 
-    val total = 60 * 60 * 1000f
+    val total = remember(startTime, endTime) {
+
+        val start = LocalTime.parse(startTime)
+
+        val end = LocalTime.parse(endTime)
+
+        Duration.between(start, end)
+            .toMillis()
+            .toFloat()
+
+    }
 
     val progress by animateFloatAsState(
 
