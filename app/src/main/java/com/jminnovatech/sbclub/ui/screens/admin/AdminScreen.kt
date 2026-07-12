@@ -46,8 +46,12 @@ import java.util.*
 import android.app.DatePickerDialog
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
+import com.jminnovatech.sbclub.data.model.admin.game.AdminGameItem
 import com.jminnovatech.sbclub.data.model.admin.game.AdminRateItem
 import com.jminnovatech.sbclub.data.model.admin.game.AdminScheduleItem
+import com.jminnovatech.sbclub.ui.screens.admin.game.AdminRateModal
+import com.jminnovatech.sbclub.ui.screens.admin.game.AdminScheduleModal
+import com.jminnovatech.sbclub.ui.screens.admin.game.PublishResultDialog
 
 fun parseTime(time:String): Long{
     return try{
@@ -75,7 +79,7 @@ fun AdminScreen(nav: NavController ) {
     var showMaster by remember { mutableStateOf(false) }
     var showGraph by remember { mutableStateOf(false) }
     var showMasterList by remember { mutableStateOf(false) }
-    var showResultModal by remember { mutableStateOf(false) }
+
     var showLogoutDialog by remember { mutableStateOf(false) }
 
     var betTime by remember { mutableStateOf("") }
@@ -120,6 +124,20 @@ fun AdminScreen(nav: NavController ) {
     var selectedRate by remember { mutableStateOf<AdminRateItem?>(null) }
     LaunchedEffect(authVM.message) {
         messageInput = authVM.message
+    }
+
+    var showScheduleModal by remember {
+        mutableStateOf(false)
+    }
+
+    var selectedGame by remember {
+        mutableStateOf<AdminGameItem?>(null)
+    }
+    var showRateModal by remember {
+        mutableStateOf(false)
+    }
+    var showResultModal by remember {
+        mutableStateOf(false)
     }
 // ✅ 🔥 এখানে বসাও (TOP LEVEL)
     LaunchedEffect(vm.createMasterState) {
@@ -403,7 +421,10 @@ fun AdminScreen(nav: NavController ) {
 
                                         Button(
                                             onClick = {
-                                                // Schedule
+                                                selectedGame = game
+
+                                                showScheduleModal = true
+
                                             }
                                         ) {
                                             Text("Schedules")
@@ -414,6 +435,9 @@ fun AdminScreen(nav: NavController ) {
                                         Button(
                                             onClick = {
                                                 // Rates
+                                                selectedGame = game
+
+                                                showRateModal = true
                                             }
                                         ) {
                                             Text("Rates")
@@ -423,7 +447,9 @@ fun AdminScreen(nav: NavController ) {
 
                                         Button(
                                             onClick = {
-                                                // Publish
+                                                selectedGame = game
+
+                                                showResultModal = true
                                             }
                                         ) {
                                             Text("Result")
@@ -695,8 +721,73 @@ fun AdminScreen(nav: NavController ) {
             }
         )
     }
+    if(
+        showScheduleModal &&
+        selectedGame != null
+    ){
 
+        AdminScheduleModal(
 
+            vm = vm,
+
+            game = selectedGame!!,
+
+            onClose = {
+
+                showScheduleModal = false
+
+            }
+
+        )
+    }
+    if (
+
+        showRateModal &&
+
+        selectedGame != null
+
+    ) {
+
+        AdminRateModal(
+
+            vm = vm,
+
+            game = selectedGame!!,
+
+            onClose = {
+
+                showRateModal = false
+
+            }
+
+        )
+
+    }
+    if (
+
+        showResultModal &&
+
+        selectedGame != null
+
+    ){
+
+        PublishResultDialog(
+
+            vm = vm,
+
+            game = selectedGame!!,
+
+            onClose = {
+
+                showResultModal = false
+
+                vm.loadGameDashboard(context)
+
+            }
+
+        )
+
+    }
 }
 
 @Composable

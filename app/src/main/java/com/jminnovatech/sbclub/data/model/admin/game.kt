@@ -52,6 +52,9 @@ data class AdminScheduleItem(
     val start_time: String,
     val end_time: String,
     val result_time: String,
+    val result_number: String?,
+
+    val declared_at: String?,
     val status: String,
     val is_active: Int
 )

@@ -271,14 +271,14 @@ interface ApiService {
     @GET("admin/game/games")
     suspend fun adminGames(): AdminGamesResponse
 
-    @GET("admin/game/schedules/{gameId}")
+    @GET("admin/game/schedules")
     suspend fun adminSchedules(
-        @Path("gameId") gameId:Int
+        @Query("game_id") gameId: Int
     ): AdminScheduleResponse
 
-    @GET("admin/game/rates/{gameId}")
+    @GET("admin/game/rates")
     suspend fun adminRates(
-        @Path("gameId") gameId:Int
+        @Query("game_id") gameId: Int
     ): AdminRateResponse
 
     @POST("admin/game/update-schedule")

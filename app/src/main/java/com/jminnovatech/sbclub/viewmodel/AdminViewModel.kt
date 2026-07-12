@@ -284,6 +284,8 @@ var gameDashboardState by mutableStateOf<ApiState<AdminDashboardResponse>>(ApiSt
         }
 
     }
-
+    fun resetGameActionState() {
+        gameActionState = ApiState.Idle
+    }
 
 }
