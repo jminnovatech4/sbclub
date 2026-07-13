@@ -50,7 +50,31 @@ fun PublishResultDialog(
         )
 
     }
+    LaunchedEffect(number) {
 
+        if (
+
+            selected != null &&
+
+            number.length == game.digit_length
+
+        ) {
+
+            vm.loadResultReport(
+
+                context,
+
+                game.id,
+
+                selected!!.id,
+
+                number
+
+            )
+
+        }
+
+    }
     val action = vm.gameActionState
 
     LaunchedEffect(action){
@@ -99,7 +123,22 @@ fun PublishResultDialog(
 
         title = {
 
-            Text("Publish Result")
+            Column {
+
+                Text(
+                    text = "Publish Result",
+                    style = MaterialTheme.typography.headlineSmall
+                )
+
+                Spacer(Modifier.height(4.dp))
+
+                Text(
+                    text = game.game_name,
+                    style = MaterialTheme.typography.titleMedium,
+                    color = MaterialTheme.colorScheme.primary
+                )
+
+            }
 
         },
 
@@ -212,7 +251,57 @@ fun PublishResultDialog(
                     }
 
                 )
+                Spacer(Modifier.height(16.dp))
 
+                when(val report = vm.resultReportState){
+
+                    ApiState.Loading -> {
+
+                        CircularProgressIndicator()
+
+                    }
+
+                    is ApiState.Success -> {
+
+                        val preview = report.data.preview
+
+                        if(preview != null){
+
+                            Card(
+                                modifier = Modifier.fillMaxWidth()
+                            ){
+
+                                Column(
+                                    Modifier.padding(12.dp)
+                                ){
+
+                                    Text("Number : ${preview.number}")
+
+                                    Text("Bet Amount : ₹${preview.bet_amount}")
+
+                                    Text("Players : ${preview.players}")
+
+                                    Text("Payable : ₹${preview.payable}")
+
+                                    Text("Profit : ₹${preview.profit}")
+
+                                }
+
+                            }
+
+                        }
+
+                    }
+
+                    is ApiState.Error -> {
+
+                        Text(report.message)
+
+                    }
+
+                    else -> {}
+
+                }
                 Spacer(Modifier.height(10.dp))
 
                 if(action is ApiState.Loading){

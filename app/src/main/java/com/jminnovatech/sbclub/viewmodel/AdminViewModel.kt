@@ -288,4 +288,38 @@ var gameDashboardState by mutableStateOf<ApiState<AdminDashboardResponse>>(ApiSt
         gameActionState = ApiState.Idle
     }
 
+    var resultReportState by mutableStateOf<ApiState<ResultReportResponse>>(ApiState.Idle)
+    fun loadResultReport(
+
+        context: Context,
+
+        gameId: Int,
+
+        scheduleId: Int,
+
+        number: String? = null
+
+    ){
+
+        viewModelScope.launch {
+
+            resultReportState = ApiState.Loading
+
+            resultReportState =
+
+                AppRepository(context)
+
+                    .resultReport(
+
+                        gameId,
+
+                        scheduleId,
+
+                        number
+
+                    )
+
+        }
+
+    }
 }

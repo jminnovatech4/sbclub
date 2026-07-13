@@ -23,6 +23,7 @@ import com.jminnovatech.sbclub.data.model.admin.game.AdminGameItem
 import com.jminnovatech.sbclub.data.model.admin.game.AdminRateResponse
 import com.jminnovatech.sbclub.data.model.admin.game.AdminScheduleResponse
 import com.jminnovatech.sbclub.data.model.admin.game.PublishResultRequest
+import com.jminnovatech.sbclub.data.model.admin.game.ResultReportResponse
 import com.jminnovatech.sbclub.data.model.admin.game.UpdateRateRequest
 import com.jminnovatech.sbclub.data.model.admin.game.UpdateScheduleRequest
 import com.jminnovatech.sbclub.data.model.master.MasterUser
@@ -1100,6 +1101,40 @@ class AppRepository(private val context: Context) {
         }
 
     }
+    suspend fun resultReport(
 
+        gameId: Int,
+
+        scheduleId: Int,
+
+        number: String? = null
+
+    ): ApiState<ResultReportResponse>{
+
+        return try{
+
+            val res = api.resultReport(
+
+                gameId,
+
+                scheduleId,
+
+                number
+
+            )
+
+            ApiState.Success(res)
+
+        }catch(e:Exception){
+
+            ApiState.Error(
+
+                NetworkErrorHandler.getMessage(e)
+
+            )
+
+        }
+
+    }
 }
 

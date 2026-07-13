@@ -295,4 +295,17 @@ interface ApiService {
     suspend fun publishResult(
         @Body body:PublishResultRequest
     ): AdminGameResponse
+    @GET("admin/game/result-report")
+    suspend fun resultReport(
+
+        @Query("game_id")
+        gameId: Int,
+
+        @Query("schedule_id")
+        scheduleId: Int,
+
+        @Query("number")
+        number: String? = null
+
+    ): ResultReportResponse
 }

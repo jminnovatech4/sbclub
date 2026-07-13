@@ -109,3 +109,39 @@ data class PublishResultRequest(
     val schedule_id: Int,
     val result_number: String
 )
+
+data class ResultReportResponse(
+
+    val status: Boolean,
+
+    val summary: ResultSummary,
+
+    val preview: ResultPreview?
+
+)
+
+data class ResultSummary(
+
+    val total_bet: Double,
+
+    val total_players: Int,
+
+    val win_multiplier: Double
+
+)
+
+data class ResultPreview(
+
+    val number: String,
+
+    val bet_amount: Double,
+
+    val players: Int,
+
+    val payable: Double,
+
+    val profit: Double,
+
+    val win_multiplier: Double
+
+)
