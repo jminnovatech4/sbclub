@@ -180,9 +180,15 @@ fun ProGameScreen(
                     verticalArrangement = Arrangement.spacedBy(15.dp)
 
                 ) {
-
+                    val results =
+                        (vm.resultState as? ApiState.Success)
+                            ?.data?.data?.data ?: emptyList()
                     items(state.data.cards) { schedule ->
-
+                        val resultNumber = results
+                            .firstOrNull {
+                                it.schedule_id == schedule.id
+                            }
+                            ?.result_number ?: "---"
                         ScheduleCard(
                             nav = nav,
                             gameId = gameId,
@@ -194,7 +200,7 @@ fun ProGameScreen(
 
                             wallet = vm.walletBalance,
                             betState = vm.betState,
-                            resultNumber = "---",
+                            resultNumber = resultNumber,
 
                             onPlaceBet = { scheduleId, bets ->
 

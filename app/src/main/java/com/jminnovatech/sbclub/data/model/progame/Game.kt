@@ -173,19 +173,21 @@ data class HistoryPage(
 
 data class ResultItem(
 
-    val id:Int,
+    val id: Int,
 
-    val result_number:String,
+    val schedule_id: Int,
 
-    val baji_no:Int,
+    val result_number: String,
 
-    val title:String?,
+    val baji_no: Int,
 
-    val start_time:String,
+    val title: String?,
 
-    val end_time:String,
+    val start_time: String,
 
-    val declared_at:String
+    val end_time: String,
+
+    val declared_at: String
 
 )
 

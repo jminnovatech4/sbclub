@@ -72,6 +72,13 @@ fun PlayGameScreen(
     val game = (scheduleState as? ApiState.Success)
         ?.data
         ?.game
+    val currentId =
+        (vm.currentState as? ApiState.Success)
+            ?.data
+            ?.data
+            ?.id ?: 0
+
+    val isRunning = schedule?.id == currentId
     LaunchedEffect(schedule) {
 
         android.util.Log.d(
@@ -92,15 +99,19 @@ fun PlayGameScreen(
         )
 
     }
-    vm.loadRunningBets(
+    LaunchedEffect(scheduleId) {
 
-        context,
+        vm.loadRunningBets(
 
-        gameId,
+            context,
 
-        scheduleId
+            gameId,
 
-    )
+            scheduleId
+
+        )
+
+    }
 
     LaunchedEffect(vm.runningBetState){
 
@@ -241,33 +252,37 @@ fun PlayGameScreen(
 
             }
 
-            item {
+            if (isRunning) {
 
-                BetPanel(
+                item {
 
-                    gameCode = gameCode,
+                    BetPanel(
 
-                    wallet = wallet,
+                        gameCode = gameCode,
 
-                    betList = betList,
+                        wallet = wallet,
 
-                    onPlaceBet = {
+                        betList = betList,
 
-                        vm.placeBet(
+                        onPlaceBet = {
 
-                            context = context,
+                            vm.placeBet(
 
-                            gameId = gameId,
+                                context = context,
 
-                            scheduleId = schedule.id,
+                                gameId = gameId,
 
-                            bets = betList.toList()
+                                scheduleId = schedule.id,
 
-                        )
+                                bets = betList.toList()
 
-                    }
+                            )
 
-                )
+                        }
+
+                    )
+
+                }
 
             }
 
@@ -281,7 +296,7 @@ fun PlayGameScreen(
 
                     ?: emptyList()
 
-            if(history.isNotEmpty()){
+            if (isRunning && history.isNotEmpty()) {
 
                 item{
 
