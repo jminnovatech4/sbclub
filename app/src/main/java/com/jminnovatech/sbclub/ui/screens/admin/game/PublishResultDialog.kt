@@ -53,24 +53,20 @@ fun PublishResultDialog(
     LaunchedEffect(number) {
 
         if (
-
             selected != null &&
-
             number.length == game.digit_length
-
         ) {
 
             vm.loadResultReport(
-
                 context,
-
                 game.id,
-
                 selected!!.id,
-
                 number
-
             )
+
+        } else {
+
+            vm.clearResultPreview()
 
         }
 
@@ -88,9 +84,12 @@ fun PublishResultDialog(
                     action.data,
                     Toast.LENGTH_SHORT
                 ).show()
-
+                vm.loadSchedules(
+                    context,
+                    game.id
+                )
                 vm.resetGameActionState()
-
+                vm.clearResultPreview()
                 onClose()
 
             }
@@ -115,7 +114,7 @@ fun PublishResultDialog(
     LaunchedEffect(selected) {
 
         number = selected?.result_number ?: ""
-
+        vm.clearResultPreview()
     }
     AlertDialog(
 
@@ -163,7 +162,7 @@ fun PublishResultDialog(
                     is ApiState.Success->{
 
                         LazyColumn(
-                            modifier = Modifier.height(180.dp)
+                            modifier = Modifier.height(220.dp)
                         ){
                             items(state.data.data) { item ->
 

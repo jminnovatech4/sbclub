@@ -70,10 +70,20 @@ fun AdminScreen(nav: NavController ) {
     val vm: AdminVM = viewModel()
     val authVM:  AuthVM = viewModel()
     fun refreshAll() {
+        vm.loadGameDashboard(context)
+
+        vm.loadGames(context)
+
         vm.loadCurrentRound(context)
+
         vm.loadCurrentPreview(context)
+
         vm.loadTransactions(context)
+
         vm.loadUsers(context)
+
+        vm.loadPending(context)
+
     }
     // 🔥 STATES (EXISTING + NEW)
     var showMaster by remember { mutableStateOf(false) }
@@ -400,62 +410,128 @@ fun AdminScreen(nav: NavController ) {
 
                         dashboard.games.forEach { game ->
 
+//                            Card(
+//                                modifier = Modifier
+//                                    .fillMaxWidth()
+//                                    .padding(vertical = 6.dp)
+//                            ) {
+//
+//                                Column(
+//                                    Modifier.padding(16.dp)
+//                                ) {
+//
+//                                    Text(
+//                                        game.game_name,
+//                                        style = MaterialTheme.typography.titleMedium
+//                                    )
+//
+//                                    Spacer(Modifier.height(10.dp))
+//
+//                                    Row {
+//
+////                                        Button(
+////                                            onClick = {
+////                                                selectedGame = game
+////
+////                                                showScheduleModal = true
+////
+////                                            }
+////                                        ) {
+////                                            Text("Schedules")
+////                                        }
+//
+////                                        Spacer(Modifier.width(8.dp))
+////
+////                                        Button(
+////                                            onClick = {
+////                                                // Rates
+////                                                selectedGame = game
+////
+////                                                showRateModal = true
+////                                            }
+////                                        ) {
+////                                            Text("Rates")
+////                                        }
+//
+//                                        Spacer(Modifier.width(8.dp))
+//
+//                                        Button(
+//                                            onClick = {
+//                                                selectedGame = game
+//
+//                                                showResultModal = true
+//                                            }
+//                                        ) {
+//                                            Text("Result")
+//                                        }
+//                                    }
+//                                }
+//                            }
                             Card(
                                 modifier = Modifier
                                     .fillMaxWidth()
-                                    .padding(vertical = 6.dp)
+                                    .padding(vertical = 8.dp),
+                                shape = RoundedCornerShape(18.dp),
+                                elevation = CardDefaults.cardElevation(
+                                    defaultElevation = 6.dp
+                                ),
+                                colors = CardDefaults.cardColors(
+                                    containerColor = MaterialTheme.colorScheme.surface
+                                )
                             ) {
 
-                                Column(
-                                    Modifier.padding(16.dp)
+                                Row(
+                                    modifier = Modifier
+                                        .fillMaxWidth()
+                                        .padding(18.dp),
+                                    verticalAlignment = Alignment.CenterVertically,
+                                    horizontalArrangement = Arrangement.SpaceBetween
                                 ) {
 
-                                    Text(
-                                        game.game_name,
-                                        style = MaterialTheme.typography.titleMedium
-                                    )
+                                    Column(
+                                        modifier = Modifier.weight(1f)
+                                    ) {
 
-                                    Spacer(Modifier.height(10.dp))
+                                        Text(
+                                            text = game.game_name,
+                                            style = MaterialTheme.typography.titleLarge,
+                                            fontWeight = FontWeight.Bold
+                                        )
 
-                                    Row {
+                                        Spacer(Modifier.height(4.dp))
 
-                                        Button(
-                                            onClick = {
-                                                selectedGame = game
+                                        Text(
+                                            text = "Publish & Manage Results",
+                                            style = MaterialTheme.typography.bodyMedium,
+                                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                                        )
 
-                                                showScheduleModal = true
-
-                                            }
-                                        ) {
-                                            Text("Schedules")
-                                        }
-
-                                        Spacer(Modifier.width(8.dp))
-
-                                        Button(
-                                            onClick = {
-                                                // Rates
-                                                selectedGame = game
-
-                                                showRateModal = true
-                                            }
-                                        ) {
-                                            Text("Rates")
-                                        }
-
-                                        Spacer(Modifier.width(8.dp))
-
-                                        Button(
-                                            onClick = {
-                                                selectedGame = game
-
-                                                showResultModal = true
-                                            }
-                                        ) {
-                                            Text("Result")
-                                        }
                                     }
+
+                                    FilledTonalButton(
+                                        onClick = {
+
+                                            selectedGame = game
+                                            showResultModal = true
+
+                                        },
+                                        shape = RoundedCornerShape(14.dp)
+                                    ) {
+
+                                        Icon(
+                                            Icons.Default.EmojiEvents,
+                                            contentDescription = null,
+                                            modifier = Modifier.size(18.dp)
+                                        )
+
+                                        Spacer(Modifier.width(6.dp))
+
+                                        Text("Result")
+
+                                    }
+
                                 }
+
                             }
                         }
                     }

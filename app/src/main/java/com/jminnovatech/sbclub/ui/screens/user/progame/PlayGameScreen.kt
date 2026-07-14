@@ -13,7 +13,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import com.jminnovatech.sbclub.data.model.progame.ProBetItem
-import androidx.compose.runtime.remember
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.Alignment
 import com.jminnovatech.sbclub.viewmodel.ProGameVM
@@ -296,16 +295,13 @@ fun PlayGameScreen(
 
                     ?: emptyList()
 
-            if (isRunning && history.isNotEmpty()) {
+            if (history.isNotEmpty()) {
 
                 item{
 
                     Text(
-
-                        "Your Running Bets",
-
+                        text = if (isRunning) "Your Running Bets" else "Your Bet History",
                         style = MaterialTheme.typography.titleMedium
-
                     )
 
                 }
@@ -314,8 +310,9 @@ fun PlayGameScreen(
 
                     RunningBetCard(
 
-                        bet = bet
+                        bet = bet,
 
+                        isRunning = isRunning
                     )
 
                 }

@@ -1,7 +1,6 @@
 package com.jminnovatech.sbclub.ui.screens.user.progame
 
 import androidx.compose.foundation.background
-import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -19,10 +18,22 @@ import com.jminnovatech.sbclub.data.model.progame.BetHistory
 @Composable
 fun RunningBetCard(
 
-    bet: BetHistory
+    bet: BetHistory,
+    isRunning: Boolean
 
 ) {
-
+    AssistChip(
+        onClick = {},
+        enabled = false,
+        label = {
+            Text(
+                if (isRunning)
+                    "RUNNING"
+                else
+                    "COMPLETED"
+            )
+        }
+    )
     Card(
 
         modifier = Modifier

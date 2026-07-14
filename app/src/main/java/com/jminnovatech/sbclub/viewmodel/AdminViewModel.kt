@@ -322,4 +322,10 @@ var gameDashboardState by mutableStateOf<ApiState<AdminDashboardResponse>>(ApiSt
         }
 
     }
+
+    fun clearResultPreview() {
+
+        resultReportState = ApiState.Idle
+
+    }
 }
