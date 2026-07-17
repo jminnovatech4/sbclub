@@ -328,4 +328,155 @@ var gameDashboardState by mutableStateOf<ApiState<AdminDashboardResponse>>(ApiSt
         resultReportState = ApiState.Idle
 
     }
+
+    //======================================
+// RESULT PANEL
+//======================================
+
+    var resultPanelState by mutableStateOf<ApiState<ResultPanelResponse>>(ApiState.Idle)
+        private set
+
+//======================================
+// RESULT PREVIEW
+//======================================
+
+    var resultPreviewMap by mutableStateOf<Map<Int, ApiState<ResultPreviewResponse>>>(emptyMap())
+        private set
+//======================================
+// PUBLISH ALL
+//======================================
+
+    var publishAllState by mutableStateOf<ApiState<String>>(ApiState.Idle)
+        private set
+
+    fun loadResultPanel(
+        context: Context
+    ) {
+
+        viewModelScope.launch {
+
+            resultPanelState = ApiState.Loading
+
+            try {
+
+                val res = AppRepository(context).resultPanel()
+
+                resultPanelState = ApiState.Success(res)
+
+            } catch (e: Exception) {
+
+                resultPanelState = ApiState.Error(
+
+                    e.message ?: "Something Went Wrong"
+
+                )
+
+            }
+
+        }
+
+    }
+
+    fun previewResult(
+        context: Context,
+        gameId: Int,
+        scheduleId: Int,
+        number: String
+    ) {
+
+        if (number.isBlank()) {
+            resultPreviewMap =
+                resultPreviewMap + (gameId to ApiState.Idle)
+            return
+        }
+
+        viewModelScope.launch {
+
+            resultPreviewMap =
+                resultPreviewMap + (gameId to ApiState.Loading)
+
+            try {
+
+                val res = AppRepository(context).resultPreview(
+                    ResultPreviewRequest(
+                        game_id = gameId,
+                        schedule_id = scheduleId,
+                        result_number = number
+                    )
+                )
+
+                resultPreviewMap =
+                    resultPreviewMap + (gameId to ApiState.Success(res))
+
+            } catch (e: Exception) {
+
+                resultPreviewMap =
+                    resultPreviewMap + (
+                            gameId to ApiState.Error(
+                                e.message ?: "Preview Failed"
+                            )
+                            )
+
+            }
+
+        }
+
+    }
+
+    fun publishAll(
+
+        context: Context,
+
+        scheduleId: Int,
+
+        results: List<PublishGameResult>
+
+    ) {
+
+        viewModelScope.launch {
+
+            publishAllState = ApiState.Loading
+
+            try {
+
+                val res = AppRepository(context).publishAll(
+
+                    PublishAllRequest(
+
+                        schedule_id = scheduleId,
+
+                        results = results
+
+                    )
+
+                )
+
+                publishAllState = ApiState.Success(
+
+                    res.message
+
+                )
+
+                loadResultPanel(context)
+
+            }
+
+            catch (e: Exception) {
+
+                publishAllState = ApiState.Error(
+
+                    e.message ?: "Publish Failed"
+
+                )
+
+            }
+
+        }
+
+    }
+    fun resetPublishState() {
+
+        publishAllState = ApiState.Idle
+
+    }
 }

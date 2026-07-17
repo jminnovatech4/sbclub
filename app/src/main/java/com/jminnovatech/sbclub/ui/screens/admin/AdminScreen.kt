@@ -51,7 +51,7 @@ import com.jminnovatech.sbclub.data.model.admin.game.AdminRateItem
 import com.jminnovatech.sbclub.data.model.admin.game.AdminScheduleItem
 import com.jminnovatech.sbclub.ui.screens.admin.game.AdminRateModal
 import com.jminnovatech.sbclub.ui.screens.admin.game.AdminScheduleModal
-import com.jminnovatech.sbclub.ui.screens.admin.game.PublishResultDialog
+
 
 fun parseTime(time:String): Long{
     return try{
@@ -121,34 +121,13 @@ fun AdminScreen(nav: NavController ) {
     // ==========================
 // ADMIN GAME
 // ==========================
-    var selectedGameId by remember { mutableStateOf<Int?>(null) }
 
-    var showEditSchedule by remember { mutableStateOf(false) }
 
-    var showEditRate by remember { mutableStateOf(false) }
-
-    var showPublishResult by remember { mutableStateOf(false) }
-
-    var selectedSchedule by remember { mutableStateOf<AdminScheduleItem?>(null) }
-
-    var selectedRate by remember { mutableStateOf<AdminRateItem?>(null) }
     LaunchedEffect(authVM.message) {
         messageInput = authVM.message
     }
 
-    var showScheduleModal by remember {
-        mutableStateOf(false)
-    }
 
-    var selectedGame by remember {
-        mutableStateOf<AdminGameItem?>(null)
-    }
-    var showRateModal by remember {
-        mutableStateOf(false)
-    }
-    var showResultModal by remember {
-        mutableStateOf(false)
-    }
 // ✅ 🔥 এখানে বসাও (TOP LEVEL)
     LaunchedEffect(vm.createMasterState) {
 
@@ -361,33 +340,7 @@ fun AdminScreen(nav: NavController ) {
 
                             val summary = state.data.summary
 
-                            Card(
-                                modifier = Modifier.fillMaxWidth()
-                            ){
 
-                                Column(
-                                    Modifier.padding(16.dp)
-                                ){
-
-                                    Text(
-                                        "Games : ${summary.games}"
-                                    )
-
-                                    Text(
-                                        "Running : ${summary.running_games}"
-                                    )
-
-                                    Text(
-                                        "Today's Bet : ₹${summary.today_bet}"
-                                    )
-
-                                    Text(
-                                        "Today's Win : ₹${summary.today_win}"
-                                    )
-
-                                }
-
-                            }
 
                         }
 
@@ -408,133 +361,58 @@ fun AdminScreen(nav: NavController ) {
 
                         Spacer(Modifier.height(16.dp))
 
-                        dashboard.games.forEach { game ->
 
-//                            Card(
-//                                modifier = Modifier
-//                                    .fillMaxWidth()
-//                                    .padding(vertical = 6.dp)
-//                            ) {
-//
-//                                Column(
-//                                    Modifier.padding(16.dp)
-//                                ) {
-//
-//                                    Text(
-//                                        game.game_name,
-//                                        style = MaterialTheme.typography.titleMedium
-//                                    )
-//
-//                                    Spacer(Modifier.height(10.dp))
-//
-//                                    Row {
-//
-////                                        Button(
-////                                            onClick = {
-////                                                selectedGame = game
-////
-////                                                showScheduleModal = true
-////
-////                                            }
-////                                        ) {
-////                                            Text("Schedules")
-////                                        }
-//
-////                                        Spacer(Modifier.width(8.dp))
-////
-////                                        Button(
-////                                            onClick = {
-////                                                // Rates
-////                                                selectedGame = game
-////
-////                                                showRateModal = true
-////                                            }
-////                                        ) {
-////                                            Text("Rates")
-////                                        }
-//
-//                                        Spacer(Modifier.width(8.dp))
-//
-//                                        Button(
-//                                            onClick = {
-//                                                selectedGame = game
-//
-//                                                showResultModal = true
-//                                            }
-//                                        ) {
-//                                            Text("Result")
-//                                        }
-//                                    }
-//                                }
-//                            }
-                            Card(
-                                modifier = Modifier
-                                    .fillMaxWidth()
-                                    .padding(vertical = 8.dp),
-                                shape = RoundedCornerShape(18.dp),
-                                elevation = CardDefaults.cardElevation(
-                                    defaultElevation = 6.dp
-                                ),
-                                colors = CardDefaults.cardColors(
-                                    containerColor = MaterialTheme.colorScheme.surface
-                                )
-                            ) {
+                    }
+                    Spacer(Modifier.height(16.dp))
 
-                                Row(
-                                    modifier = Modifier
-                                        .fillMaxWidth()
-                                        .padding(18.dp),
-                                    verticalAlignment = Alignment.CenterVertically,
-                                    horizontalArrangement = Arrangement.SpaceBetween
-                                ) {
+                    Card(
+                        modifier = Modifier.fillMaxWidth(),
+                        shape = RoundedCornerShape(18.dp)
+                    ) {
 
-                                    Column(
-                                        modifier = Modifier.weight(1f)
-                                    ) {
+                        Column(
+                            modifier = Modifier.padding(20.dp)
+                        ) {
 
-                                        Text(
-                                            text = game.game_name,
-                                            style = MaterialTheme.typography.titleLarge,
-                                            fontWeight = FontWeight.Bold
-                                        )
+                            Text(
+                                text = "🎯 Result Management",
+                                style = MaterialTheme.typography.titleLarge,
+                                fontWeight = FontWeight.Bold
+                            )
 
-                                        Spacer(Modifier.height(4.dp))
+                            Spacer(Modifier.height(8.dp))
 
-                                        Text(
-                                            text = "Publish & Manage Results",
-                                            style = MaterialTheme.typography.bodyMedium,
-                                            color = MaterialTheme.colorScheme.onSurfaceVariant
-                                        )
+                            Text(
+                                text = "Publish Single, Patti, CP and Auto Jodi Result"
+                            )
 
-                                    }
+                            Spacer(Modifier.height(16.dp))
 
-                                    FilledTonalButton(
-                                        onClick = {
+                            Button(
+                                modifier = Modifier.fillMaxWidth(),
+                                onClick = {
 
-                                            selectedGame = game
-                                            showResultModal = true
-
-                                        },
-                                        shape = RoundedCornerShape(14.dp)
-                                    ) {
-
-                                        Icon(
-                                            Icons.Default.EmojiEvents,
-                                            contentDescription = null,
-                                            modifier = Modifier.size(18.dp)
-                                        )
-
-                                        Spacer(Modifier.width(6.dp))
-
-                                        Text("Result")
-
-                                    }
+                                    nav.navigate("result_panel")
 
                                 }
+                            ) {
+
+                                Icon(
+                                    Icons.Default.EmojiEvents,
+                                    contentDescription = null
+                                )
+
+                                Spacer(Modifier.width(8.dp))
+
+                                Text("Open Result Panel")
 
                             }
+
                         }
+
                     }
+
+                    Spacer(Modifier.height(16.dp))
                     Spacer(Modifier.height(12.dp))
 
                     DashboardItem("Create Master", Icons.Default.PersonAdd) { showMaster = true }
@@ -797,73 +675,7 @@ fun AdminScreen(nav: NavController ) {
             }
         )
     }
-    if(
-        showScheduleModal &&
-        selectedGame != null
-    ){
 
-        AdminScheduleModal(
-
-            vm = vm,
-
-            game = selectedGame!!,
-
-            onClose = {
-
-                showScheduleModal = false
-
-            }
-
-        )
-    }
-    if (
-
-        showRateModal &&
-
-        selectedGame != null
-
-    ) {
-
-        AdminRateModal(
-
-            vm = vm,
-
-            game = selectedGame!!,
-
-            onClose = {
-
-                showRateModal = false
-
-            }
-
-        )
-
-    }
-    if (
-
-        showResultModal &&
-
-        selectedGame != null
-
-    ){
-
-        PublishResultDialog(
-
-            vm = vm,
-
-            game = selectedGame!!,
-
-            onClose = {
-
-                showResultModal = false
-
-                vm.loadGameDashboard(context)
-
-            }
-
-        )
-
-    }
 }
 
 @Composable

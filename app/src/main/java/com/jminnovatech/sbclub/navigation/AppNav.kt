@@ -17,7 +17,9 @@ import com.jminnovatech.sbclub.ui.screens.user.progame.PlayGameScreen
 import com.jminnovatech.sbclub.ui.screens.user.progame.ProGameScreen
 import com.jminnovatech.sbclub.viewmodel.MasterVM
 import com.jminnovatech.sbclub.viewmodel.WalletVM
-
+import androidx.lifecycle.viewmodel.compose.viewModel
+import com.jminnovatech.sbclub.ui.screens.admin.game.ResultPanelScreen
+import com.jminnovatech.sbclub.viewmodel.AdminVM
 @RequiresApi(Build.VERSION_CODES.O)
 @Composable
 fun AppNav(context: Context) {
@@ -34,7 +36,13 @@ fun AppNav(context: Context) {
 
         // 🔹 ADMIN
         composable("admin") { AdminScreen(nav) }
+        composable("result_panel") {
 
+            val vm: AdminVM = viewModel()
+
+            ResultPanelScreen(vm)
+
+        }
         // 🔹 MASTER
         composable("master") {
 

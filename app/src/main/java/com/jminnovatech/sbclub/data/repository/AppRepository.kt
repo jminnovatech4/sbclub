@@ -22,7 +22,9 @@ import com.jminnovatech.sbclub.data.model.admin.game.AdminDashboardResponse
 import com.jminnovatech.sbclub.data.model.admin.game.AdminGameItem
 import com.jminnovatech.sbclub.data.model.admin.game.AdminRateResponse
 import com.jminnovatech.sbclub.data.model.admin.game.AdminScheduleResponse
+import com.jminnovatech.sbclub.data.model.admin.game.PublishAllRequest
 import com.jminnovatech.sbclub.data.model.admin.game.PublishResultRequest
+import com.jminnovatech.sbclub.data.model.admin.game.ResultPreviewRequest
 import com.jminnovatech.sbclub.data.model.admin.game.ResultReportResponse
 import com.jminnovatech.sbclub.data.model.admin.game.UpdateRateRequest
 import com.jminnovatech.sbclub.data.model.admin.game.UpdateScheduleRequest
@@ -1136,5 +1138,37 @@ class AppRepository(private val context: Context) {
         }
 
     }
+
+    //======================================
+// RESULT PANEL
+//======================================
+
+    suspend fun resultPanel() =
+
+        api.resultPanel()
+
+//======================================
+// RESULT PREVIEW
+//======================================
+
+    suspend fun resultPreview(
+
+        request: ResultPreviewRequest
+
+    ) =
+
+        api.resultPreview(request)
+
+//======================================
+// PUBLISH ALL
+//======================================
+
+    suspend fun publishAll(
+
+        request: PublishAllRequest
+
+    ) =
+
+        api.publishAll(request)
 }
 

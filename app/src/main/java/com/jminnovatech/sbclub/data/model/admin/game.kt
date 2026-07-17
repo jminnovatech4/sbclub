@@ -145,3 +145,77 @@ data class ResultPreview(
     val win_multiplier: Double
 
 )
+
+
+
+data class ResultPanelResponse(
+    val status: Boolean,
+    val current_schedule: CurrentSchedule?,
+    val games: List<ResultGame>,
+    val history: List<ScheduleHistory>
+)
+
+data class CurrentSchedule(
+    val id: Int,
+    val baji_no: Int,
+    val title: String?,
+    val start_time: String,
+    val end_time: String,
+    val result_time: String,
+    val status: String
+)
+
+data class ResultGame(
+    val id: Int,
+    val game_name: String,
+    val game_code: String,
+    val digit_length: Int,
+    val display_order: Int,
+    val result_number: String
+)
+
+data class ScheduleHistory(
+    val id: Int,
+    val baji_no: Int,
+    val title: String?,
+    val start_time: String,
+    val end_time: String,
+    val result_time: String,
+    val status: String,
+    val results: List<HistoryResult>
+)
+
+data class HistoryResult(
+    val id: Int,
+    val game_name: String,
+    val game_code: String,
+    val result_number: String?,
+    val declared_at: String?
+)
+
+data class ResultPreviewResponse(
+    val status: Boolean,
+    val preview: PreviewData
+)
+
+data class PreviewData(
+    val number: String,
+    val bet_amount: Double,
+    val players: Int,
+    val payable: Double,
+    val profit: Double
+)
+data class PublishAllRequest(
+    val schedule_id: Int,
+    val results: List<PublishGameResult>
+)
+
+data class PublishGameResult(
+    val game_id: Int,
+    val result_number: String
+)
+data class ResultPreviewRequest(
+    val game_id: Int,
+    val schedule_id: Int,
+    val result_number: String
+)

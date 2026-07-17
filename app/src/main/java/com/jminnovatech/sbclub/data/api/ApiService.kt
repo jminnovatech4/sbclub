@@ -308,4 +308,33 @@ interface ApiService {
         number: String? = null
 
     ): ResultReportResponse
+
+    // =======================================
+// RESULT PANEL
+// =======================================
+
+    @GET("admin/game/result-panel")
+    suspend fun resultPanel(): ResultPanelResponse
+
+// =======================================
+// RESULT PREVIEW
+// =======================================
+
+    @POST("admin/game/result-preview")
+    suspend fun resultPreview(
+
+        @Body request: ResultPreviewRequest
+
+    ): ResultPreviewResponse
+
+// =======================================
+// PUBLISH ALL
+// =======================================
+
+    @POST("admin/game/publish-all")
+    suspend fun publishAll(
+
+        @Body request: PublishAllRequest
+
+    ): MessageResponse
 }
