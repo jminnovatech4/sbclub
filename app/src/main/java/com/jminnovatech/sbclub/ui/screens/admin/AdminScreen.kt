@@ -46,11 +46,7 @@ import java.util.*
 import android.app.DatePickerDialog
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
-import com.jminnovatech.sbclub.data.model.admin.game.AdminGameItem
-import com.jminnovatech.sbclub.data.model.admin.game.AdminRateItem
-import com.jminnovatech.sbclub.data.model.admin.game.AdminScheduleItem
-import com.jminnovatech.sbclub.ui.screens.admin.game.AdminRateModal
-import com.jminnovatech.sbclub.ui.screens.admin.game.AdminScheduleModal
+
 
 
 fun parseTime(time:String): Long{

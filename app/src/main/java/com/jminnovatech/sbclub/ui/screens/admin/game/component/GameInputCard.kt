@@ -76,15 +76,10 @@ fun GameInputCard(
                         if (it.length == game.digit_length) {
 
                             vm.previewResult(
-
                                 context,
-
                                 game.id,
-
-                                scheduleId,
-
+                                game.schedule_id,
                                 it
-
                             )
 
                         }

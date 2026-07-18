@@ -169,6 +169,7 @@ data class ResultGame(
     val id: Int,
     val game_name: String,
     val game_code: String,
+    val schedule_id: Int,
     val digit_length: Int,
     val display_order: Int,
     val result_number: String

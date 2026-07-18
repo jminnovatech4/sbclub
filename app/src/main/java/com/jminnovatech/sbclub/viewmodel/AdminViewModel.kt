@@ -26,6 +26,8 @@ import com.jminnovatech.sbclub.data.model.admin.game.PublishResultRequest
 
 import com.jminnovatech.sbclub.model.UserNew
 import com.jminnovatech.sbclub.data.model.admin.game.*
+import retrofit2.HttpException
+
 class AdminVM : ViewModel() {
 
     // 🔐 CREATE MASTER
@@ -461,14 +463,13 @@ var gameDashboardState by mutableStateOf<ApiState<AdminDashboardResponse>>(ApiSt
 
             }
 
-            catch (e: Exception) {
+            catch (e: HttpException) {
 
-                publishAllState = ApiState.Error(
+                val errorBody = e.response()?.errorBody()?.string()
 
-                    e.message ?: "Publish Failed"
+                Log.e("SERVER_ERROR", errorBody ?: "No Body")
 
-                )
-
+                publishAllState = ApiState.Error(errorBody ?: "HTTP 500")
             }
 
         }
