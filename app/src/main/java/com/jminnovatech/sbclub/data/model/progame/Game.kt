@@ -38,23 +38,41 @@ data class GameListResponse(
 
 data class Schedule(
 
-    val id:Int,
+    val id: Int,
 
-    val game_id:Int,
+    val game_id: Int,
 
-    val baji_no:Int,
+    val baji_no: Int,
 
-    val title:String?,
+    val title: String?,
 
-    val start_time:String,
+    val start_time: String,
 
-    val end_time:String,
+    val end_time: String,
 
-    val result_time:String,
+    val result_time: String,
 
-    val status:String,
+    val status: String,
 
-    val is_active:Int
+    val is_active: Int,
+
+    val locked: Boolean,
+
+    val result: ScheduleResult?
+
+)
+
+data class ScheduleResult(
+
+    val id: Int,
+
+    val game_id: Int,
+
+    val schedule_id: Int,
+
+    val result_number: String,
+
+    val declared_at: String?
 
 )
 

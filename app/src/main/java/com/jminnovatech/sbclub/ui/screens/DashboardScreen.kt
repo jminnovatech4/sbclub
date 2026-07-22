@@ -11,10 +11,13 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.AccountBalanceWallet
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.Menu
+import androidx.compose.material.icons.filled.Refresh
 import androidx.compose.material.icons.filled.Visibility
 import androidx.compose.material.icons.filled.VisibilityOff
+import androidx.compose.material.icons.filled.WifiOff
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -71,6 +74,7 @@ fun DashboardScreen(
     val scope = rememberCoroutineScope()
     LaunchedEffect(Unit) {
         vm.loadGames(context)
+        vm.loadWallet(context)
     }
     ModalNavigationDrawer(
 
@@ -291,33 +295,127 @@ fun DashboardScreen(
 
                 Spacer(Modifier.width(8.dp))
 
-                Column {
+                Column(
+                    modifier = Modifier.weight(1f)
+                ) {
 
                     Text(
-
                         text = "SB CLUB",
-
                         color = Color.White,
-
-                        fontSize = 30.sp,
-
+                        fontSize = 25.sp,
                         fontWeight = FontWeight.Bold
+                    )
+
+
+
+
+
+                }
+                Card(
+
+                    shape = RoundedCornerShape(50.dp),
+
+                    colors = CardDefaults.cardColors(
+
+                        containerColor = Color.White
 
                     )
 
+                ) {
+
+                    Row(
+
+                        modifier = Modifier.padding(
+                            horizontal = 14.dp,
+                            vertical = 10.dp
+                        ),
+
+                        verticalAlignment = Alignment.CenterVertically
+
+                    ) {
+
+                        Icon(
+                            Icons.Default.AccountBalanceWallet,
+                            contentDescription = null,
+                            tint = Color(0xFF2563EB)
+                        )
+
+                        Spacer(Modifier.width(6.dp))
+
+                        Text(
+
+                            text = "₹ %.2f".format(vm.walletBalance),
+
+                            color = Color.Black,
+
+                            fontWeight = FontWeight.Bold
+
+                        )
+
+                    }
+
+                }
+            }
+
+            Spacer(Modifier.height(20.dp))
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(vertical = 5.dp),
+                contentAlignment = Alignment.Center
+            ) {
+
+                Text(
+                    text = "KOLKATA FATAFAT",
+                    color = Color(0xFFFFD54F),
+                    fontWeight = FontWeight.Bold,
+                    fontSize = 25.sp
+                )
+
+
+            }
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(vertical = 10.dp),
+                contentAlignment = Alignment.Center
+            ) {
+
+                Button(
+                    onClick = {
+
+                        vm.loadGames(context)
+                        vm.loadWallet(context)
+
+                    },
+                    shape = RoundedCornerShape(50.dp),
+                    colors = ButtonDefaults.buttonColors(
+                        containerColor = Color(0xFF2563EB),
+                        contentColor = Color.White
+                    ),
+                    elevation = ButtonDefaults.buttonElevation(
+                        defaultElevation = 8.dp
+                    ),
+                    modifier = Modifier
+                        .height(52.dp)
+                ) {
+
+                    Icon(
+                        imageVector = Icons.Default.Refresh,
+                        contentDescription = null,
+                        modifier = Modifier.size(20.dp)
+                    )
+
+                    Spacer(Modifier.width(8.dp))
+
                     Text(
-
-                        text = "Select Game",
-
-                        color = Color.LightGray
-
+                        text = "Refresh",
+                        fontWeight = FontWeight.Bold
                     )
 
                 }
 
             }
-
-            Spacer(Modifier.height(20.dp))
 
             when (val state = vm.gamesState) {
 
@@ -336,10 +434,55 @@ fun DashboardScreen(
 
                 is ApiState.Error -> {
 
-                    Text(
-                        state.message,
-                        color = Color.Red
-                    )
+                    Box(
+                        modifier = Modifier.fillMaxSize(),
+                        contentAlignment = Alignment.Center
+                    ) {
+
+                        Column(
+                            horizontalAlignment = Alignment.CenterHorizontally
+                        ) {
+
+                            Icon(
+                                Icons.Default.WifiOff,
+                                contentDescription = null,
+                                tint = Color.Gray,
+                                modifier = Modifier.size(70.dp)
+                            )
+
+                            Spacer(Modifier.height(12.dp))
+
+                            Text(
+                                "No Internet Connection",
+                                color = Color.White,
+                                fontWeight = FontWeight.Bold
+                            )
+
+                            Spacer(Modifier.height(8.dp))
+
+                            Text(
+                                state.message,
+                                color = Color.LightGray
+                            )
+
+                            Spacer(Modifier.height(18.dp))
+
+                            Button(
+                                onClick = {
+
+                                    vm.loadGames(context)
+                                    vm.loadWallet(context)
+
+                                }
+                            ) {
+
+                                Text("Retry")
+
+                            }
+
+                        }
+
+                    }
 
                 }
 

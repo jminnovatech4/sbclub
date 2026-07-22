@@ -49,7 +49,7 @@ fun ProGameScreen(
         vm.loadWallet(context)
 
         // Result list আনবে
-        vm.loadResults(context, gameId)
+      //  vm.loadResults(context, gameId)
     }
     LaunchedEffect(vm.betHistoryState) {
 
@@ -107,6 +107,7 @@ fun ProGameScreen(
             else -> {}
         }
     }
+
     when (val state = vm.scheduleState) {
 
         ApiState.Idle,
@@ -180,40 +181,27 @@ fun ProGameScreen(
                     verticalArrangement = Arrangement.spacedBy(15.dp)
 
                 ) {
-                    val results =
-                        (vm.resultState as? ApiState.Success)
-                            ?.data?.data?.data ?: emptyList()
+
                     items(state.data.cards) { schedule ->
-                        val resultNumber = results
-                            .firstOrNull {
-                                it.schedule_id == schedule.id
-                            }
-                            ?.result_number ?: "---"
+
                         ScheduleCard(
                             nav = nav,
                             gameId = gameId,
-
                             schedule = schedule,
-
                             gameCode = state.data.game.game_code,
                             currentId = currentId,
-
                             wallet = vm.walletBalance,
                             betState = vm.betState,
-                            resultNumber = resultNumber,
+
+                            resultNumber = schedule.result?.result_number,
 
                             onPlaceBet = { scheduleId, bets ->
 
                                 vm.placeBet(
-
-                                    context = context,
-
-                                    gameId = gameId,
-
-                                    scheduleId = scheduleId,
-
-                                    bets = bets
-
+                                    context,
+                                    gameId,
+                                    scheduleId,
+                                    bets
                                 )
 
                             },
@@ -221,13 +209,9 @@ fun ProGameScreen(
                             onHistoryClick = { scheduleId ->
 
                                 vm.loadHistory(
-
-                                    context = context,
-
-                                    gameId = gameId,
-
-                                    scheduleId = scheduleId
-
+                                    context,
+                                    gameId,
+                                    scheduleId
                                 )
 
                             }
