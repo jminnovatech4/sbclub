@@ -3,23 +3,34 @@ package com.jminnovatech.sbclub.ui.screens.progame
 import android.content.Context
 import android.os.Build
 import androidx.annotation.RequiresApi
+import androidx.compose.animation.core.LinearEasing
+import androidx.compose.animation.core.RepeatMode
+import androidx.compose.animation.core.animateFloat
+import androidx.compose.animation.core.infiniteRepeatable
+import androidx.compose.animation.core.rememberInfiniteTransition
+import androidx.compose.animation.core.tween
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.AccountBalanceWallet
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.Menu
+import androidx.compose.material.icons.filled.Message
 import androidx.compose.material.icons.filled.Refresh
 import androidx.compose.material.icons.filled.Visibility
 import androidx.compose.material.icons.filled.VisibilityOff
 import androidx.compose.material.icons.filled.WifiOff
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
+import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
@@ -34,14 +45,20 @@ import com.jminnovatech.sbclub.utils.ApiState
 import com.jminnovatech.sbclub.viewmodel.ProGameVM
 import kotlinx.coroutines.launch
 import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.ui.draw.clipToBounds
+import androidx.compose.ui.input.pointer.pointerInput
+import androidx.compose.ui.layout.onGloballyPositioned
+import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.input.VisualTransformation
+import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.window.Dialog
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.jminnovatech.sbclub.ui.screens.Transactions
 import com.jminnovatech.sbclub.viewmodel.WalletVM
 import com.jminnovatech.sbclub.repository.AppRepository
+import com.jminnovatech.sbclub.ui.screens.DepositScreen
 
 import com.jminnovatech.sbclub.utils.SessionManager
 import com.jminnovatech.sbclub.viewmodel.AuthVM
@@ -69,12 +86,21 @@ fun DashboardScreen(
         mutableStateOf(false)
 
     }
+    var showFullMsg by remember { mutableStateOf(false) }
+    val authVM: AuthVM = viewModel()
     var showChangePass by remember { mutableStateOf(false) }
     var showChangePassword by remember { mutableStateOf(false) }
     val scope = rememberCoroutineScope()
+    var showDeposit by remember {
+        mutableStateOf(false)
+    }
     LaunchedEffect(Unit) {
+
         vm.loadGames(context)
         vm.loadWallet(context)
+
+        authVM.loadMessage(context)
+
     }
     ModalNavigationDrawer(
 
@@ -153,7 +179,23 @@ fun DashboardScreen(
 //                    }
 //
 //                )
+                NavigationDrawerItem(
 
+                    label = { Text("💰 Deposit Money") },
+
+                    selected = false,
+
+                    onClick = {
+
+                        showDeposit = true
+
+                        scope.launch {
+                            drawerState.close()
+                        }
+
+                    }
+
+                )
                 NavigationDrawerItem(
 
                     label = { Text("📜 Transactions") },
@@ -356,7 +398,42 @@ fun DashboardScreen(
 
                 }
             }
+            Spacer(Modifier.height(10.dp))
+            Card(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .clickable {
+                        showFullMsg = true
+                    },
+                shape = RoundedCornerShape(10.dp),
+                colors = CardDefaults.cardColors(
+                    containerColor = Color(0xFFF6FF0D)
+                )
+            ) {
 
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(horizontal = 10.dp, vertical = 8.dp),
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+
+
+
+
+
+                    NewsTicker(
+                        text = authVM.message,
+                        modifier = Modifier.weight(1f)
+                    )
+                    Spacer(Modifier.width(8.dp))
+                    Icon(
+                        Icons.Default.Message,
+                        contentDescription = null,
+                        tint = Color.Blue
+                    )
+                }
+            }
             Spacer(Modifier.height(20.dp))
             Box(
                 modifier = Modifier
@@ -416,6 +493,9 @@ fun DashboardScreen(
                 }
 
             }
+
+
+            Spacer(Modifier.height(10.dp))
 
             when (val state = vm.gamesState) {
 
@@ -874,6 +954,69 @@ fun DashboardScreen(
 
     }
 
+    if (showFullMsg) {
+
+        AlertDialog(
+            onDismissRequest = { showFullMsg = false },
+
+            title = {
+                Text("📢 Full Message")
+            },
+
+            text = {
+
+                Column(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .verticalScroll(rememberScrollState())
+                ) {
+                    Text(
+                        text = authVM.message,
+                        fontSize = 15.sp
+                    )
+                }
+            },
+
+            confirmButton = {
+                Button(onClick = { showFullMsg = false }) {
+                    Text("Close")
+                }
+            }
+        )
+    }
+    if (showDeposit) {
+
+        Dialog(
+            onDismissRequest = {
+                showDeposit = false
+            }
+        ) {
+
+            Surface(
+
+                modifier = Modifier.fillMaxSize(),
+
+                color = Color(0xFFF4F6FA)
+
+            ) {
+
+                DepositScreen(
+
+                    context = context,
+
+                    onClose = {
+
+                        showDeposit = false
+
+                    }
+
+                )
+
+            }
+
+        }
+
+    }
 }
 @Composable
 fun DiceIcon(dots: Int) {
@@ -1024,4 +1167,117 @@ fun GameCard(
 
     }
 
+}
+@Composable
+fun NewsTicker(
+    text: String,
+    modifier: Modifier = Modifier,
+    speedMs: Int = 16000 // বেশি = ধীরে
+) {
+    if (text.isEmpty()) return
+
+    var textWidth by remember { mutableStateOf(0f) }
+    var boxWidth by remember { mutableStateOf(0f) }
+    var paused by remember { mutableStateOf(false) }
+
+    val ready = textWidth > 0f
+
+    val transition = rememberInfiniteTransition()
+
+    val offsetX by transition.animateFloat(
+        initialValue = -textWidth,   // 🔥 LEFT START
+        targetValue = boxWidth,      // 🔥 RIGHT END
+        animationSpec = infiniteRepeatable(
+            animation = tween(
+                durationMillis = speedMs,
+                easing = LinearEasing
+            ),
+            repeatMode = RepeatMode.Restart
+        ),
+        label = ""
+    )
+
+    Box(
+        modifier = modifier
+            .fillMaxWidth()
+            .height(26.dp)
+            .clipToBounds()
+            .onGloballyPositioned {
+                boxWidth = it.size.width.toFloat()
+            }
+            .pointerInput(Unit) {
+                detectTapGestures(
+                    onPress = {
+                        paused = true
+                        tryAwaitRelease()
+                        paused = false
+                    }
+                )
+            }
+    ) {
+
+        // 🔥 FADE EDGES (left & right)
+        Box(
+            Modifier
+                .matchParentSize()
+                .background(
+                    Brush.horizontalGradient(
+                        colors = listOf(
+                            Color.White,
+                            Color.Transparent,
+                            Color.Transparent,
+                            Color.White
+                        ),
+                        startX = 0f,
+                        endX = boxWidth
+                    )
+                )
+        )
+
+        // 🔥 LOOP TEXT (continuous)
+        Row(
+            modifier = Modifier.offset {
+                IntOffset(
+                    x = if (!ready || paused) 0 else -offsetX.toInt(),
+                    y = 0
+                )
+            }
+        ) {
+
+            Text(
+                text = "$text     ", // gap for smooth loop
+                fontSize = 16.sp,
+                fontWeight = FontWeight.Bold,
+                maxLines = 1,
+                style = TextStyle(
+                    brush = Brush.horizontalGradient(
+                        colors = listOf(
+                            Color.Red,
+                            Color.Magenta,
+                            Color.Green
+                        )
+                    )
+                ),
+                onTextLayout = {
+                    textWidth = it.size.width.toFloat()
+                }
+            )
+
+            Text(
+                text = text,
+                fontSize = 22.sp,
+                fontWeight = FontWeight.Bold,
+                maxLines = 1,
+                style = TextStyle(
+                    brush = Brush.horizontalGradient(
+                        colors = listOf(
+                            Color.Red,
+                            Color.Magenta,
+                            Color.Green
+                        )
+                    )
+                )
+            )
+        }
+    }
 }

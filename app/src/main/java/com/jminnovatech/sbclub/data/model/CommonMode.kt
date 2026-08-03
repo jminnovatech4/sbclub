@@ -109,6 +109,15 @@ data class ProfitGame(
 )
 
 data class MessageResponse(
+
     val status: Boolean,
-    val message: String
+
+    val message: String,
+
+    val upi_name: String = "",
+
+    val upi_id: String = "",
+
+    val qr_image: String = ""
+
 )

@@ -10,6 +10,9 @@ import com.jminnovatech.sbclub.repository.AppRepository
 import com.jminnovatech.sbclub.utils.*
 import com.jminnovatech.sbclub.utils.SessionManager
 import com.jminnovatech.sbclub.data.api.LoginResponse
+import android.content.Intent
+import android.net.Uri
+import android.widget.Toast
 
 class AuthVM : ViewModel() {
 
@@ -67,14 +70,82 @@ class AuthVM : ViewModel() {
     }
     var message by mutableStateOf("")
 
+    var upiName by mutableStateOf("")
+        private set
+
+    var upiId by mutableStateOf("")
+        private set
+
+    var qrImage by mutableStateOf("")
+        private set
     fun loadMessage(context: Context) {
+
         viewModelScope.launch {
+
             try {
+
                 val res = AppRepository(context).getAppMessage()
+
                 message = res.message
+
+                upiName = res.upi_name
+
+                upiId = res.upi_id
+
+                qrImage = res.qr_image
+
             } catch (e: Exception) {
+
                 message = ""
+
+                upiName = ""
+
+                upiId = ""
+
+                qrImage = ""
+
             }
+
         }
+
+    }
+    fun openUpi(
+        context: Context,
+        upiId: String,
+        upiName: String,
+        amount: String
+    ) {
+
+        try {
+
+            val uri = Uri.parse(
+                "upi://pay" +
+                        "?pa=$upiId" +
+                        "&pn=$upiName" +
+                        "&am=$amount" +
+                        "&cu=INR"
+            )
+
+            val intent = Intent(Intent.ACTION_VIEW, uri)
+
+            context.startActivity(
+                Intent.createChooser(
+                    intent,
+                    "Pay Using"
+                )
+            )
+
+        } catch (e: Exception) {
+
+            e.printStackTrace()
+
+            Toast.makeText(
+                context,
+                e.message ?: "No UPI App Found",
+                Toast.LENGTH_LONG
+            ).show()
+
+        }
+
     }
 }
