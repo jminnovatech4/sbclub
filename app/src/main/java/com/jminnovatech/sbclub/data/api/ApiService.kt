@@ -1,5 +1,7 @@
 package com.jminnovatech.sbclub.data.api
 
+import com.jminnovatech.sbclub.data.model.DepositRequest
+import com.jminnovatech.sbclub.data.model.DepositResponse
 import com.jminnovatech.sbclub.data.model.LedgerItem
 import com.jminnovatech.sbclub.data.model.MessageResponse
 import com.jminnovatech.sbclub.data.model.ProfileResponse
@@ -337,4 +339,9 @@ interface ApiService {
         @Body request: PublishAllRequest
 
     ): MessageResponse
+
+    @POST("wallet/request")
+    suspend fun depositRequest(
+        @Body body: DepositRequest
+    ): DepositResponse
 }

@@ -7,11 +7,19 @@ import com.jminnovatech.sbclub.navigation.AppNav
 import com.jminnovatech.sbclub.utils.NetworkMonitor
 
 class MainActivity : ComponentActivity() {
+
     override fun onCreate(savedInstanceState: Bundle?) {
+
         super.onCreate(savedInstanceState)
+
         NetworkMonitor.start(this)
+
         setContent {
+
             AppNav(this)
+
         }
+
     }
+
 }

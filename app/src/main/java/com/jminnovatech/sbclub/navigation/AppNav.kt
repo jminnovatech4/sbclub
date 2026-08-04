@@ -72,7 +72,19 @@ fun AppNav(context: Context) {
         // 🔹 OPTIONAL (KEEP FOR DIRECT NAV)
         composable("results") { ResultScreen() }
         composable("dashboard") {
-            DashboardScreen(nav, context)
+            DashboardScreen(
+
+                nav = nav,
+
+                context = context,
+
+                openDeposit = false,
+
+                sharedAmount = "",
+
+                sharedUtr = ""
+
+            )
         }
         composable(
             route = "pro_game/{gameId}"

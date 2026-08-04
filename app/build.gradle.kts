@@ -77,6 +77,7 @@ dependencies {
     implementation("com.google.accompanist:accompanist-swiperefresh:0.30.1")
     implementation("androidx.core:core-splashscreen:1.0.1")
     implementation("io.coil-kt:coil-compose:2.7.0")
+    implementation("io.coil-kt:coil-compose:2.7.0")
 
 // 🔥 Material 3
 

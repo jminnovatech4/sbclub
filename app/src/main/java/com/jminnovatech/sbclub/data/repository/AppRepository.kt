@@ -6,6 +6,7 @@ import com.jminnovatech.sbclub.utils.ApiState
 import retrofit2.HttpException
 import com.jminnovatech.sbclub.data.api.*
 import com.jminnovatech.sbclub.data.api.LoginResponse
+import com.jminnovatech.sbclub.data.model.DepositRequest
 import com.jminnovatech.sbclub.data.model.LedgerItem
 import com.jminnovatech.sbclub.data.model.MessageResponse
 import com.jminnovatech.sbclub.data.model.ProfileResponse
@@ -1170,5 +1171,67 @@ class AppRepository(private val context: Context) {
     ) =
 
         api.publishAll(request)
+
+    suspend fun depositRequest(
+        amount: Double,
+        transactionId: String
+    ): ApiState<String> {
+
+        return try {
+
+            val res = api.depositRequest(
+
+                DepositRequest(
+
+                    amount = amount,
+
+                    utr_no = transactionId,
+
+                    payment_method = "UPI"
+
+                )
+
+            )
+
+            if (res.status) {
+
+                ApiState.Success(res.message)
+
+            } else {
+
+                ApiState.Error(res.message)
+
+            }
+
+        } catch (e: retrofit2.HttpException) {
+
+            val errorBody = e.response()?.errorBody()?.string()
+
+            android.util.Log.e(
+                "DEPOSIT_API",
+                errorBody ?: "No Error Body"
+            )
+
+            ApiState.Error(
+                errorBody ?: "HTTP ${e.code()}"
+            )
+
+        } catch (e: Exception) {
+
+            android.util.Log.e(
+                "DEPOSIT_API",
+                e.stackTraceToString()
+            )
+
+            ApiState.Error(
+                e.message ?: "Unknown Error"
+            )
+
+        }
+
+    }
+
 }
+
+
 

@@ -68,6 +68,13 @@ import com.jminnovatech.sbclub.viewmodel.AuthVM
 fun DashboardScreen(
     nav: NavController,
     context: Context,
+
+    openDeposit: Boolean = false,
+
+    sharedAmount: String = "",
+
+    sharedUtr: String = "",
+
     vm: ProGameVM = remember { ProGameVM() }
 ) {
     val drawerState = rememberDrawerState(DrawerValue.Closed)
@@ -93,6 +100,15 @@ fun DashboardScreen(
     val scope = rememberCoroutineScope()
     var showDeposit by remember {
         mutableStateOf(false)
+    }
+    LaunchedEffect(openDeposit) {
+
+        if (openDeposit) {
+
+            showDeposit = true
+
+        }
+
     }
     LaunchedEffect(Unit) {
 
@@ -1003,6 +1019,10 @@ fun DashboardScreen(
                 DepositScreen(
 
                     context = context,
+
+                    amount = sharedAmount,
+
+                    transactionId = sharedUtr,
 
                     onClose = {
 

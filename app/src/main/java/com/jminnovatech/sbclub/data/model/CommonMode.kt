@@ -121,3 +121,20 @@ data class MessageResponse(
     val qr_image: String = ""
 
 )
+
+data class DepositRequest(
+
+    val amount: Double,
+
+    val utr_no: String,
+
+    val payment_method: String = "UPI"
+
+)
+data class DepositResponse(
+
+    val status: Boolean,
+
+    val message: String
+
+)

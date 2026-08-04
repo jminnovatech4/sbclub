@@ -123,7 +123,8 @@ class AuthVM : ViewModel() {
                         "?pa=$upiId" +
                         "&pn=$upiName" +
                         "&am=$amount" +
-                        "&cu=INR"
+                        "&cu=INR" +
+                        "&tn=SB Club Deposit"
             )
 
             val intent = Intent(Intent.ACTION_VIEW, uri)
@@ -144,6 +145,39 @@ class AuthVM : ViewModel() {
                 e.message ?: "No UPI App Found",
                 Toast.LENGTH_LONG
             ).show()
+
+        }
+
+    }
+
+    var depositState by mutableStateOf<ApiState<String>>(ApiState.Idle)
+        private set
+
+    fun submitDeposit(
+
+        context: Context,
+
+        amount: Double,
+
+        transactionId: String
+
+    ) {
+
+        viewModelScope.launch {
+
+            depositState = ApiState.Loading
+
+            depositState =
+
+                AppRepository(context)
+
+                    .depositRequest(
+
+                        amount,
+
+                        transactionId
+
+                    )
 
         }
 

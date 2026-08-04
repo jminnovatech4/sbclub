@@ -1,6 +1,7 @@
 package com.jminnovatech.sbclub.ui.screens
 
 import android.content.Context
+import android.widget.Toast
 import androidx.compose.foundation.layout.*
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Close
@@ -27,11 +28,17 @@ import androidx.compose.material.icons.filled.QrCode
 import androidx.compose.ui.platform.LocalClipboardManager
 import androidx.compose.ui.text.AnnotatedString
 import coil.compose.AsyncImage
+import com.jminnovatech.sbclub.utils.ApiState
+
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun DepositScreen(
 
     context: Context,
+
+    amount: String = "",
+
+    transactionId: String = "",
 
     onClose: () -> Unit
 
@@ -53,12 +60,51 @@ fun DepositScreen(
             upiId = authVM.upiId
         }
     }
-    var amount by remember {
-        mutableStateOf("")
+    var amountValue by remember {
+        mutableStateOf(amount)
     }
 
     var txnId by remember {
-        mutableStateOf("")
+        mutableStateOf(transactionId)
+    }
+    LaunchedEffect(authVM.depositState) {
+
+        when(val state = authVM.depositState){
+
+            is ApiState.Success -> {
+
+                Toast.makeText(
+
+                    context,
+
+                    state.data,
+
+                    Toast.LENGTH_SHORT
+
+                ).show()
+
+                onClose()
+
+            }
+
+            is ApiState.Error -> {
+
+                Toast.makeText(
+
+                    context,
+
+                    state.message,
+
+                    Toast.LENGTH_SHORT
+
+                ).show()
+
+            }
+
+            else -> {}
+
+        }
+
     }
     Scaffold(
 
@@ -238,11 +284,12 @@ fun DepositScreen(
 
             OutlinedTextField(
 
-                value = amount,
+                value = amountValue,
 
                 onValueChange = {
 
-                    amount = it.filter { c -> c.isDigit() }
+                    amountValue = it.filter { c -> c.isDigit() }
+
 
                 },
 
@@ -276,7 +323,7 @@ fun DepositScreen(
 
                         upiName = authVM.upiName,
 
-                        amount = amount
+                        amount = amountValue
 
                     )
 
@@ -320,14 +367,56 @@ fun DepositScreen(
                     .fillMaxWidth()
                     .height(56.dp),
 
-                enabled =
-                    amount.isNotBlank()
-                            &&
-                            txnId.isNotBlank(),
+//                enabled =
+//                    amountValue.isNotBlank() &&
+//                            txnId.isNotBlank(),
 
                 onClick = {
 
-                    // API next step
+                    if (amountValue.isBlank()) {
+
+                        Toast.makeText(
+                            context,
+                            "Enter Amount",
+                            Toast.LENGTH_SHORT
+                        ).show()
+
+                        return@Button
+                    }
+
+                    if (txnId.isBlank()) {
+
+                        Toast.makeText(
+                            context,
+                            "Enter Transaction ID",
+                            Toast.LENGTH_SHORT
+                        ).show()
+
+                        return@Button
+                    }
+
+                    val amt = amountValue.toDoubleOrNull()
+
+                    if (amt == null) {
+
+                        Toast.makeText(
+                            context,
+                            "Invalid Amount",
+                            Toast.LENGTH_SHORT
+                        ).show()
+
+                        return@Button
+                    }
+
+                    authVM.submitDeposit(
+
+                        context,
+
+                        amt,
+
+                        txnId
+
+                    )
 
                 }
 
