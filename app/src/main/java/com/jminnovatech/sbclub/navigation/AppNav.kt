@@ -22,7 +22,20 @@ import com.jminnovatech.sbclub.ui.screens.admin.game.ResultPanelScreen
 import com.jminnovatech.sbclub.viewmodel.AdminVM
 @RequiresApi(Build.VERSION_CODES.O)
 @Composable
-fun AppNav(context: Context) {
+fun AppNav(
+    context: Context,
+
+    openDeposit: Boolean = false,
+
+    sharedAmount: String = "",
+
+    sharedUtr: String = "",
+
+    receiptText: String = "",
+
+    upiApp: String = ""
+
+) {
 
     val nav = rememberNavController()
 
@@ -72,19 +85,21 @@ fun AppNav(context: Context) {
         // 🔹 OPTIONAL (KEEP FOR DIRECT NAV)
         composable("results") { ResultScreen() }
         composable("dashboard") {
+
             DashboardScreen(
 
                 nav = nav,
 
                 context = context,
 
-                openDeposit = false,
+                openDeposit = openDeposit,
 
-                sharedAmount = "",
+                sharedAmount = sharedAmount,
 
-                sharedUtr = ""
+                sharedUtr = sharedUtr
 
             )
+
         }
         composable(
             route = "pro_game/{gameId}"

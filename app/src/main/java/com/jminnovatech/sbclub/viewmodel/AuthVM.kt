@@ -182,4 +182,10 @@ class AuthVM : ViewModel() {
         }
 
     }
+
+    fun clearDepositState() {
+
+        depositState = ApiState.Idle
+
+    }
 }

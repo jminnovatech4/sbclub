@@ -101,9 +101,9 @@ fun DashboardScreen(
     var showDeposit by remember {
         mutableStateOf(false)
     }
-    LaunchedEffect(openDeposit) {
+    LaunchedEffect(sharedUtr) {
 
-        if (openDeposit) {
+        if (sharedUtr.isNotBlank()) {
 
             showDeposit = true
 
