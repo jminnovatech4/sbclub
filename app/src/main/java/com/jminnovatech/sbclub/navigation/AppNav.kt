@@ -25,6 +25,8 @@ import com.jminnovatech.sbclub.viewmodel.AdminVM
 fun AppNav(
     context: Context,
 
+    startDestination: String = "splash",
+
     openDeposit: Boolean = false,
 
     sharedAmount: String = "",
@@ -39,7 +41,10 @@ fun AppNav(
 
     val nav = rememberNavController()
 
-    NavHost(navController = nav, startDestination = "splash") {
+    NavHost(
+        navController = nav,
+        startDestination = startDestination
+    ) {
 
         // 🔹 SPLASH
         composable("splash") { SplashScreen(nav, context) }

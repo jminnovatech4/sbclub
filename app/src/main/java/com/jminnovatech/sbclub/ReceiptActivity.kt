@@ -3,28 +3,71 @@ package com.jminnovatech.sbclub
 import android.content.Intent
 import android.os.Bundle
 import androidx.activity.ComponentActivity
-
+import android.net.Uri
+import android.widget.Toast
+import com.google.mlkit.vision.common.InputImage
+import com.google.mlkit.vision.text.TextRecognition
+import com.google.mlkit.vision.text.latin.TextRecognizerOptions
+import com.jminnovatech.sbclub.utils.ReceiptParser
 class ReceiptActivity : ComponentActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
 
         super.onCreate(savedInstanceState)
 
-        val receipt = intent.getStringExtra(Intent.EXTRA_TEXT) ?: ""
+        when {
 
-        val amount = extractAmount(receipt)
+            intent.type == "text/plain" -> {
 
-        val utr = extractUTR(receipt)
+                handleText()
 
-        val app = detectApp(receipt)
+            }
+
+            intent.type?.startsWith("image/") == true -> {
+
+                handleImage()
+
+            }
+
+            else -> {
+
+                Toast.makeText(
+                    this,
+                    "Unsupported Share",
+                    Toast.LENGTH_SHORT
+                ).show()
+
+                finish()
+
+            }
+
+        }
+
+    }
+    private fun handleText() {
+
+        val receipt =
+
+            intent.getStringExtra(Intent.EXTRA_TEXT) ?: ""
+
+        processReceipt(receipt)
+
+    }
+    private fun processReceipt(text: String) {
+
+        val result = ReceiptParser.parse(text)
 
         val i = Intent(this, MainActivity::class.java)
 
-        i.putExtra("receipt_text", receipt)
-        i.putExtra("amount", amount)
-        i.putExtra("utr", utr)
-        i.putExtra("upi_app", app)
         i.putExtra("open_deposit", true)
+
+        i.putExtra("amount", result.amount)
+
+        i.putExtra("utr", result.utr)
+
+        i.putExtra("upi_app", result.app)
+
+        i.putExtra("receipt_text", result.rawText)
 
         i.flags =
             Intent.FLAG_ACTIVITY_CLEAR_TOP or
@@ -33,43 +76,99 @@ class ReceiptActivity : ComponentActivity() {
         startActivity(i)
 
         finish()
+
     }
+    private fun handleImage() {
 
-    private fun extractAmount(text: String): String {
+        val uri =
+            intent.getParcelableExtra<Uri>(Intent.EXTRA_STREAM)
 
-        val regex = Regex("₹\\s?([0-9]+(?:\\.[0-9]{1,2})?)")
+        if (uri == null) {
 
-        return regex.find(text)
-            ?.groupValues
-            ?.getOrNull(1)
-            ?: ""
-    }
+            Toast.makeText(
+                this,
+                "Image not found",
+                Toast.LENGTH_SHORT
+            ).show()
 
-    private fun extractUTR(text: String): String {
+            finish()
 
-        val regex = Regex("\\b\\d{12,18}\\b")
-
-        return regex.find(text)
-            ?.value
-            ?: ""
-    }
-
-    private fun detectApp(text: String): String {
-
-        val t = text.lowercase()
-
-        return when {
-
-            "phonepe" in t -> "PhonePe"
-
-            "google pay" in t || "gpay" in t -> "Google Pay"
-
-            "paytm" in t -> "Paytm"
-
-            "bhim" in t -> "BHIM"
-
-            else -> "UPI"
+            return
 
         }
+
+        recognizeReceipt(uri)
+
     }
+    private fun recognizeReceipt(uri: Uri) {
+
+        try {
+
+            val image = InputImage.fromFilePath(this, uri)
+
+            val recognizer = TextRecognition.getClient(
+                TextRecognizerOptions.DEFAULT_OPTIONS
+            )
+
+            recognizer.process(image)
+
+                .addOnSuccessListener { visionText ->
+
+                    if (visionText.text.isBlank()) {
+
+                        Toast.makeText(
+                            this,
+                            "No text found in receipt",
+                            Toast.LENGTH_SHORT
+                        ).show()
+
+                        finish()
+
+                        return@addOnSuccessListener
+                    }
+
+                    // 🔥 পুরো OCR Text Logcat এ দেখাবে
+                    android.util.Log.d(
+                        "OCR_TEXT",
+                        visionText.text
+                    )
+
+                    // 🔥 পুরো OCR Text Screen এ দেখাবে
+                    Toast.makeText(
+                        this,
+                        visionText.text,
+                        Toast.LENGTH_LONG
+                    ).show()
+
+                    processReceipt(
+                        visionText.text
+                    )
+                }
+
+                .addOnFailureListener {
+
+                    Toast.makeText(
+                        this,
+                        "OCR Failed",
+                        Toast.LENGTH_SHORT
+                    ).show()
+
+                    finish()
+
+                }
+
+        } catch (e: Exception) {
+
+            Toast.makeText(
+                this,
+                "Unable to read receipt",
+                Toast.LENGTH_LONG
+            ).show()
+
+            finish()
+
+        }
+
+    }
+
 }
