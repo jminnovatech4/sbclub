@@ -19,7 +19,17 @@ import kotlinx.coroutines.delay
 import com.jminnovatech.sbclub.utils.SessionManager
 import com.jminnovatech.sbclub.R
 @Composable
-fun SplashScreen(nav: NavController, context: Context) {
+fun SplashScreen(
+    nav: NavController,
+
+    context: Context,
+
+    openDeposit: Boolean = false,
+
+    sharedAmount: String = "",
+
+    sharedUtr: String = ""
+) {
 
     val session = SessionManager(context)
 
@@ -74,8 +84,30 @@ fun SplashScreen(nav: NavController, context: Context) {
             "master" -> nav.navigate("master") {
                 popUpTo("splash") { inclusive = true }
             }
-            "user" -> nav.navigate("dashboard") {
-                popUpTo("splash") { inclusive = true }
+            "user" -> {
+
+                nav.currentBackStackEntry
+                    ?.savedStateHandle
+                    ?.set("openDeposit", openDeposit)
+
+                nav.currentBackStackEntry
+                    ?.savedStateHandle
+                    ?.set("sharedAmount", sharedAmount)
+
+                nav.currentBackStackEntry
+                    ?.savedStateHandle
+                    ?.set("sharedUtr", sharedUtr)
+
+                nav.navigate("dashboard") {
+
+                    popUpTo("splash") {
+
+                        inclusive = true
+
+                    }
+
+                }
+
             }
             else -> nav.navigate("login") {
                 popUpTo("splash") { inclusive = true }

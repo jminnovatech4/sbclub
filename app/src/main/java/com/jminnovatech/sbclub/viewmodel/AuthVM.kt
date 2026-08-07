@@ -13,6 +13,7 @@ import com.jminnovatech.sbclub.data.api.LoginResponse
 import android.content.Intent
 import android.net.Uri
 import android.widget.Toast
+import com.jminnovatech.sbclub.data.model.WalletRequest
 
 class AuthVM : ViewModel() {
 
@@ -187,5 +188,18 @@ class AuthVM : ViewModel() {
 
         depositState = ApiState.Idle
 
+    }
+
+    var depositHistoryState by mutableStateOf<ApiState<List<WalletRequest>>>(
+        ApiState.Loading
+    )
+
+    fun loadDepositHistory(context: Context) {
+        viewModelScope.launch {
+            depositHistoryState = ApiState.Loading
+
+            // 'repo' এর বদলে AppRepository(context) ব্যবহার করুন
+            depositHistoryState = AppRepository(context).getDepositHistory()
+        }
     }
 }

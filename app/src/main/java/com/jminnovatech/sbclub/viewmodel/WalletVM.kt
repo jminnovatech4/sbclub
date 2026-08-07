@@ -12,10 +12,12 @@ import com.jminnovatech.sbclub.data.model.Payment
 import com.jminnovatech.sbclub.data.model.ProfileResponse
 import com.jminnovatech.sbclub.data.model.ResultWithBetResponse
 import com.jminnovatech.sbclub.data.model.SummaryResponse
+import com.jminnovatech.sbclub.data.model.WalletRequest
 import com.jminnovatech.sbclub.data.model.WithdrawItem
 import com.jminnovatech.sbclub.repository.AppRepository
 import com.jminnovatech.sbclub.utils.ApiState
 import kotlinx.coroutines.launch
+
 
 class WalletVM(private val repo: AppRepository) : ViewModel() {
 
@@ -122,4 +124,10 @@ class WalletVM(private val repo: AppRepository) : ViewModel() {
             profileState = repo.getProfile()
         }
     }
+
+    // ======================================
+// DEPOSIT HISTORY
+// ======================================
+
+
 }

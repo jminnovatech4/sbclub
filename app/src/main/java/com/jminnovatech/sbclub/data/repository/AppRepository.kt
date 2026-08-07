@@ -15,6 +15,7 @@ import com.jminnovatech.sbclub.data.model.ResultWithBetResponse
 import com.jminnovatech.sbclub.data.model.RoundItem
 import com.jminnovatech.sbclub.data.model.RoundItemUI
 import com.jminnovatech.sbclub.data.model.SummaryResponse
+import com.jminnovatech.sbclub.data.model.WalletRequest
 import com.jminnovatech.sbclub.data.model.WithdrawItem
 import com.jminnovatech.sbclub.data.model.admin.MasterReportResponse
 import com.jminnovatech.sbclub.data.model.admin.PendingResponse
@@ -1230,6 +1231,32 @@ class AppRepository(private val context: Context) {
         }
 
     }
+    suspend fun getDepositHistory(): ApiState<List<WalletRequest>> {
+
+        return try {
+
+            val res = api.getDepositHistory()
+
+            if (res.status) {
+
+                ApiState.Success(res.data)
+
+            } else {
+
+                ApiState.Error("No Deposit History")
+
+            }
+
+        } catch (e: Exception) {
+
+            ApiState.Error(
+                NetworkErrorHandler.getMessage(e)
+            )
+
+        }
+
+    }
+
 
 }
 

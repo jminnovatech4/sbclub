@@ -138,3 +138,26 @@ data class DepositResponse(
     val message: String
 
 )
+data class WalletRequest(
+
+    val id: Int,
+
+    val amount: String,
+
+    val utr_no: String,
+
+    val payment_method: String,
+
+    val status: String,
+
+    val created_at: String
+
+)
+
+data class WalletHistoryResponse(
+
+    val status: Boolean,
+
+    val data: List<WalletRequest>
+
+)

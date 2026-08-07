@@ -42,7 +42,23 @@ fun AppNav(
     NavHost(navController = nav, startDestination = "splash") {
 
         // 🔹 SPLASH
-        composable("splash") { SplashScreen(nav, context) }
+        composable("splash") {
+
+            SplashScreen(
+
+                nav = nav,
+
+                context = context,
+
+                openDeposit = openDeposit,
+
+                sharedAmount = sharedAmount,
+
+                sharedUtr = sharedUtr
+
+            )
+
+        }
 
         // 🔹 LOGIN
         composable("login") { LoginScreen(nav, context) }

@@ -9,6 +9,7 @@ import com.jminnovatech.sbclub.data.model.ProfitListResponse
 import com.jminnovatech.sbclub.data.model.ResultWithBetResponse
 import com.jminnovatech.sbclub.data.model.RoundItem
 import com.jminnovatech.sbclub.data.model.SummaryResponse
+import com.jminnovatech.sbclub.data.model.WalletHistoryResponse
 import com.jminnovatech.sbclub.data.model.WithdrawResponse
 import com.jminnovatech.sbclub.data.model.admin.MasterReportResponse
 import com.jminnovatech.sbclub.data.model.admin.PendingResponse
@@ -344,4 +345,15 @@ interface ApiService {
     suspend fun depositRequest(
         @Body body: DepositRequest
     ): DepositResponse
+
+    @GET("deposit/history")
+    suspend fun getDepositHistory(): WalletHistoryResponse
+
+    
+    
+    
+    
+    
+    
+    
 }
