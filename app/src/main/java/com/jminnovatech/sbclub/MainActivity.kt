@@ -4,17 +4,11 @@ import android.content.Intent
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
-import androidx.compose.runtime.mutableStateOf
 import com.jminnovatech.sbclub.navigation.AppNav
 import com.jminnovatech.sbclub.utils.NetworkMonitor
+import com.jminnovatech.sbclub.utils.SessionManager
 
 class MainActivity : ComponentActivity() {
-
-    private val openDeposit = mutableStateOf(false)
-    private val sharedAmount = mutableStateOf("")
-    private val sharedUtr = mutableStateOf("")
-    private val receiptText = mutableStateOf("")
-    private val upiApp = mutableStateOf("")
 
     override fun onCreate(savedInstanceState: Bundle?) {
 
@@ -22,27 +16,7 @@ class MainActivity : ComponentActivity() {
 
         NetworkMonitor.start(this)
 
-        readIntent(intent)
-
-        setContent {
-
-            AppNav(
-
-                context = this,
-
-                openDeposit = openDeposit.value,
-
-                sharedAmount = sharedAmount.value,
-
-                sharedUtr = sharedUtr.value,
-
-                receiptText = receiptText.value,
-
-                upiApp = upiApp.value
-
-            )
-
-        }
+        openScreen(intent)
 
     }
 
@@ -52,26 +26,62 @@ class MainActivity : ComponentActivity() {
 
         setIntent(intent)
 
-        readIntent(intent)
+        openScreen(intent)
 
     }
 
-    private fun readIntent(intent: Intent?) {
+    private fun openScreen(intent: Intent?) {
 
-        openDeposit.value =
+        val openDeposit =
             intent?.getBooleanExtra("open_deposit", false) ?: false
 
-        sharedAmount.value =
+        val amount =
             intent?.getStringExtra("amount") ?: ""
 
-        sharedUtr.value =
+        val utr =
             intent?.getStringExtra("utr") ?: ""
 
-        receiptText.value =
+        val receipt =
             intent?.getStringExtra("receipt_text") ?: ""
 
-        upiApp.value =
+        val upiApp =
             intent?.getStringExtra("upi_app") ?: ""
+
+        val session = SessionManager(this)
+
+        setContent {
+
+            if (openDeposit) {
+
+                AppNav(
+
+                    context = this,
+
+                    startDestination = "dashboard",
+
+                    openDeposit = true,
+
+                    sharedAmount = amount,
+
+                    sharedUtr = utr,
+
+                    receiptText = receipt,
+
+                    upiApp = upiApp
+
+                )
+
+            } else {
+
+                AppNav(
+
+                    context = this
+
+                )
+
+            }
+
+        }
 
     }
 

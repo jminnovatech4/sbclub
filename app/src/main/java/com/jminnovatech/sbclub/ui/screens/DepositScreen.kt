@@ -46,14 +46,34 @@ fun DepositScreen(
     val clipboard = LocalClipboardManager.current
 
     var upiId by remember { mutableStateOf("") }
-    var amountValue by remember { mutableStateOf(amount) }
-    var txnId by remember { mutableStateOf(transactionId) }
 
     // Dialog & Loading State
     var showSuccessDialog by remember { mutableStateOf(false) }
     var successMessage by remember { mutableStateOf("") }
     var isLoading by remember { mutableStateOf(false) }
+    var amountValue by remember {
+        mutableStateOf("")
+    }
 
+    var txnId by remember {
+        mutableStateOf("")
+    }
+
+    LaunchedEffect(amount, transactionId) {
+
+        if (amountValue.isBlank() && amount.isNotBlank()) {
+
+            amountValue = amount
+
+        }
+
+        if (txnId.isBlank() && transactionId.isNotBlank()) {
+
+            txnId = transactionId
+
+        }
+
+    }
     LaunchedEffect(Unit) {
         authVM.loadMessage(context)
     }
@@ -241,7 +261,13 @@ fun DepositScreen(
                         OutlinedTextField(
                             value = amountValue,
                             onValueChange = {
-                                amountValue = it.filter(Char::isDigit).take(6)
+                                amountValue =
+
+                                    it.filter {
+
+                                        it.isDigit() || it == '.'
+
+                                    }.take(8)
                             },
                             modifier = Modifier.fillMaxWidth(),
                             label = { Text("Amount (₹)") },
@@ -285,12 +311,72 @@ fun DepositScreen(
                         HorizontalDivider(color = Color(0xFFE2E8F0))
 
                         Spacer(Modifier.height(20.dp))
+                        if (amountValue.isNotBlank() || txnId.isNotBlank()) {
 
+                            Card(
+
+                                modifier = Modifier.fillMaxWidth(),
+
+                                colors = CardDefaults.cardColors(
+
+                                    containerColor = Color(0xFFE8F5E9)
+
+                                )
+
+                            ) {
+
+                                Column(
+
+                                    modifier = Modifier.padding(14.dp)
+
+                                ) {
+
+                                    Text(
+
+                                        text = "Receipt Detected",
+
+                                        color = Color(0xFF2E7D32),
+
+                                        fontWeight = FontWeight.Bold
+
+                                    )
+
+                                    Spacer(Modifier.height(6.dp))
+
+                                    if (amountValue.isNotBlank()) {
+
+                                        Text(
+
+                                            "Amount : ₹$amountValue"
+
+                                        )
+
+                                    }
+
+                                    if (txnId.isNotBlank()) {
+
+                                        Text(
+
+                                            "UTR : $txnId"
+
+                                        )
+
+                                    }
+
+                                }
+
+                            }
+
+                            Spacer(Modifier.height(15.dp))
+
+                        }
                         // 5. UTR Auto Uppercase
                         OutlinedTextField(
                             value = txnId,
                             onValueChange = {
-                                txnId = it.uppercase()
+                                txnId = it
+                                    .uppercase()
+                                    .replace(" ", "")
                             },
                             modifier = Modifier.fillMaxWidth(),
                             label = { Text("Transaction / UTR Number") },
