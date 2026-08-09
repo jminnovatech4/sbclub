@@ -60,6 +60,7 @@ dependencies {
     implementation(libs.androidx.ink.brush)
     implementation(libs.androidx.compose.ui.text)
     implementation(libs.androidx.animation)
+    implementation(libs.play.services.mlkit.text.recognition.common)
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)

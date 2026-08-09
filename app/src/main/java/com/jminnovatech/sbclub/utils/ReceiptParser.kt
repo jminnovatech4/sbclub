@@ -19,180 +19,341 @@ object ReceiptParser {
         )
     }
 
+    // =========================================================
+    // AMOUNT
+    // =========================================================
+
     private fun findAmount(text: String): String {
 
-        val lines = text.lines()
+        val lines = text
+            .replace("\r", "")
+            .lines()
+            .map { it.trim() }
+            .filter { it.isNotBlank() }
 
-        // ==========================
-        // ₹ Amount
-        // ==========================
-        lines.forEach { line ->
+        // =====================================================
+        // 1. ₹100
+        // 2. ₹ 100
+        // 3. ₹1,000
+        // 4. ₹ 1,000.00
+        // =====================================================
 
-            val match = Regex(
-                "₹\\s*([0-9,]+(?:\\.[0-9]{1,2})?)"
-            ).find(line)
+        val rupeeRegex = Regex(
+            "₹\\s*([0-9,]+(?:\\.[0-9]{1,2})?)"
+        )
 
-            if (match != null) {
+        for (line in lines) {
 
-                return match.groupValues[1]
-                    .replace(",", "")
-                    .replace(".00", "")
-            }
-        }
-
-        // ==========================
-        // Rs Amount
-        // ==========================
-        lines.forEach { line ->
-
-            val match = Regex(
-                "Rs\\.?\\s*([0-9,]+)",
-                RegexOption.IGNORE_CASE
-            ).find(line)
+            val match = rupeeRegex.find(line)
 
             if (match != null) {
 
-                return match.groupValues[1]
-                    .replace(",", "")
+                return cleanAmount(
+                    match.groupValues[1]
+                )
             }
         }
 
-        // ==========================
-        // INR Amount
-        // ==========================
-        lines.forEach { line ->
+        // =====================================================
+        // 2. Rs 100
+        // =====================================================
 
-            val match = Regex(
-                "INR\\s*([0-9,]+)",
-                RegexOption.IGNORE_CASE
-            ).find(line)
+        val rsRegex = Regex(
+            "\\bRs\\.?\\s*([0-9,]+(?:\\.[0-9]{1,2})?)",
+            RegexOption.IGNORE_CASE
+        )
+
+        for (line in lines) {
+
+            val match = rsRegex.find(line)
 
             if (match != null) {
 
-                return match.groupValues[1]
-                    .replace(",", "")
+                return cleanAmount(
+                    match.groupValues[1]
+                )
             }
         }
 
-        // ==========================
-        // Amount :
-        // ==========================
-        lines.forEach { line ->
+        // =====================================================
+        // 3. INR 100
+        // =====================================================
 
-            val match = Regex(
-                "Amount\\D*([0-9,]+)",
-                RegexOption.IGNORE_CASE
-            ).find(line)
+        val inrRegex = Regex(
+            "\\bINR\\s*([0-9,]+(?:\\.[0-9]{1,2})?)",
+            RegexOption.IGNORE_CASE
+        )
+
+        for (line in lines) {
+
+            val match = inrRegex.find(line)
 
             if (match != null) {
 
-                return match.groupValues[1]
-                    .replace(",", "")
+                return cleanAmount(
+                    match.groupValues[1]
+                )
             }
         }
 
-        // ==========================
-        // Paid :
-        // ==========================
-        lines.forEach { line ->
+        // =====================================================
+        // 4. Amount ₹100
+        // =====================================================
 
-            val match = Regex(
-                "Paid\\D*([0-9,]+)",
-                RegexOption.IGNORE_CASE
-            ).find(line)
+        val amountRegex = Regex(
+            "Amount\\D{0,20}(?:₹|Rs\\.?|INR)?\\s*([0-9,]+(?:\\.[0-9]{1,2})?)",
+            RegexOption.IGNORE_CASE
+        )
+
+        val amountMatch = amountRegex.find(text)
+
+        if (amountMatch != null) {
+
+            return cleanAmount(
+                amountMatch.groupValues[1]
+            )
+        }
+
+        // =====================================================
+        // 5. Paid ₹100
+        // =====================================================
+
+        val paidRegex = Regex(
+            "Paid\\D{0,20}(?:₹|Rs\\.?|INR)?\\s*([0-9,]+(?:\\.[0-9]{1,2})?)",
+            RegexOption.IGNORE_CASE
+        )
+
+        val paidMatch = paidRegex.find(text)
+
+        if (paidMatch != null) {
+
+            return cleanAmount(
+                paidMatch.groupValues[1]
+            )
+        }
+
+        // =====================================================
+        // 6. You paid 100
+        // =====================================================
+
+        val youPaidRegex = Regex(
+            "You\\s+paid\\D{0,20}(?:₹|Rs\\.?|INR)?\\s*([0-9,]+(?:\\.[0-9]{1,2})?)",
+            RegexOption.IGNORE_CASE
+        )
+
+        val youPaidMatch = youPaidRegex.find(text)
+
+        if (youPaidMatch != null) {
+
+            return cleanAmount(
+                youPaidMatch.groupValues[1]
+            )
+        }
+
+        // =====================================================
+        // 7. OCR comma amount
+        //
+        // Example:
+        // 1,000
+        // 5,210
+        // 10,000
+        // =====================================================
+
+        val commaAmountRegex = Regex(
+            "\\b([0-9]{1,3}(?:,[0-9]{2,3})+)\\b"
+        )
+
+        for (line in lines) {
+
+            val match = commaAmountRegex.find(line)
 
             if (match != null) {
 
-                return match.groupValues[1]
-                    .replace(",", "")
-            }
-        }
+                val value = cleanAmount(match.value)
 
-        // ==========================
-        // PhonePe / GPay fallback
-        // e.g. 5,210
-        // ==========================
-        lines.forEach { line ->
+                val number = value.toDoubleOrNull()
 
-            val match = Regex(
-                "\\b([0-9]{1,3}(?:,[0-9]{3})+)\\b"
-            ).find(line)
+                if (number != null && number >= 10) {
 
-            if (match != null) {
-
-                return match.value
-                    .replace(",", "")
-            }
-        }
-
-        // ==========================
-        // Last Fallback
-        // ==========================
-        val clean = text.replace("\n", " ")
-
-        Regex("\\b([0-9]{2,6})\\b")
-            .findAll(clean)
-            .forEach {
-
-                val value =
-                    it.groupValues[1].toInt()
-
-                if (value in 10..1000000) {
-
-                    return value.toString()
-
+                    return value
                 }
-
             }
+        }
+
+        // =====================================================
+        // 8. OCR may convert ₹100 into just 100
+        //
+        // IMPORTANT:
+        // Do NOT blindly take the first number.
+        // First avoid UTR / transaction numbers.
+        // =====================================================
+
+        for (line in lines) {
+
+            val normalized = line
+                .replace(",", "")
+                .trim()
+
+            if (
+                Regex(
+                    "^[0-9]{1,6}(?:\\.[0-9]{1,2})?$"
+                ).matches(normalized)
+            ) {
+
+                val number =
+                    normalized.toDoubleOrNull()
+
+                if (
+                    number != null &&
+                    number >= 10 &&
+                    number <= 1000000
+                ) {
+
+                    return cleanAmount(normalized)
+                }
+            }
+        }
+
+        // =====================================================
+        // 9. Last fallback
+        // =====================================================
+
+        val numberRegex = Regex(
+            "\\b[0-9]{2,6}(?:\\.[0-9]{1,2})?\\b"
+        )
+
+        val candidates = numberRegex
+            .findAll(text)
+            .map { it.value }
+            .toList()
+
+        for (value in candidates) {
+
+            val number = value.toDoubleOrNull()
+
+            if (
+                number != null &&
+                number >= 10 &&
+                number <= 1000000
+            ) {
+
+                // Avoid obvious UTR-sized values
+                if (value.length < 10) {
+                    return cleanAmount(value)
+                }
+            }
+        }
 
         return ""
-
     }
+
+    // =========================================================
+    // CLEAN AMOUNT
+    // =========================================================
+
+    private fun cleanAmount(value: String): String {
+
+        return value
+            .replace(",", "")
+            .replace("₹", "")
+            .trim()
+            .removeSuffix(".00")
+    }
+
+    // =========================================================
+    // UTR
+    // =========================================================
 
     private fun findUTR(text: String): String {
 
-        val patterns = listOf(
+        // =====================================================
+        // UTR
+        // =====================================================
 
-            Regex(
-                "UTR\\s*(No|Number)?\\s*[:\\-]?\\s*([A-Za-z0-9]{10,30})",
-                RegexOption.IGNORE_CASE
-            ),
-
-            Regex(
-                "UPI\\s*Ref(?:erence)?\\s*(No|Number)?\\s*[:\\-]?\\s*([A-Za-z0-9]{10,30})",
-                RegexOption.IGNORE_CASE
-            ),
-
-            Regex(
-                "Transaction\\s*(ID|No|Number)?\\s*[:\\-]?\\s*([A-Za-z0-9]{10,30})",
-                RegexOption.IGNORE_CASE
-            ),
-
-            Regex(
-                "Ref(?:erence)?\\s*(No|Number)?\\s*[:\\-]?\\s*([A-Za-z0-9]{10,30})",
-                RegexOption.IGNORE_CASE
-            )
-
+        val utrRegex = Regex(
+            "UTR\\s*(?:No|Number|ID)?\\s*[:\\-]?\\s*([A-Za-z0-9]{10,30})",
+            RegexOption.IGNORE_CASE
         )
 
-        patterns.forEach {
+        val utrMatch = utrRegex.find(text)
 
-            val m = it.find(text)
+        if (utrMatch != null) {
 
-            if (m != null) {
-
-                return m.groupValues.last()
-
-            }
-
+            return utrMatch.groupValues[1]
         }
+
+        // =====================================================
+        // UPI Reference
+        // =====================================================
+
+        val upiReferenceRegex = Regex(
+            "UPI\\s*Ref(?:erence)?\\s*(?:No|Number|ID)?\\s*[:\\-]?\\s*([A-Za-z0-9]{10,30})",
+            RegexOption.IGNORE_CASE
+        )
+
+        val upiMatch =
+            upiReferenceRegex.find(text)
+
+        if (upiMatch != null) {
+
+            return upiMatch.groupValues[1]
+        }
+
+        // =====================================================
+        // Transaction ID
+        // =====================================================
+
+        val transactionRegex = Regex(
+            "Transaction\\s*(?:ID|No|Number)?\\s*[:\\-]?\\s*([A-Za-z0-9]{10,30})",
+            RegexOption.IGNORE_CASE
+        )
+
+        val transactionMatch =
+            transactionRegex.find(text)
+
+        if (transactionMatch != null) {
+
+            return transactionMatch.groupValues[1]
+        }
+
+        // =====================================================
+        // Reference
+        // =====================================================
+
+        val referenceRegex = Regex(
+            "Ref(?:erence)?\\s*(?:No|Number|ID)?\\s*[:\\-]?\\s*([A-Za-z0-9]{10,30})",
+            RegexOption.IGNORE_CASE
+        )
+
+        val referenceMatch =
+            referenceRegex.find(text)
+
+        if (referenceMatch != null) {
+
+            return referenceMatch.groupValues[1]
+        }
+
+        // =====================================================
+        // Pure numeric UTR
+        // =====================================================
 
         val digitRegex =
             Regex("\\b\\d{12,18}\\b")
 
-        return digitRegex.find(text)?.value ?: ""
+        val digitMatch =
+            digitRegex.find(text)
 
+        if (digitMatch != null) {
+
+            return digitMatch.value
+        }
+
+        return ""
     }
+
+    // =========================================================
+    // APP DETECTION
+    // =========================================================
 
     private fun findApp(text: String): String {
 
@@ -200,22 +361,26 @@ object ReceiptParser {
 
         return when {
 
-            "google pay" in t -> "Google Pay"
+            "google pay" in t ->
+                "Google Pay"
 
-            "gpay" in t -> "Google Pay"
+            "gpay" in t ->
+                "Google Pay"
 
-            "phonepe" in t -> "PhonePe"
+            "phonepe" in t ->
+                "PhonePe"
 
-            "paytm" in t -> "Paytm"
+            "paytm" in t ->
+                "Paytm"
 
-            "bhim" in t -> "BHIM"
+            "bhim" in t ->
+                "BHIM"
 
-            "amazon pay" in t -> "Amazon Pay"
+            "amazon pay" in t ->
+                "Amazon Pay"
 
-            else -> "UPI"
-
+            else ->
+                "UPI"
         }
-
     }
-
 }
