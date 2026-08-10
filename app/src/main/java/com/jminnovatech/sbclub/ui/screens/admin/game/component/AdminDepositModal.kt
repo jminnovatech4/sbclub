@@ -703,6 +703,8 @@ fun AdminDepositPendingCard(
 
                 showApproveConfirm = false
 
+                walletVM.clearDepositActionState()
+
                 walletVM.loadAdminDepositPending()
 
                 walletVM.loadAdminDepositHistory()
@@ -715,6 +717,8 @@ fun AdminDepositPendingCard(
                     "Approve failed: ${approveState.message}",
                     Toast.LENGTH_LONG
                 ).show()
+
+                walletVM.clearDepositActionState()
             }
 
             else -> {}

@@ -254,7 +254,7 @@ class WalletVM(private val repo: AppRepository) : ViewModel() {
 
         }
     }
-    fun clearDepositAction() {
+    fun clearDepositActionState() {
 
         depositActionState = null
 
