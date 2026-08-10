@@ -349,8 +349,27 @@ interface ApiService {
     @GET("deposit/history")
     suspend fun getDepositHistory(): WalletHistoryResponse
 
-    
-    
+
+    // =====================================
+// ADMIN DEPOSIT
+// =====================================
+
+    @GET("admin/deposit/pending")
+    suspend fun getAdminPendingDeposits(): WalletHistoryResponse
+
+    @GET("admin/deposit/history")
+    suspend fun getAdminDepositHistory(): WalletHistoryResponse
+
+    @POST("admin/deposit/{id}/approve")
+    suspend fun approveDeposit(
+        @Path("id") id: Int,
+        @Body body: Map<String, Double>
+    ): CommonResponse
+
+    @POST("admin/deposit/{id}/reject")
+    suspend fun rejectDeposit(
+        @Path("id") id: Int
+    ): CommonResponse
     
     
     

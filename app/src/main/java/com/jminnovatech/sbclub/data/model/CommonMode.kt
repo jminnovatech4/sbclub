@@ -141,7 +141,7 @@ data class DepositResponse(
 data class WalletRequest(
 
     val id: Int,
-
+    val user_id: Int,
     val amount: String,
 
     val utr_no: String,

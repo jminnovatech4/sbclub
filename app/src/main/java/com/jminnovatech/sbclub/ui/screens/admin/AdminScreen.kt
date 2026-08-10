@@ -46,7 +46,7 @@ import java.util.*
 import android.app.DatePickerDialog
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
-
+import com.jminnovatech.sbclub.ui.screens.admin.game.components.AdminDepositModal
 
 
 fun parseTime(time:String): Long{
@@ -104,7 +104,9 @@ fun AdminScreen(nav: NavController ) {
     var showPattiListDialog by remember { mutableStateOf(false) }
 
     var showWithdraw by remember { mutableStateOf(false) }
-
+    var showDeposit by remember {
+        mutableStateOf(false)
+    }
     var showProfitModal by remember { mutableStateOf(false) }
     val walletVM: WalletVM = viewModel(
         factory = WalletVMFactory.WalletVMFactory(context)
@@ -242,7 +244,21 @@ fun AdminScreen(nav: NavController ) {
                         walletVM.loadPending()   // 🔥 load admin pending
                         showWithdraw = true
                     }
+                    DrawerItem(
+                        "Deposit Management",
+                        Icons.Default.AddCard
+                    ) {
 
+                        walletVM.loadAdminDepositPending()
+
+                        walletVM.loadAdminDepositHistory()
+
+                        showDeposit = true
+
+                        scope.launch {
+                            drawerState.close()
+                        }
+                    }
                     Divider()
 
                     DrawerItem("Logout", Icons.Default.ExitToApp, Color.Red) {
@@ -578,7 +594,16 @@ fun AdminScreen(nav: NavController ) {
         }
     }
 
+    if (showDeposit) {
 
+        AdminDepositModal(
+            walletVM = walletVM,
+            onClose = {
+                showDeposit = false
+            }
+        )
+
+    }
 
     if (showMsgModal) {
 

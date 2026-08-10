@@ -128,6 +128,135 @@ class WalletVM(private val repo: AppRepository) : ViewModel() {
     // ======================================
 // DEPOSIT HISTORY
 // ======================================
+// =====================================
+// ADMIN DEPOSIT
+// =====================================
+
+    var adminDepositPendingState by mutableStateOf<
+            ApiState<List<WalletRequest>>
+            >(ApiState.Loading)
+
+    var adminDepositHistoryState by mutableStateOf<
+            ApiState<List<WalletRequest>>
+            >(ApiState.Loading)
+
+    var depositActionState by mutableStateOf<
+            ApiState<String>?
+            >(null)
 
 
+// =====================================
+// LOAD PENDING
+// =====================================
+
+    fun loadAdminDepositPending() {
+
+        viewModelScope.launch {
+
+            adminDepositPendingState =
+                repo.getAdminPendingDeposits()
+
+        }
+    }
+
+
+// =====================================
+// LOAD HISTORY
+// =====================================
+
+    fun loadAdminDepositHistory() {
+
+        viewModelScope.launch {
+
+            adminDepositHistoryState =
+                repo.getAdminDepositHistory()
+
+        }
+    }
+
+
+// =====================================
+// APPROVE
+// =====================================
+
+    fun approveDeposit(
+        id: Int,
+        amount: Double
+    ) {
+
+        viewModelScope.launch {
+
+            Log.d(
+                "DEPOSIT_APPROVE",
+                "START id=$id amount=$amount"
+            )
+
+            depositActionState =
+                ApiState.Loading
+
+            val result = repo.approveDeposit(
+                id,
+                amount
+            )
+
+            Log.d(
+                "DEPOSIT_APPROVE",
+                "RESULT=$result"
+            )
+
+            depositActionState = result
+
+            if (result is ApiState.Success) {
+
+                Log.d(
+                    "DEPOSIT_APPROVE",
+                    "SUCCESS -> reload"
+                )
+
+                loadAdminDepositPending()
+
+                loadAdminDepositHistory()
+
+            } else if (result is ApiState.Error) {
+
+                Log.e(
+                    "DEPOSIT_APPROVE",
+                    "ERROR=${result.message}"
+                )
+            }
+        }
+    }
+
+
+// =====================================
+// REJECT
+// =====================================
+
+    fun rejectDeposit(id: Int) {
+
+        viewModelScope.launch {
+
+            depositActionState =
+                ApiState.Loading
+
+            val result =
+                repo.rejectDeposit(id)
+
+            depositActionState = result
+
+            if (result is ApiState.Success) {
+
+                loadAdminDepositPending()
+
+                loadAdminDepositHistory()
+
+            }
+
+        }
+    }
+    fun clearDepositAction() {
+
+        depositActionState = null
+
+    }
 }

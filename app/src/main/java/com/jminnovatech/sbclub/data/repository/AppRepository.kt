@@ -1,6 +1,7 @@
 package com.jminnovatech.sbclub.repository
 
 import android.content.Context
+import android.util.Log
 import com.jminnovatech.sbclub.data.api.RetrofitClient
 import com.jminnovatech.sbclub.utils.ApiState
 import retrofit2.HttpException
@@ -1257,7 +1258,297 @@ class AppRepository(private val context: Context) {
 
     }
 
+// =====================================
+// ADMIN DEPOSIT PENDING
+// =====================================
 
+    suspend fun getAdminPendingDeposits():
+            ApiState<List<WalletRequest>> {
+
+        return try {
+
+            val res =
+                api.getAdminPendingDeposits()
+
+            if (res.status) {
+
+                ApiState.Success(res.data)
+
+            } else {
+
+                ApiState.Error(
+                    "Unable to load pending deposits"
+                )
+
+            }
+
+        } catch (e: Exception) {
+
+            ApiState.Error(
+                NetworkErrorHandler.getMessage(e)
+            )
+
+        }
+    }
+
+
+// =====================================
+// ADMIN DEPOSIT HISTORY
+// =====================================
+
+    suspend fun getAdminDepositHistory():
+            ApiState<List<WalletRequest>> {
+
+        return try {
+
+            val res =
+                api.getAdminDepositHistory()
+
+            if (res.status) {
+
+                ApiState.Success(res.data)
+
+            } else {
+
+                ApiState.Error(
+                    "Unable to load deposit history"
+                )
+
+            }
+
+        } catch (e: Exception) {
+
+            ApiState.Error(
+                NetworkErrorHandler.getMessage(e)
+            )
+
+        }
+    }
+
+
+// =====================================
+// APPROVE DEPOSIT
+// =====================================
+
+    suspend fun approveDeposit(
+        id: Int,
+        amount: Double
+    ): ApiState<String> {
+
+        return try {
+
+            Log.d(
+                "DEPOSIT_APPROVE",
+                "======================================"
+            )
+
+            Log.d(
+                "DEPOSIT_APPROVE",
+                "APPROVE START"
+            )
+
+            Log.d(
+                "DEPOSIT_APPROVE",
+                "ID = $id"
+            )
+
+            Log.d(
+                "DEPOSIT_APPROVE",
+                "AMOUNT = $amount"
+            )
+
+            Log.d(
+                "DEPOSIT_APPROVE",
+                "ENDPOINT = admin/deposit/$id/approve"
+            )
+
+            val requestBody = mapOf(
+                "amount" to amount
+            )
+
+            Log.d(
+                "DEPOSIT_APPROVE",
+                "REQUEST BODY = $requestBody"
+            )
+
+            val res = api.approveDeposit(
+                id,
+                requestBody
+            )
+
+            Log.d(
+                "DEPOSIT_APPROVE",
+                "========== RESPONSE =========="
+            )
+
+            Log.d(
+                "DEPOSIT_APPROVE",
+                "STATUS = ${res.status}"
+            )
+
+            Log.d(
+                "DEPOSIT_APPROVE",
+                "MSG = ${res.msg}"
+            )
+
+            Log.d(
+                "DEPOSIT_APPROVE",
+                "FULL RESPONSE = $res"
+            )
+
+            Log.d(
+                "DEPOSIT_APPROVE",
+                "APPROVE END"
+            )
+
+            Log.d(
+                "DEPOSIT_APPROVE",
+                "======================================"
+            )
+
+            if (res.status) {
+
+                ApiState.Success(
+                    res.msg
+                )
+
+            } else {
+
+                ApiState.Error(
+                    res.msg
+                )
+            }
+
+        } catch (e: retrofit2.HttpException) {
+
+            Log.e(
+                "DEPOSIT_APPROVE",
+                "======================================"
+            )
+
+            Log.e(
+                "DEPOSIT_APPROVE",
+                "HTTP ERROR"
+            )
+
+            Log.e(
+                "DEPOSIT_APPROVE",
+                "HTTP CODE = ${e.code()}"
+            )
+
+            Log.e(
+                "DEPOSIT_APPROVE",
+                "HTTP MESSAGE = ${e.message()}"
+            )
+
+            Log.e(
+                "DEPOSIT_APPROVE",
+                "URL = ${e.response()?.raw()?.request?.url}"
+            )
+
+            val errorBody =
+                e.response()
+                    ?.errorBody()
+                    ?.string()
+
+            Log.e(
+                "DEPOSIT_APPROVE",
+                "ERROR BODY ="
+            )
+
+            Log.e(
+                "DEPOSIT_APPROVE",
+                errorBody ?: "NULL"
+            )
+
+            Log.e(
+                "DEPOSIT_APPROVE",
+                "======================================"
+            )
+
+            ApiState.Error(
+                "HTTP ${e.code()}: ${errorBody ?: e.message()}"
+            )
+
+        } catch (e: Exception) {
+
+            Log.e(
+                "DEPOSIT_APPROVE",
+                "======================================"
+            )
+
+            Log.e(
+                "DEPOSIT_APPROVE",
+                "GENERAL ERROR"
+            )
+
+            Log.e(
+                "DEPOSIT_APPROVE",
+                "TYPE = ${e.javaClass.name}"
+            )
+
+            Log.e(
+                "DEPOSIT_APPROVE",
+                "MESSAGE = ${e.message}"
+            )
+
+            Log.e(
+                "DEPOSIT_APPROVE",
+                "STACK TRACE:"
+            )
+
+            Log.e(
+                "DEPOSIT_APPROVE",
+                e.stackTraceToString()
+            )
+
+            Log.e(
+                "DEPOSIT_APPROVE",
+                "======================================"
+            )
+
+            ApiState.Error(
+                e.message ?: "Approve failed"
+            )
+        }
+    }
+
+
+// =====================================
+// REJECT DEPOSIT
+// =====================================
+
+    suspend fun rejectDeposit(
+        id: Int
+    ): ApiState<String> {
+
+        return try {
+
+            val res =
+                api.rejectDeposit(id)
+
+            if (res.status) {
+
+                ApiState.Success(
+                    res.msg
+                )
+
+            } else {
+
+                ApiState.Error(
+                    res.msg
+                )
+
+            }
+
+        } catch (e: Exception) {
+
+            ApiState.Error(
+                NetworkErrorHandler.getMessage(e)
+            )
+
+        }
+    }
 }
 
 
