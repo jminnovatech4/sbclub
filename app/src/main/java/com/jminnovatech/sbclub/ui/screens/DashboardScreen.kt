@@ -21,6 +21,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.AccountBalanceWallet
+import androidx.compose.material.icons.filled.AddCircle
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.Menu
 import androidx.compose.material.icons.filled.Message
@@ -386,36 +387,77 @@ fun DashboardScreen(
                 ) {
 
                     Row(
-
-                        modifier = Modifier.padding(
-                            horizontal = 14.dp,
-                            vertical = 10.dp
-                        ),
-
                         verticalAlignment = Alignment.CenterVertically
-
                     ) {
 
-                        Icon(
-                            Icons.Default.AccountBalanceWallet,
-                            contentDescription = null,
-                            tint = Color(0xFF2563EB)
-                        )
+                        Button(
+                            onClick = {
 
-                        Spacer(Modifier.width(6.dp))
+                                showDeposit = true
 
-                        Text(
+                                scope.launch {
+                                    drawerState.close()
+                                }
 
-                            text = "₹ %.2f".format(vm.walletBalance),
+                            },
+                            shape = RoundedCornerShape(50.dp),
+                            colors = ButtonDefaults.buttonColors(
+                                containerColor = Color(0xFF3AB43F),
+                                contentColor = Color.White
+                            ),
+                            elevation = ButtonDefaults.buttonElevation(
+                                defaultElevation = 8.dp
+                            ),
+                            modifier = Modifier
+                                .height(52.dp)
+                        ) {
 
-                            color = Color.Black,
+                            Icon(
+                                imageVector = Icons.Default.AddCircle,
+                                contentDescription = null,
+                                modifier = Modifier.size(16.dp)
+                            )
 
-                            fontWeight = FontWeight.Bold
+                            Spacer(Modifier.width(8.dp))
 
-                        )
+                            Text(
+                                text = "",
+                                fontWeight = FontWeight.Bold
+                            )
 
+                        }
+
+                        Row(
+
+                            modifier = Modifier.padding(
+                                horizontal = 14.dp,
+                                vertical = 10.dp
+                            ),
+
+                            verticalAlignment = Alignment.CenterVertically
+
+                        ) {
+
+                            Icon(
+                                Icons.Default.AccountBalanceWallet,
+                                contentDescription = null,
+                                tint = Color(0xFF2563EB)
+                            )
+
+                            Spacer(Modifier.width(6.dp))
+
+                            Text(
+
+                                text = "₹ %.2f".format(vm.walletBalance),
+
+                                color = Color.Black,
+
+                                fontWeight = FontWeight.Bold
+
+                            )
+
+                        }
                     }
-
                 }
             }
             Spacer(Modifier.height(10.dp))
