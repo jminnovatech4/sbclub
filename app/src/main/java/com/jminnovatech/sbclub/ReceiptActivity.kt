@@ -55,19 +55,164 @@ class ReceiptActivity : ComponentActivity() {
     }
     private fun processReceipt(text: String) {
 
-        val result = ReceiptParser.parse(text)
+        val result =
+            ReceiptParser.parse(text)
 
-        val i = Intent(this, MainActivity::class.java)
+        // =====================================
+        // SAVED PAYMENT AMOUNT
+        // =====================================
 
-        i.putExtra("open_deposit", true)
+        val prefs =
+            getSharedPreferences(
+                "SBCLUB_PAYMENT",
+                MODE_PRIVATE
+            )
 
-        i.putExtra("amount", result.amount)
+        val savedAmount =
+            prefs.getString(
+                "pending_amount",
+                ""
+            ) ?: ""
 
-        i.putExtra("utr", result.utr)
+        val ocrAmount =
+            result.amount.trim()
 
-        i.putExtra("upi_app", result.app)
 
-        i.putExtra("receipt_text", result.rawText)
+        // =====================================
+        // CHECK OCR AMOUNT
+        // =====================================
+
+        if (
+            savedAmount.isNotBlank() &&
+            ocrAmount.isNotBlank()
+        ) {
+
+            val saved =
+                savedAmount
+                    .replace(",", "")
+                    .toDoubleOrNull()
+
+            val ocr =
+                ocrAmount
+                    .replace(",", "")
+                    .toDoubleOrNull()
+
+
+            // =================================
+            // AMOUNT MISMATCH
+            // =================================
+
+            if (
+                saved != null &&
+                ocr != null &&
+                saved != ocr
+            ) {
+
+                android.app.AlertDialog.Builder(this)
+
+                    .setTitle("Amount Mismatch")
+
+                    .setMessage(
+                        "Payment amount: ₹$savedAmount\n" +
+                                "Receipt amount: ₹$ocrAmount\n\n" +
+                                "Receipt amount does not match.\n" +
+                                "Please enter the correct amount manually."
+                    )
+
+                    .setPositiveButton("Enter Amount") { _, _ ->
+
+                        val i =
+                            Intent(
+                                this,
+                                MainActivity::class.java
+                            )
+
+                        i.putExtra(
+                            "open_deposit",
+                            true
+                        )
+
+                        // ❌ OCR amount remove
+                        // User will enter amount manually
+                        i.putExtra(
+                            "amount",
+                            ""
+                        )
+
+                        // ✅ Keep UTR
+                        i.putExtra(
+                            "utr",
+                            result.utr
+                        )
+
+                        i.putExtra(
+                            "upi_app",
+                            result.app
+                        )
+
+                        i.putExtra(
+                            "receipt_text",
+                            result.rawText
+                        )
+
+                        i.flags =
+                            Intent.FLAG_ACTIVITY_CLEAR_TOP or
+                                    Intent.FLAG_ACTIVITY_SINGLE_TOP
+
+                        startActivity(i)
+
+                        finish()
+                    }
+
+                    .setNegativeButton("Cancel") { dialog, _ ->
+
+                        dialog.dismiss()
+                        finish()
+
+                    }
+
+                    .show()
+
+                return
+            }
+        }
+
+
+        // =====================================
+        // NORMAL EXISTING FLOW
+        // =====================================
+
+        val i =
+            Intent(
+                this,
+                MainActivity::class.java
+            )
+
+        i.putExtra(
+            "open_deposit",
+            true
+        )
+
+        // Existing OCR amount
+        i.putExtra(
+            "amount",
+            result.amount
+        )
+
+        i.putExtra(
+            "utr",
+            result.utr
+        )
+
+        i.putExtra(
+            "upi_app",
+            result.app
+        )
+
+        i.putExtra(
+            "receipt_text",
+            result.rawText
+        )
 
         i.flags =
             Intent.FLAG_ACTIVITY_CLEAR_TOP or
@@ -76,7 +221,6 @@ class ReceiptActivity : ComponentActivity() {
         startActivity(i)
 
         finish()
-
     }
     private fun handleImage() {
 

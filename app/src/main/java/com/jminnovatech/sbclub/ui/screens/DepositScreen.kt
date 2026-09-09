@@ -77,8 +77,23 @@ fun DepositScreen(
                 isLoading = true
             }
             is ApiState.Success -> {
+
                 isLoading = false
-                successMessage = state.data.ifBlank { "Recharge request submitted successfully." }
+
+                successMessage = state.data.ifBlank {
+                    "Recharge request submitted successfully."
+                }
+
+                // Clear saved payment amount
+                context
+                    .getSharedPreferences(
+                        "SBCLUB_PAYMENT",
+                        Context.MODE_PRIVATE
+                    )
+                    .edit()
+                    .remove("pending_amount")
+                    .apply()
+
                 showSuccessDialog = true
             }
             is ApiState.Error -> {
@@ -296,6 +311,18 @@ fun DepositScreen(
                                     disabledContainerColor = Color(0xFFA7F3D0)
                                 ),
                                 onClick = {
+
+                                    // Payment amount save
+                                    context
+                                        .getSharedPreferences(
+                                            "SBCLUB_PAYMENT",
+                                            Context.MODE_PRIVATE
+                                        )
+                                        .edit()
+                                        .putString("pending_amount", amountValue)
+                                        .apply()
+
+                                    // Existing UPI code
                                     authVM.openUpi(
                                         context = context,
                                         upiId = upiId,

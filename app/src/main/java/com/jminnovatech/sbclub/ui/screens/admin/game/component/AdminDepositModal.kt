@@ -46,6 +46,48 @@ import java.util.*
 import android.app.DatePickerDialog
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
+private fun formatDepositDate(date: String): String {
+
+    return try {
+
+        val inputFormat =
+            SimpleDateFormat(
+                "yyyy-MM-dd'T'HH:mm:ss",
+                Locale.US
+            )
+
+        // Laravel/API UTC time
+        inputFormat.timeZone =
+            TimeZone.getTimeZone("UTC")
+
+        val outputFormat =
+            SimpleDateFormat(
+                "dd MMM yyyy, hh:mm a",
+                Locale.ENGLISH
+            )
+
+        // User phone local timezone
+        outputFormat.timeZone =
+            TimeZone.getDefault()
+
+        // Remove microseconds
+        val cleanDate =
+            date.take(19)
+
+        val parsedDate =
+            inputFormat.parse(cleanDate)
+
+        if (parsedDate != null) {
+            outputFormat.format(parsedDate)
+        } else {
+            date
+        }
+
+    } catch (e: Exception) {
+
+        date
+    }
+}
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun AdminDepositModal(
@@ -1045,14 +1087,14 @@ fun AdminDepositHistoryCard(
                     FontWeight.Medium
             )
 
-            if (!item.created_at.isNullOrBlank()) {
+            if (item.created_at.isNotBlank()) {
 
                 Spacer(
                     Modifier.height(6.dp)
                 )
 
                 Text(
-                    item.created_at,
+                    formatDepositDate(item.created_at),
                     color = Color.Gray,
                     fontSize = 11.sp
                 )
