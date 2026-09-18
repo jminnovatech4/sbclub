@@ -56,6 +56,7 @@ import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.window.Dialog
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewmodel.compose.viewModel
+import com.jminnovatech.sbclub.data.model.progame.GameGroup
 import com.jminnovatech.sbclub.ui.screens.Transactions
 import com.jminnovatech.sbclub.viewmodel.WalletVM
 import com.jminnovatech.sbclub.repository.AppRepository
@@ -116,7 +117,7 @@ fun DashboardScreen(
 
     }
     LaunchedEffect(Unit) {
-
+        vm.loadGroups(context)
         vm.loadGames(context)
         vm.loadWallet(context)
 
@@ -497,21 +498,81 @@ fun DashboardScreen(
                 }
             }
             Spacer(Modifier.height(20.dp))
-            Box(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(vertical = 5.dp),
-                contentAlignment = Alignment.Center
+            @Composable
+            fun GameGroupCard(
+                group: GameGroup,
+                onClick: () -> Unit
             ) {
 
-                Text(
-                    text = "KOLKATA FATAFAT",
-                    color = Color(0xFFFFD54F),
-                    fontWeight = FontWeight.Bold,
-                    fontSize = 25.sp
-                )
+                Card(
 
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(105.dp)
+                        .clickable {
+                            onClick()
+                        },
 
+                    shape = RoundedCornerShape(18.dp),
+
+                    colors = CardDefaults.cardColors(
+                        containerColor = Color(0xFF2563EB)
+                    ),
+
+                    elevation = CardDefaults.cardElevation(
+                        defaultElevation = 8.dp
+                    )
+
+                ) {
+
+                    Column(
+
+                        modifier = Modifier.fillMaxSize(),
+
+                        horizontalAlignment = Alignment.CenterHorizontally,
+
+                        verticalArrangement = Arrangement.Center
+
+                    ) {
+
+                        Box(
+
+                            modifier = Modifier
+                                .size(42.dp)
+                                .background(
+                                    Color.White,
+                                    RoundedCornerShape(12.dp)
+                                ),
+
+                            contentAlignment = Alignment.Center
+
+                        ) {
+
+                            Text(
+                                text = "🎯",
+                                fontSize = 24.sp
+                            )
+                        }
+
+                        Spacer(
+                            Modifier.height(8.dp)
+                        )
+
+                        Text(
+
+                            text = group.name,
+
+                            color = Color.White,
+
+                            fontSize = 15.sp,
+
+                            fontWeight = FontWeight.Bold,
+
+                            maxLines = 1
+
+                        )
+                    }
+                }
             }
             Box(
                 modifier = Modifier
@@ -559,25 +620,28 @@ fun DashboardScreen(
 
             Spacer(Modifier.height(10.dp))
 
-            when (val state = vm.gamesState) {
+            when (val state = vm.groupsState) {
 
-                ApiState.Idle -> {}
+                ApiState.Idle -> {
+
+                }
 
                 ApiState.Loading -> {
 
                     Box(
-                        Modifier.fillMaxSize(),
+                        modifier = Modifier.fillMaxWidth(),
                         contentAlignment = Alignment.Center
                     ) {
-                        CircularProgressIndicator()
-                    }
 
+                        CircularProgressIndicator()
+
+                    }
                 }
 
                 is ApiState.Error -> {
 
                     Box(
-                        modifier = Modifier.fillMaxSize(),
+                        modifier = Modifier.fillMaxWidth(),
                         contentAlignment = Alignment.Center
                     ) {
 
@@ -589,65 +653,70 @@ fun DashboardScreen(
                                 Icons.Default.WifiOff,
                                 contentDescription = null,
                                 tint = Color.Gray,
-                                modifier = Modifier.size(70.dp)
+                                modifier = Modifier.size(60.dp)
                             )
 
-                            Spacer(Modifier.height(12.dp))
+                            Spacer(
+                                Modifier.height(10.dp)
+                            )
 
                             Text(
-                                "No Internet Connection",
-                                color = Color.White,
-                                fontWeight = FontWeight.Bold
+                                text = state.message,
+                                color = Color.White
                             )
 
-                            Spacer(Modifier.height(8.dp))
-
-                            Text(
-                                state.message,
-                                color = Color.LightGray
+                            Spacer(
+                                Modifier.height(12.dp)
                             )
-
-                            Spacer(Modifier.height(18.dp))
 
                             Button(
                                 onClick = {
-
-                                    vm.loadGames(context)
+                                    vm.loadGroups(context)
                                     vm.loadWallet(context)
-
                                 }
                             ) {
 
                                 Text("Retry")
 
                             }
-
                         }
-
                     }
-
                 }
 
                 is ApiState.Success -> {
 
-                    LazyColumn {
+                    val groups = state.data
 
-                        items(state.data) { game ->
+                    Row(
 
-                            GameCard(game) {
+                        modifier = Modifier.fillMaxWidth(),
 
-                                nav.navigate("pro_game/${game.id}")
+                        horizontalArrangement =
+                            Arrangement.spacedBy(12.dp)
 
+                    ) {
+
+                        groups.forEach { group ->
+
+                            Box(
+                                modifier = Modifier.weight(1f)
+                            ) {
+
+                                GameGroupCard(
+                                    group = group,
+
+                                    onClick = {
+
+                                        nav.navigate(
+                                            "pro_game_group/${group.id}"
+                                        )
+
+                                    }
+                                )
                             }
-
-                            Spacer(Modifier.height(15.dp))
-
                         }
-
                     }
-
                 }
-
             }
 
         }
@@ -1343,6 +1412,77 @@ fun NewsTicker(
                         )
                     )
                 )
+            )
+        }
+    }
+}
+
+@Composable
+fun GameGroupCard(
+    group: GameGroup,
+    modifier: Modifier = Modifier,
+    onClick: () -> Unit
+) {
+
+    Card(
+
+        modifier = modifier
+            .height(105.dp)
+            .clickable {
+                onClick()
+            },
+
+        shape = RoundedCornerShape(18.dp),
+
+        colors = CardDefaults.cardColors(
+            containerColor = Color(0xFF2563EB)
+        ),
+
+        elevation = CardDefaults.cardElevation(
+            defaultElevation = 8.dp
+        )
+
+    ) {
+
+        Column(
+
+            modifier = Modifier.fillMaxSize(),
+
+            horizontalAlignment = Alignment.CenterHorizontally,
+
+            verticalArrangement = Arrangement.Center
+
+        ) {
+
+            Box(
+
+                modifier = Modifier
+                    .size(42.dp)
+                    .background(
+                        Color.White,
+                        RoundedCornerShape(12.dp)
+                    ),
+
+                contentAlignment = Alignment.Center
+
+            ) {
+
+                Text(
+                    text = "🎯",
+                    fontSize = 24.sp
+                )
+            }
+
+            Spacer(
+                Modifier.height(8.dp)
+            )
+
+            Text(
+                text = group.name,
+                color = Color.White,
+                fontSize = 15.sp,
+                fontWeight = FontWeight.Bold,
+                maxLines = 1
             )
         }
     }

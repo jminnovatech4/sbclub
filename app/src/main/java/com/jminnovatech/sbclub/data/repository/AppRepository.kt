@@ -593,7 +593,65 @@ class AppRepository(private val context: Context) {
 
     }
 
+// ============================================================
+// PRO GAME GROUPS
+// ============================================================
 
+    suspend fun getGameGroups(): ApiState<List<GameGroup>> {
+
+        return try {
+
+            val res = api.getGameGroups()
+
+            if (res.status) {
+
+                ApiState.Success(res.data)
+
+            } else {
+
+                ApiState.Error("No Game Groups")
+
+            }
+
+        } catch (e: Exception) {
+
+            e.printStackTrace()
+
+            ApiState.Error(
+                NetworkErrorHandler.getMessage(e)
+            )
+
+        }
+    }
+
+    suspend fun getGroupGames(
+        groupId: Int
+    ): ApiState<List<Game>> {
+
+        return try {
+
+            val res = api.getGroupGames(groupId)
+
+            if (res.status) {
+
+                ApiState.Success(res.data)
+
+            } else {
+
+                ApiState.Error("No Games")
+
+            }
+
+        } catch (e: Exception) {
+
+            e.printStackTrace()
+
+            ApiState.Error(
+                NetworkErrorHandler.getMessage(e)
+            )
+
+        }
+    }
 
     suspend fun gameResults(
         gameId:Int
@@ -636,76 +694,15 @@ class AppRepository(private val context: Context) {
     }
 
     suspend fun getProSchedules(
-
-        gameId: Int
-
+        gameId: Int,
+        groupId: Int = 1
     ): ApiState<ScheduleResponse> {
 
         return try {
 
-            val res = api.getSchedules(gameId)
-
-            if (res.status) {
-                ApiState.Success(res)
-            } else {
-                ApiState.Error("Schedule not found")
-            }
-
-        } catch (e: Exception) {
-
-            e.printStackTrace()
-
-            android.util.Log.e("PRO_GAME_ERROR", e.stackTraceToString())
-
-            ApiState.Error(e.message ?: "Unknown Error")
-        }
-
-    }
-
-    suspend fun getCurrentProSchedule(
-
-        gameId: Int
-
-    ): ApiState<CurrentScheduleResponse> {
-
-        return try {
-
-            val res = api.getCurrentSchedule(gameId)
-
-            if (res.status) {
-                ApiState.Success(res)
-            } else {
-                ApiState.Error("Game Closed")
-            }
-
-        } catch (e: Exception) {
-
-            e.printStackTrace()
-
-            ApiState.Error(NetworkErrorHandler.getMessage(e))
-
-        }
-
-    }
-
-
-
-    suspend fun getProHistory(
-
-        gameId: Int,
-
-        scheduleId: Int? = null
-
-    ): ApiState<HistoryResponse> {
-
-        return try {
-
-            val res = api.getProHistory(
-
+            val res = api.getSchedules(
                 gameId,
-
-                scheduleId
-
+                groupId
             )
 
             if (res.status) {
@@ -714,7 +711,7 @@ class AppRepository(private val context: Context) {
 
             } else {
 
-                ApiState.Error("No History")
+                ApiState.Error("Schedule not found")
 
             }
 
@@ -722,20 +719,101 @@ class AppRepository(private val context: Context) {
 
             e.printStackTrace()
 
-            ApiState.Error(NetworkErrorHandler.getMessage(e))
+            android.util.Log.e(
+                "PRO_GAME_ERROR",
+                e.stackTraceToString()
+            )
 
+            ApiState.Error(
+                e.message ?: "Unknown Error"
+            )
+        }
+    }
+
+    suspend fun getCurrentProSchedule(
+        gameId: Int,
+        groupId: Int = 1
+    ): ApiState<CurrentScheduleResponse> {
+
+        return try {
+
+            val res = api.getCurrentSchedule(
+                gameId = gameId,
+                groupId = groupId
+            )
+
+            if (res.status) {
+
+                ApiState.Success(res)
+
+            } else {
+
+                ApiState.Error(
+                    "Game Closed"
+                )
+
+            }
+
+        } catch (e: Exception) {
+
+            e.printStackTrace()
+
+            ApiState.Error(
+                NetworkErrorHandler.getMessage(e)
+            )
 
         }
+    }
 
+
+
+    suspend fun getProHistory(
+        gameId: Int,
+        scheduleId: Int? = null,
+        groupId: Int = 1
+    ): ApiState<HistoryResponse> {
+
+        return try {
+
+            val res = api.getProHistory(
+                gameId = gameId,
+                scheduleId = scheduleId,
+                groupId = groupId
+            )
+
+            if (res.status) {
+
+                ApiState.Success(res)
+
+            } else {
+
+                ApiState.Error(
+                    "History not found"
+                )
+
+            }
+
+        } catch (e: Exception) {
+
+            e.printStackTrace()
+
+            ApiState.Error(
+                NetworkErrorHandler.getMessage(e)
+            )
+        }
     }
 
     suspend fun getProResults(
-        gameId: Int
+        gameId: Int,
+        groupId: Int = 1
     ): ApiState<ResultResponse> {
 
         return try {
 
-            val res = api.getProResults(gameId)
+            val res = api.getProResults(
+                gameId = gameId,
+                groupId = groupId
+            )
 
             if (res.status) {
 
@@ -751,28 +829,45 @@ class AppRepository(private val context: Context) {
 
             e.printStackTrace()
 
-            ApiState.Error(NetworkErrorHandler.getMessage(e))
+            ApiState.Error(
+                NetworkErrorHandler.getMessage(e)
+            )
 
         }
-
     }
 
     suspend fun getBetHistory(
         gameId: Int,
-        scheduleId: Int
+        scheduleId: Int,
+        groupId: Int = 1
     ): ApiState<BetHistoryResponse> {
 
         return try {
 
-            val res = api.getBetHistory(gameId, scheduleId)
+            val res = api.getBetHistory(
+                gameId = gameId,
+                scheduleId = scheduleId,
+                groupId = groupId
+            )
 
-            android.util.Log.d("BET_HISTORY", "status=${res.status}")
-            android.util.Log.d("BET_HISTORY", "data=${res.data}")
+            android.util.Log.d(
+                "BET_HISTORY",
+                "status=${res.status}"
+            )
+
+            android.util.Log.d(
+                "BET_HISTORY",
+                "data=${res.data}"
+            )
 
             if (res.status) {
+
                 ApiState.Success(res)
+
             } else {
+
                 ApiState.Error("No Bet History")
+
             }
 
         } catch (e: Exception) {
@@ -782,26 +877,24 @@ class AppRepository(private val context: Context) {
                 e.stackTraceToString()
             )
 
-            ApiState.Error(NetworkErrorHandler.getMessage(e))
+            ApiState.Error(
+                NetworkErrorHandler.getMessage(e)
+            )
+
         }
     }
 
     suspend fun runningBets(
-
         gameId: Int,
-
-        scheduleId: Int
-
+        scheduleId: Int,
+        groupId: Int = 1
     ): RunningBetResponse {
 
         return api.runningBets(
-
-            gameId,
-
-            scheduleId
-
+            gameId = gameId,
+            scheduleId = scheduleId,
+            groupId = groupId
         )
-
     }
 
     // ==============================

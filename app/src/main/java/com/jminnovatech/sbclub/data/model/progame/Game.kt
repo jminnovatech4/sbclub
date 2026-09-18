@@ -111,13 +111,10 @@ data class ProBetItem(
 
 
 data class ProBetRequest(
-
-    val game_id:Int,
-
-    val schedule_id:Int,
-
-    val bets:List<ProBetItem>
-
+    val game_id: Int,
+    val schedule_id: Int,
+    val group_id: Int,
+    val bets: List<ProBetItem>
 )
 
 data class BetHistoryResponse(
@@ -250,4 +247,17 @@ data class RunningBetResponse(
 
     val data: List<RunningBet>
 
+)
+
+data class GameGroup(
+    val id: Int,
+    val name: String,
+    val code: String,
+    val is_active: Int,
+    val display_order: Int
+)
+
+data class GameGroupResponse(
+    val status: Boolean,
+    val data: List<GameGroup>
 )

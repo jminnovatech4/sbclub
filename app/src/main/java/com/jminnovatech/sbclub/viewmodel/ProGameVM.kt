@@ -104,17 +104,39 @@ class ProGameVM : ViewModel() {
         }
 
     }
+// ============================================================
+// Group Games
+// ============================================================
 
-    // ============================================================
-    // Load Schedule
-    // ============================================================
+    var groupGamesState by mutableStateOf<ApiState<List<Game>>>(
+        ApiState.Idle
+    )
+        private set
+
+    fun loadGroupGames(
+        context: Context,
+        groupId: Int
+    ) {
+
+        viewModelScope.launch {
+
+            groupGamesState = ApiState.Loading
+
+            groupGamesState =
+                AppRepository(context)
+                    .getGroupGames(groupId)
+        }
+    }
+
+
+// ============================================================
+// Load Schedule
+// ============================================================
 
     fun loadSchedules(
-
         context: Context,
-
-        gameId: Int
-
+        gameId: Int,
+        groupId: Int = 1
     ) {
 
         viewModelScope.launch {
@@ -123,22 +145,29 @@ class ProGameVM : ViewModel() {
 
             scheduleState =
                 AppRepository(context)
-                    .getProSchedules(gameId)
-
+                    .getProSchedules(
+                        gameId = gameId,
+                        groupId = groupId
+                    )
         }
-
     }
 
     // ============================================================
     // Current Schedule
     // ============================================================
 
+// ============================================================
+// Current Schedule
+// ============================================================
+
+// ============================================================
+// Current Schedule
+// ============================================================
+
     fun loadCurrent(
-
         context: Context,
-
-        gameId: Int
-
+        gameId: Int,
+        groupId: Int = 1
     ) {
 
         viewModelScope.launch {
@@ -147,10 +176,11 @@ class ProGameVM : ViewModel() {
 
             currentState =
                 AppRepository(context)
-                    .getCurrentProSchedule(gameId)
-
+                    .getCurrentProSchedule(
+                        gameId = gameId,
+                        groupId = groupId
+                    )
         }
-
     }
 
     // ============================================================
@@ -158,15 +188,11 @@ class ProGameVM : ViewModel() {
     // ============================================================
 
     fun placeBet(
-
         context: Context,
-
         gameId: Int,
-
         scheduleId: Int,
-
+        groupId: Int,
         bets: List<ProBetItem>
-
     ) {
 
         viewModelScope.launch {
@@ -183,6 +209,8 @@ class ProGameVM : ViewModel() {
 
                     schedule_id = scheduleId,
 
+                    group_id = groupId,
+
                     bets = bets
 
                 )
@@ -193,35 +221,45 @@ class ProGameVM : ViewModel() {
 
                 loadWallet(context)
 
-                loadCurrent(context, gameId)
+                loadCurrent(
+                    context,
+                    gameId,
+                    groupId
+                )
 
-                loadResults(context, gameId)
+                loadResults(
+                    context,
+                    gameId
+                )
 
-                loadHistory(context, gameId, scheduleId)
-                loadBetHistory(
+                loadHistory(
                     context,
                     gameId,
                     scheduleId
                 )
 
+                loadBetHistory(
+                    context,
+                    gameId,
+                    scheduleId
+                )
             }
-
         }
-
     }
 
     // ============================================================
     // History
     // ============================================================
 
+// ============================================================
+// History
+// ============================================================
+
     fun loadHistory(
-
         context: Context,
-
         gameId: Int,
-
-        scheduleId: Int? = null
-
+        scheduleId: Int? = null,
+        groupId: Int = 1
     ) {
 
         viewModelScope.launch {
@@ -231,15 +269,11 @@ class ProGameVM : ViewModel() {
             historyState =
                 AppRepository(context)
                     .getProHistory(
-
-                        gameId,
-
-                        scheduleId
-
+                        gameId = gameId,
+                        scheduleId = scheduleId,
+                        groupId = groupId
                     )
-
         }
-
     }
 
     // ============================================================
@@ -247,11 +281,9 @@ class ProGameVM : ViewModel() {
     // ============================================================
 
     fun loadResults(
-
         context: Context,
-
-        gameId: Int
-
+        gameId: Int,
+        groupId: Int = 1
     ) {
 
         viewModelScope.launch {
@@ -260,10 +292,12 @@ class ProGameVM : ViewModel() {
 
             resultState =
                 AppRepository(context)
-                    .getProResults(gameId)
+                    .getProResults(
+                        gameId = gameId,
+                        groupId = groupId
+                    )
 
         }
-
     }
 
     // ============================================================
@@ -287,15 +321,21 @@ class ProGameVM : ViewModel() {
     fun loadBetHistory(
         context: Context,
         gameId: Int,
-        scheduleId: Int
+        scheduleId: Int,
+        groupId: Int = 1
     ) {
 
         viewModelScope.launch {
 
             betHistoryState = ApiState.Loading
 
-            betHistoryState = AppRepository(context)
-                .getBetHistory(gameId, scheduleId)
+            betHistoryState =
+                AppRepository(context)
+                    .getBetHistory(
+                        gameId = gameId,
+                        scheduleId = scheduleId,
+                        groupId = groupId
+                    )
 
             android.util.Log.d(
                 "BET_HISTORY_VM",
@@ -303,16 +343,12 @@ class ProGameVM : ViewModel() {
             )
         }
     }
-
     var runningBetState by mutableStateOf<ApiState<RunningBetResponse>>(ApiState.Idle)
     fun loadRunningBets(
-
         context: Context,
-
         gameId: Int,
-
-        scheduleId: Int
-
+        scheduleId: Int,
+        groupId: Int = 1
     ) {
 
         viewModelScope.launch {
@@ -324,28 +360,46 @@ class ProGameVM : ViewModel() {
                 val repo = AppRepository(context)
 
                 val res = repo.runningBets(
-
-                    gameId,
-
-                    scheduleId
-
+                    gameId = gameId,
+                    scheduleId = scheduleId,
+                    groupId = groupId
                 )
 
-                runningBetState = ApiState.Success(res)
+                runningBetState =
+                    ApiState.Success(res)
 
-            }
+            } catch (e: Exception) {
 
-            catch (e: Exception) {
-
-                runningBetState = ApiState.Error(
-
-                    e.message ?: "Error"
-
-                )
+                runningBetState =
+                    ApiState.Error(
+                        e.message ?: "Error"
+                    )
 
             }
 
         }
-
     }
+    // ============================================================
+// Groups
+// ============================================================
+
+    var groupsState by mutableStateOf<ApiState<List<GameGroup>>>(
+        ApiState.Idle
+    )
+        private set
+
+    fun loadGroups(context: Context) {
+
+        viewModelScope.launch {
+
+            groupsState = ApiState.Loading
+
+            groupsState =
+                AppRepository(context)
+                    .getGameGroups()
+        }
+    }
+
+
+
 }

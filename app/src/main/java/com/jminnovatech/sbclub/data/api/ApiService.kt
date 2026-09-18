@@ -193,18 +193,36 @@ interface ApiService {
 | PRO GAME
 |--------------------------------------------------------------------------
 */
+// ==========================================
+// PRO GAME GROUPS
+// ==========================================
 
+    @GET("pro-game/groups")
+    suspend fun getGameGroups(): GameGroupResponse
+
+    @GET("pro-game/groups/{groupId}/games")
+    suspend fun getGroupGames(
+        @Path("groupId") groupId: Int
+    ): GameListResponse
+
+    @GET("pro-game/groups/{groupId}/games/{gameId}/schedules")
+    suspend fun getGroupSchedules(
+        @Path("groupId") groupId: Int,
+        @Path("gameId") gameId: Int
+    ): ScheduleResponse
     @GET("pro-game/games")
     suspend fun getGames(): GameListResponse
 
     @GET("pro-game/games/{gameId}/schedules")
     suspend fun getSchedules(
-        @Path("gameId") gameId:Int
+        @Path("gameId") gameId: Int,
+        @Query("group_id") groupId: Int = 1
     ): ScheduleResponse
 
     @GET("pro-game/games/{gameId}/current")
     suspend fun getCurrentSchedule(
-        @Path("gameId") gameId:Int
+        @Path("gameId") gameId: Int,
+        @Query("group_id") groupId: Int = 1
     ): CurrentScheduleResponse
 
     @POST("pro-game/place-bet")
@@ -225,43 +243,32 @@ interface ApiService {
 
     @GET("pro-game/history")
     suspend fun getProHistory(
-
-        @Query("game_id")
-        gameId:Int,
-
-        @Query("schedule_id")
-        scheduleId:Int? = null,
-
-        @Query("page")
-        page:Int = 1
-
+        @Query("game_id") gameId: Int,
+        @Query("schedule_id") scheduleId: Int? = null,
+        @Query("page") page: Int = 1,
+        @Query("group_id") groupId: Int = 1
     ): HistoryResponse
 
     @GET("pro-game/results")
     suspend fun getProResults(
-
-        @Query("game_id")
-        gameId:Int,
-
-        @Query("page")
-        page:Int = 1
-
+        @Query("game_id") gameId: Int,
+        @Query("page") page: Int = 1,
+        @Query("group_id") groupId: Int = 1
     ): ResultResponse
 
 
     @GET("pro-game/bethistory")
     suspend fun getBetHistory(
         @Query("game_id") gameId: Int,
-        @Query("schedule_id") scheduleId: Int
+        @Query("schedule_id") scheduleId: Int,
+        @Query("group_id") groupId: Int = 1
     ): BetHistoryResponse
 
-    @GET("running-bets")
+    @GET("pro-game/running-bets")
     suspend fun runningBets(
-
         @Query("game_id") gameId: Int,
-
-        @Query("schedule_id") scheduleId: Int
-
+        @Query("schedule_id") scheduleId: Int,
+        @Query("group_id") groupId: Int = 1
     ): RunningBetResponse
 
 // ==============================
@@ -372,7 +379,7 @@ interface ApiService {
     ): CommonResponse
     
     
-    
+
     
     
 }

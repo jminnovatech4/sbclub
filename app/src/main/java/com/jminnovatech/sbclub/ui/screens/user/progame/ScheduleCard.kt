@@ -35,7 +35,7 @@ import com.jminnovatech.sbclub.utils.ApiState
 @Composable
 fun ScheduleCard(
     nav: NavController,
-
+    groupId: Int,
     gameId: Int,
 
     schedule: Schedule,
@@ -431,7 +431,7 @@ fun ScheduleCard(
 
                     nav.navigate(
 
-                        "play_game/$gameId/${schedule.id}"
+                        "play_game/$groupId/$gameId/${schedule.id}"
 
                     )
 

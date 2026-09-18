@@ -69,7 +69,13 @@ import java.util.Locale
 @RequiresApi(Build.VERSION_CODES.O)
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun UserMainScreen(nav: NavController, context: Context,gameId:Int) {
+fun UserMainScreen(
+    nav: NavController,
+    context: Context,
+    groupId: Int,
+    gameId: Int
+)
+{
     val vm: WalletVM = viewModel(
         factory = WalletVMFactory(AppRepository(context))
     )
@@ -310,6 +316,7 @@ fun UserMainScreen(nav: NavController, context: Context,gameId:Int) {
                         ProGameScreen(
                             nav = nav,
                             context = context,
+                            groupId = groupId,
                             gameId = gameId
                         )
 

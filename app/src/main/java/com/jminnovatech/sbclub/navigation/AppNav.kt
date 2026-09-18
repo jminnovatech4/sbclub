@@ -19,6 +19,7 @@ import com.jminnovatech.sbclub.viewmodel.MasterVM
 import com.jminnovatech.sbclub.viewmodel.WalletVM
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.jminnovatech.sbclub.ui.screens.admin.game.ResultPanelScreen
+import com.jminnovatech.sbclub.ui.screens.user.progame.GroupGameScreen
 import com.jminnovatech.sbclub.viewmodel.AdminVM
 @RequiresApi(Build.VERSION_CODES.O)
 @Composable
@@ -91,14 +92,24 @@ fun AppNav(
             WithdrawScreen(walletVM)
         }
         // 🔥 USER MAIN (IMPORTANT FIX)
-        composable("user/{gameId}") {
+        composable("user/{groupId}/{gameId}") {
+
+            val groupId =
+                it.arguments
+                    ?.getString("groupId")
+                    ?.toInt()
+                    ?: 1
 
             val gameId =
-                it.arguments?.getString("gameId")?.toInt() ?: 1
+                it.arguments
+                    ?.getString("gameId")
+                    ?.toInt()
+                    ?: 1
 
             UserMainScreen(
                 nav = nav,
                 context = context,
+                groupId = groupId,
                 gameId = gameId
             )
         }
@@ -123,32 +134,65 @@ fun AppNav(
 
         }
         composable(
-            route = "pro_game/{gameId}"
+            route = "pro_game/{groupId}/{gameId}"
         ) {
 
+            val groupId =
+                it.arguments
+                    ?.getString("groupId")
+                    ?.toInt()
+                    ?: 1
+
             val gameId =
-                it.arguments?.getString("gameId")?.toInt() ?: 1
+                it.arguments
+                    ?.getString("gameId")
+                    ?.toInt()
+                    ?: 1
 
             ProGameScreen(
                 nav = nav,
                 context = context,
+                groupId = groupId,
                 gameId = gameId
             )
-
         }
         composable(
-
-            "play_game/{gameId}/{scheduleId}"
-
+            route = "pro_game_group/{groupId}"
         ) {
 
-            val gameId =
+            val groupId =
+                it.arguments
+                    ?.getString("groupId")
+                    ?.toInt()
+                    ?: 1
 
-                it.arguments?.getString("gameId")!!.toInt()
+            GroupGameScreen(
+                nav = nav,
+                context = context,
+                groupId = groupId
+            )
+        }
+        composable(
+            "play_game/{groupId}/{gameId}/{scheduleId}"
+        ) {
+
+            val groupId =
+                it.arguments
+                    ?.getString("groupId")
+                    ?.toInt()
+                    ?: 1
+
+            val gameId =
+                it.arguments
+                    ?.getString("gameId")
+                    ?.toInt()
+                    ?: 1
 
             val scheduleId =
-
-                it.arguments?.getString("scheduleId")!!.toInt()
+                it.arguments
+                    ?.getString("scheduleId")
+                    ?.toInt()
+                    ?: 0
 
             PlayGameScreen(
 
@@ -156,12 +200,12 @@ fun AppNav(
 
                 context = context,
 
+                groupId = groupId,
+
                 gameId = gameId,
 
                 scheduleId = scheduleId
-
             )
-
         }
     }
 }
