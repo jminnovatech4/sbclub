@@ -64,6 +64,13 @@ import com.jminnovatech.sbclub.ui.screens.DepositScreen
 
 import com.jminnovatech.sbclub.utils.SessionManager
 import com.jminnovatech.sbclub.viewmodel.AuthVM
+import androidx.compose.foundation.Image
+import androidx.compose.foundation.clickable
+
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.res.painterResource
+import com.jminnovatech.sbclub.R
 
 @RequiresApi(Build.VERSION_CODES.O)
 @Composable
@@ -122,7 +129,7 @@ fun DashboardScreen(
         vm.loadWallet(context)
 
         authVM.loadMessage(context)
-
+        vm.loadGroups(context)
     }
     ModalNavigationDrawer(
 
@@ -401,38 +408,36 @@ fun DashboardScreen(
                                 }
 
                             },
+
                             shape = RoundedCornerShape(50.dp),
+
                             colors = ButtonDefaults.buttonColors(
                                 containerColor = Color(0xFF3AB43F),
                                 contentColor = Color.White
                             ),
+
                             elevation = ButtonDefaults.buttonElevation(
-                                defaultElevation = 8.dp
+                                defaultElevation = 6.dp
                             ),
+
+                            contentPadding = PaddingValues(0.dp),
+
                             modifier = Modifier
-                                .height(52.dp)
+                                .size(42.dp)
                         ) {
 
                             Icon(
                                 imageVector = Icons.Default.AddCircle,
-                                contentDescription = null,
-                                modifier = Modifier.size(16.dp)
+                                contentDescription = "Add Money",
+                                modifier = Modifier.size(20.dp)
                             )
-
-                            Spacer(Modifier.width(8.dp))
-
-                            Text(
-                                text = "",
-                                fontWeight = FontWeight.Bold
-                            )
-
                         }
 
                         Row(
 
                             modifier = Modifier.padding(
-                                horizontal = 14.dp,
-                                vertical = 10.dp
+                                horizontal = 10.dp,
+                                vertical = 8.dp
                             ),
 
                             verticalAlignment = Alignment.CenterVertically
@@ -442,7 +447,8 @@ fun DashboardScreen(
                             Icon(
                                 Icons.Default.AccountBalanceWallet,
                                 contentDescription = null,
-                                tint = Color(0xFF2563EB)
+                                tint = Color(0xFF2563EB),
+                                modifier = Modifier.size(18.dp)
                             )
 
                             Spacer(Modifier.width(6.dp))
@@ -620,100 +626,56 @@ fun DashboardScreen(
 
             Spacer(Modifier.height(10.dp))
 
-            when (val state = vm.groupsState) {
+            // ============================================================
+// GAME GROUPS
+// ============================================================
 
-                ApiState.Idle -> {
+            val groupsState = vm.groupsState
 
-                }
+            when (groupsState) {
 
+                ApiState.Idle,
                 ApiState.Loading -> {
 
                     Box(
-                        modifier = Modifier.fillMaxWidth(),
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .height(150.dp),
                         contentAlignment = Alignment.Center
                     ) {
-
                         CircularProgressIndicator()
-
                     }
                 }
 
                 is ApiState.Error -> {
 
-                    Box(
-                        modifier = Modifier.fillMaxWidth(),
-                        contentAlignment = Alignment.Center
-                    ) {
-
-                        Column(
-                            horizontalAlignment = Alignment.CenterHorizontally
-                        ) {
-
-                            Icon(
-                                Icons.Default.WifiOff,
-                                contentDescription = null,
-                                tint = Color.Gray,
-                                modifier = Modifier.size(60.dp)
-                            )
-
-                            Spacer(
-                                Modifier.height(10.dp)
-                            )
-
-                            Text(
-                                text = state.message,
-                                color = Color.White
-                            )
-
-                            Spacer(
-                                Modifier.height(12.dp)
-                            )
-
-                            Button(
-                                onClick = {
-                                    vm.loadGroups(context)
-                                    vm.loadWallet(context)
-                                }
-                            ) {
-
-                                Text("Retry")
-
-                            }
-                        }
-                    }
+                    Text(
+                        text = groupsState.message,
+                        color = Color.Red
+                    )
                 }
 
                 is ApiState.Success -> {
 
-                    val groups = state.data
-
                     Row(
-
-                        modifier = Modifier.fillMaxWidth(),
-
-                        horizontalArrangement =
-                            Arrangement.spacedBy(12.dp)
-
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(horizontal = 12.dp),
+                        horizontalArrangement = Arrangement.spacedBy(12.dp)
                     ) {
 
-                        groups.forEach { group ->
+                        groupsState.data.forEach { group ->
 
-                            Box(
-                                modifier = Modifier.weight(1f)
-                            ) {
+                            GameGroupButton(
+                                group = group,
+                                modifier = Modifier.weight(1f),
+                                onClick = {
 
-                                GameGroupCard(
-                                    group = group,
-
-                                    onClick = {
-
-                                        nav.navigate(
-                                            "pro_game_group/${group.id}"
-                                        )
-
-                                    }
-                                )
-                            }
+                                    nav.navigate(
+                                        "pro_game_group/${group.id}"
+                                    )
+                                }
+                            )
                         }
                     }
                 }
@@ -1483,6 +1445,71 @@ fun GameGroupCard(
                 fontSize = 15.sp,
                 fontWeight = FontWeight.Bold,
                 maxLines = 1
+            )
+        }
+    }
+}
+
+@Composable
+private fun GameGroupButton(
+    group: GameGroup,
+    modifier: Modifier = Modifier,
+    onClick: () -> Unit
+) {
+
+    val logo = when (group.id) {
+
+        1 -> R.drawable.kolkatafatafat_logo
+
+        2 -> R.drawable.megabazar
+
+        else -> R.drawable.logo
+    }
+
+    Card(
+        modifier = modifier
+            .height(170.dp)
+            .clickable {
+                onClick()
+            },
+        shape = RoundedCornerShape(22.dp),
+        elevation = CardDefaults.cardElevation(
+            defaultElevation = 8.dp
+        ),
+        colors = CardDefaults.cardColors(
+            containerColor = Color.White
+        )
+    ) {
+
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(10.dp),
+            horizontalAlignment = Alignment.CenterHorizontally,
+            verticalArrangement = Arrangement.Center
+        ) {
+
+            Image(
+                painter = painterResource(id = logo),
+                contentDescription = group.name,
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(105.dp)
+                    .clip(
+                        RoundedCornerShape(16.dp)
+                    ),
+                contentScale = ContentScale.Fit
+            )
+
+            Spacer(
+                modifier = Modifier.height(8.dp)
+            )
+
+            Text(
+                text = group.name,
+                style = MaterialTheme.typography.titleSmall,
+                fontWeight = FontWeight.Bold,
+                color = Color(0xFF111827)
             )
         }
     }

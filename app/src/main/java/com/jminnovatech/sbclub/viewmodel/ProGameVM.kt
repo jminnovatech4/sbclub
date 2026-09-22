@@ -57,10 +57,11 @@ class ProGameVM : ViewModel() {
     // Wallet
     // -------------------------
 
-    var walletBalance by mutableDoubleStateOf(0.0)
 // ============================================================
 // Wallet
 // ============================================================
+
+    var walletBalance by mutableDoubleStateOf(0.0)
 
     fun loadWallet(
         context: Context
@@ -75,18 +76,27 @@ class ProGameVM : ViewModel() {
                 is ApiState.Success -> {
 
                     walletBalance =
-                        state.data.wallet.toDoubleOrNull() ?: 0.0
+                        state.data.wallet
+                            .toDoubleOrNull()
+                            ?: 0.0
 
+                    android.util.Log.d(
+                        "PRO_WALLET",
+                        "Wallet Balance = $walletBalance"
+                    )
                 }
 
-                else -> {
+                is ApiState.Error -> {
 
+                    android.util.Log.e(
+                        "PRO_WALLET",
+                        "Wallet Error = ${state.message}"
+                    )
                 }
 
+                else -> {}
             }
-
         }
-
     }
     // =======================================a=====================
     // Load Games
@@ -229,19 +239,22 @@ class ProGameVM : ViewModel() {
 
                 loadResults(
                     context,
-                    gameId
+                    gameId,
+                    groupId
                 )
 
                 loadHistory(
                     context,
                     gameId,
-                    scheduleId
+                    scheduleId,
+                    groupId
                 )
 
                 loadBetHistory(
                     context,
                     gameId,
-                    scheduleId
+                    scheduleId,
+                    groupId
                 )
             }
         }

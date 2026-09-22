@@ -23,13 +23,10 @@ fun PlayGameScreen(
 
     nav: NavController,
     context: Context,
-
     groupId: Int,
-
     gameId: Int,
-
     scheduleId: Int,
-
+    initialWallet: Double,
     vm: ProGameVM = remember { ProGameVM() }
 
 ) {
@@ -37,7 +34,12 @@ fun PlayGameScreen(
     // ============================================================
     // LOAD DATA
     // ============================================================
+    LaunchedEffect(initialWallet) {
 
+        if (initialWallet > 0) {
+            vm.updateWallet(initialWallet)
+        }
+    }
     LaunchedEffect(groupId, gameId, scheduleId) {
 
         vm.loadSchedules(

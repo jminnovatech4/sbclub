@@ -173,38 +173,29 @@ fun AppNav(
             )
         }
         composable(
-            "play_game/{groupId}/{gameId}/{scheduleId}"
+            "play_game/{groupId}/{gameId}/{scheduleId}/{wallet}"
         ) {
 
             val groupId =
-                it.arguments
-                    ?.getString("groupId")
-                    ?.toInt()
-                    ?: 1
+                it.arguments?.getString("groupId")?.toIntOrNull() ?: 1
 
             val gameId =
-                it.arguments
-                    ?.getString("gameId")
-                    ?.toInt()
-                    ?: 1
+                it.arguments?.getString("gameId")?.toIntOrNull() ?: 1
 
             val scheduleId =
-                it.arguments
-                    ?.getString("scheduleId")
-                    ?.toInt()
-                    ?: 0
+                it.arguments?.getString("scheduleId")?.toIntOrNull() ?: 0
+
+            val wallet =
+                it.arguments?.getString("wallet")?.toDoubleOrNull() ?: 0.0
 
             PlayGameScreen(
 
                 nav = nav,
-
                 context = context,
-
                 groupId = groupId,
-
                 gameId = gameId,
-
-                scheduleId = scheduleId
+                scheduleId = scheduleId,
+                initialWallet = wallet
             )
         }
     }

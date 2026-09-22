@@ -183,7 +183,7 @@ fun ScheduleCard(
 
                         Text(
 
-                            text = "BAJI ${schedule.baji_no}",
+                            text = schedule.title ?: "BAJI ${schedule.baji_no}",
 
                             color = Color.White,
 
@@ -430,9 +430,7 @@ fun ScheduleCard(
                 onClick = {
 
                     nav.navigate(
-
-                        "play_game/$groupId/$gameId/${schedule.id}"
-
+                        "play_game/$groupId/$gameId/${schedule.id}/$wallet"
                     )
 
                 }
