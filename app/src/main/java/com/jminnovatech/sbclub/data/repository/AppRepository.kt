@@ -1239,9 +1239,10 @@ class AppRepository(private val context: Context) {
 // RESULT PANEL
 //======================================
 
-    suspend fun resultPanel() =
-
-        api.resultPanel()
+    suspend fun resultPanel(
+        groupId: Int = 1
+    ) =
+        api.resultPanel(groupId)
 
 //======================================
 // RESULT PREVIEW

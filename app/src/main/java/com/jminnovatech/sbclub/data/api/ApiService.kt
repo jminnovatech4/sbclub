@@ -324,7 +324,9 @@ interface ApiService {
 // =======================================
 
     @GET("admin/game/result-panel")
-    suspend fun resultPanel(): ResultPanelResponse
+    suspend fun resultPanel(
+        @Query("group_id") groupId: Int = 1
+    ): ResultPanelResponse
 
 // =======================================
 // RESULT PREVIEW

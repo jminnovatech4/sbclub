@@ -1461,7 +1461,7 @@ private fun GameGroupButton(
 
         1 -> R.drawable.kolkatafatafat_logo
 
-        2 -> R.drawable.megabazar
+        2 -> R.drawable.mainbazar
 
         else -> R.drawable.logo
     }

@@ -10,6 +10,7 @@ import androidx.compose.material.icons.filled.History
 import androidx.compose.material.icons.filled.Refresh
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Brush
@@ -30,14 +31,33 @@ fun ResultPanelScreen(
 
     val context = LocalContext.current
 
-    LaunchedEffect(Unit) {
+    // ==========================================
+    // SELECTED GAME GROUP
+    // ==========================================
 
-        vm.loadResultPanel(context)
+    var selectedGroupId by rememberSaveable {
+        mutableIntStateOf(1)
+    }
+
+    // ==========================================
+    // LOAD SELECTED GROUP RESULT PANEL
+    // ==========================================
+
+    LaunchedEffect(selectedGroupId) {
+
+        vm.loadResultPanel(
+            context,
+            selectedGroupId
+        )
 
     }
 
     val panelState = vm.resultPanelState
     val publishState = vm.publishAllState
+
+    // ==========================================
+    // PUBLISH RESULT MESSAGE
+    // ==========================================
 
     LaunchedEffect(publishState) {
 
@@ -104,9 +124,13 @@ fun ResultPanelScreen(
 
                     CircularProgressIndicator()
 
-                    Spacer(Modifier.height(15.dp))
+                    Spacer(
+                        Modifier.height(15.dp)
+                    )
 
-                    Text("Loading Result Panel...")
+                    Text(
+                        "Loading Result Panel..."
+                    )
 
                 }
 
@@ -129,17 +153,26 @@ fun ResultPanelScreen(
                         style = MaterialTheme.typography.displayLarge
                     )
 
-                    Spacer(Modifier.height(12.dp))
+                    Spacer(
+                        Modifier.height(12.dp)
+                    )
 
-                    Text(panelState.message)
+                    Text(
+                        panelState.message
+                    )
 
-                    Spacer(Modifier.height(20.dp))
+                    Spacer(
+                        Modifier.height(20.dp)
+                    )
 
                     Button(
 
                         onClick = {
 
-                            vm.loadResultPanel(context)
+                            vm.loadResultPanel(
+                                context,
+                                selectedGroupId
+                            )
 
                         }
 
@@ -150,7 +183,9 @@ fun ResultPanelScreen(
                             null
                         )
 
-                        Spacer(Modifier.width(8.dp))
+                        Spacer(
+                            Modifier.width(8.dp)
+                        )
 
                         Text("Retry")
 
@@ -166,7 +201,15 @@ fun ResultPanelScreen(
 
                     vm = vm,
 
-                    data = panelState.data
+                    data = panelState.data,
+
+                    groupId = selectedGroupId,
+
+                    onGroupChange = { groupId ->
+
+                        selectedGroupId = groupId
+
+                    }
 
                 )
 
@@ -180,12 +223,17 @@ fun ResultPanelScreen(
 
 }
 
+
 @Composable
 private fun ResultPanelBody(
 
     vm: AdminVM,
 
-    data: ResultPanelResponse
+    data: ResultPanelResponse,
+
+    groupId: Int,
+
+    onGroupChange: (Int) -> Unit
 
 ) {
 
@@ -214,6 +262,143 @@ private fun ResultPanelBody(
     ) {
 
         // ===============================
+        // GAME GROUP SELECTOR
+        // ===============================
+
+        item {
+
+            Text(
+
+                text = "Select Game",
+
+                style = MaterialTheme.typography.titleMedium,
+
+                fontWeight = FontWeight.Bold
+
+            )
+
+            Spacer(
+                Modifier.height(8.dp)
+            )
+
+            Row(
+
+                modifier = Modifier.fillMaxWidth(),
+
+                horizontalArrangement = Arrangement.spacedBy(10.dp)
+
+            ) {
+
+                FilterChip(
+
+                    selected = groupId == 1,
+
+                    onClick = {
+
+                        if (groupId != 1) {
+
+                            onGroupChange(1)
+
+                        }
+
+                    },
+
+                    label = {
+
+                        Text(
+                            "KOLKATA FATAFAT"
+                        )
+
+                    },
+
+                    modifier = Modifier.weight(1f)
+
+                )
+
+                FilterChip(
+
+                    selected = groupId == 2,
+
+                    onClick = {
+
+                        if (groupId != 2) {
+
+                            onGroupChange(2)
+
+                        }
+
+                    },
+
+                    label = {
+
+                        Text(
+                            "MAIN BAZAR"
+                        )
+
+                    },
+
+                    modifier = Modifier.weight(1f)
+
+                )
+
+            }
+
+        }
+
+
+        // ===============================
+        // SELECTED GROUP NAME
+        // ===============================
+
+        item {
+
+            Card(
+
+                modifier = Modifier.fillMaxWidth(),
+
+                colors = CardDefaults.cardColors(
+
+                    containerColor =
+                        if (groupId == 1)
+                            Color(0xFFE3F2FD)
+                        else
+                            Color(0xFFFFF3E0)
+
+                )
+
+            ) {
+
+                Row(
+
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(14.dp),
+
+                    verticalAlignment = Alignment.CenterVertically
+
+                ) {
+
+                    Text(
+
+                        text = if (groupId == 1)
+                            "🎯 KOLKATA FATAFAT"
+                        else
+                            "🎯 MAINBAZAR",
+
+                        style = MaterialTheme.typography.titleMedium,
+
+                        fontWeight = FontWeight.Bold
+
+                    )
+
+                }
+
+            }
+
+        }
+
+
+        // ===============================
         // REFRESH BUTTON
         // ===============================
 
@@ -225,7 +410,10 @@ private fun ResultPanelBody(
 
                 onClick = {
 
-                    vm.loadResultPanel(context)
+                    vm.loadResultPanel(
+                        context,
+                        groupId
+                    )
 
                 }
 
@@ -236,13 +424,18 @@ private fun ResultPanelBody(
                     null
                 )
 
-                Spacer(Modifier.width(10.dp))
+                Spacer(
+                    Modifier.width(10.dp)
+                )
 
-                Text("Refresh Panel")
+                Text(
+                    "Refresh Panel"
+                )
 
             }
 
         }
+
 
         // ===============================
         // CURRENT PUBLISH PANEL
@@ -272,13 +465,16 @@ private fun ResultPanelBody(
 
                     vm = vm,
 
-                    inputMap = inputMap
+                    inputMap = inputMap,
+
+                    groupId = groupId
 
                 )
 
             }
 
         }
+
 
         // ===============================
         // EMPTY STATE
@@ -294,7 +490,8 @@ private fun ResultPanelBody(
 
                     colors = CardDefaults.cardColors(
 
-                        containerColor = Color(0xFFF8FAFC)
+                        containerColor =
+                            Color(0xFFF8FAFC)
 
                     )
 
@@ -306,7 +503,8 @@ private fun ResultPanelBody(
                             .fillMaxWidth()
                             .padding(32.dp),
 
-                        horizontalAlignment = Alignment.CenterHorizontally
+                        horizontalAlignment =
+                            Alignment.CenterHorizontally
 
                     ) {
 
@@ -314,23 +512,30 @@ private fun ResultPanelBody(
 
                             "🎯",
 
-                            style = MaterialTheme.typography.displayLarge
+                            style =
+                                MaterialTheme.typography.displayLarge
 
                         )
 
-                        Spacer(Modifier.height(12.dp))
+                        Spacer(
+                            Modifier.height(12.dp)
+                        )
 
                         Text(
 
                             "No Result Available",
 
-                            style = MaterialTheme.typography.headlineSmall,
+                            style =
+                                MaterialTheme.typography.headlineSmall,
 
-                            fontWeight = FontWeight.Bold
+                            fontWeight =
+                                FontWeight.Bold
 
                         )
 
-                        Spacer(Modifier.height(8.dp))
+                        Spacer(
+                            Modifier.height(8.dp)
+                        )
 
                         Text(
 
@@ -340,13 +545,18 @@ private fun ResultPanelBody(
 
                         )
 
-                        Spacer(Modifier.height(22.dp))
+                        Spacer(
+                            Modifier.height(22.dp)
+                        )
 
                         Button(
 
                             onClick = {
 
-                                vm.loadResultPanel(context)
+                                vm.loadResultPanel(
+                                    context,
+                                    groupId
+                                )
 
                             }
 
@@ -357,9 +567,13 @@ private fun ResultPanelBody(
                                 null
                             )
 
-                            Spacer(Modifier.width(8.dp))
+                            Spacer(
+                                Modifier.width(8.dp)
+                            )
 
-                            Text("Refresh")
+                            Text(
+                                "Refresh"
+                            )
 
                         }
 
@@ -371,6 +585,7 @@ private fun ResultPanelBody(
 
         }
 
+
         // ===============================
         // HISTORY
         // ===============================
@@ -381,7 +596,8 @@ private fun ResultPanelBody(
 
                 Row(
 
-                    verticalAlignment = Alignment.CenterVertically
+                    verticalAlignment =
+                        Alignment.CenterVertically
 
                 ) {
 
@@ -391,19 +607,25 @@ private fun ResultPanelBody(
 
                         null,
 
-                        tint = Color(0xFF2563EB)
+                        tint =
+                            Color(0xFF2563EB)
 
                     )
 
-                    Spacer(Modifier.width(8.dp))
+                    Spacer(
+                        Modifier.width(8.dp)
+                    )
 
                     Text(
 
-                        text = "Published History",
+                        text =
+                            "Published History",
 
-                        style = MaterialTheme.typography.titleLarge,
+                        style =
+                            MaterialTheme.typography.titleLarge,
 
-                        fontWeight = FontWeight.Bold
+                        fontWeight =
+                            FontWeight.Bold
 
                     )
 
@@ -418,6 +640,7 @@ private fun ResultPanelBody(
             }
 
         }
+
 
         item {
 

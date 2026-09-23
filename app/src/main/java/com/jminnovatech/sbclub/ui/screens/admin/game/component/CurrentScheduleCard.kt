@@ -9,15 +9,18 @@ import com.jminnovatech.sbclub.data.model.admin.game.PublishGameResult
 import com.jminnovatech.sbclub.data.model.admin.game.ResultPanelResponse
 import com.jminnovatech.sbclub.viewmodel.AdminVM
 import androidx.compose.ui.platform.LocalContext
+
 @Composable
 fun CurrentScheduleCard(
     data: ResultPanelResponse,
     vm: AdminVM,
-    inputMap: MutableMap<Int, String>
+    inputMap: MutableMap<Int, String>,
+    groupId: Int
 ) {
 
     val schedule = data.current_schedule ?: return
     val context = LocalContext.current
+
     Card(
         modifier = Modifier.fillMaxWidth()
     ) {
@@ -60,7 +63,8 @@ fun CurrentScheduleCard(
 
                     data.games.forEach {
 
-                        val value = inputMap[it.id]?.trim().orEmpty()
+                        val value =
+                            inputMap[it.id]?.trim().orEmpty()
 
                         if (value.isNotEmpty()) {
 
@@ -77,6 +81,7 @@ fun CurrentScheduleCard(
                             )
 
                         }
+
                     }
 
                     if (list.isNotEmpty()) {
@@ -85,11 +90,14 @@ fun CurrentScheduleCard(
 
                             context = context,
 
+                            groupId = groupId,
+
                             scheduleId = schedule.id,
 
                             results = list
 
                         )
+
                     }
 
                 }

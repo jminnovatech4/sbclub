@@ -352,7 +352,8 @@ var gameDashboardState by mutableStateOf<ApiState<AdminDashboardResponse>>(ApiSt
         private set
 
     fun loadResultPanel(
-        context: Context
+        context: Context,
+        groupId: Int = 1
     ) {
 
         viewModelScope.launch {
@@ -361,17 +362,19 @@ var gameDashboardState by mutableStateOf<ApiState<AdminDashboardResponse>>(ApiSt
 
             try {
 
-                val res = AppRepository(context).resultPanel()
+                val res =
+                    AppRepository(context)
+                        .resultPanel(groupId)
 
-                resultPanelState = ApiState.Success(res)
+                resultPanelState =
+                    ApiState.Success(res)
 
             } catch (e: Exception) {
 
-                resultPanelState = ApiState.Error(
-
-                    e.message ?: "Something Went Wrong"
-
-                )
+                resultPanelState =
+                    ApiState.Error(
+                        e.message ?: "Something Went Wrong"
+                    )
 
             }
 
@@ -426,13 +429,10 @@ var gameDashboardState by mutableStateOf<ApiState<AdminDashboardResponse>>(ApiSt
     }
 
     fun publishAll(
-
         context: Context,
-
+        groupId: Int,
         scheduleId: Int,
-
         results: List<PublishGameResult>
-
     ) {
 
         viewModelScope.launch {
@@ -459,7 +459,8 @@ var gameDashboardState by mutableStateOf<ApiState<AdminDashboardResponse>>(ApiSt
 
                 )
 
-                loadResultPanel(context)
+                // Reload same group's Result Panel
+                loadResultPanel(context, groupId)
 
             }
 
@@ -469,11 +470,12 @@ var gameDashboardState by mutableStateOf<ApiState<AdminDashboardResponse>>(ApiSt
 
                 Log.e("SERVER_ERROR", errorBody ?: "No Body")
 
-                publishAllState = ApiState.Error(errorBody ?: "HTTP 500")
+                publishAllState = ApiState.Error(
+                    errorBody ?: "HTTP 500"
+                )
             }
 
         }
-
     }
     fun resetPublishState() {
 
