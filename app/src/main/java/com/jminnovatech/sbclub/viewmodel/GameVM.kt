@@ -7,6 +7,7 @@ import androidx.compose.runtime.*
 import com.jminnovatech.sbclub.data.model.ResultWithBetResponse
 
 import com.jminnovatech.sbclub.data.model.RoundItem
+import com.jminnovatech.sbclub.data.model.progame.LatestResultsResponse
 import com.jminnovatech.sbclub.data.model.user.BetItem.BetItem
 import com.jminnovatech.sbclub.data.model.user.BetItem.BetRequest
 import com.jminnovatech.sbclub.repository.AppRepository
@@ -81,5 +82,35 @@ class GameVM : ViewModel() {
                 ApiState.Error(e.message ?: "Error")
             }
         }
+    }
+
+    var latestResultsState by mutableStateOf<ApiState<LatestResultsResponse>>(
+        ApiState.Idle
+    )
+        private set
+    fun loadLatestResults(context: Context) {
+
+        viewModelScope.launch {
+
+            latestResultsState = ApiState.Loading
+
+            try {
+
+                val result = AppRepository(context)
+                    .getLatestResults()
+
+                latestResultsState = result
+
+            } catch (e: Exception) {
+
+                latestResultsState =
+                    ApiState.Error(
+                        e.message ?: "Unable to load results"
+                    )
+
+            }
+
+        }
+
     }
 }

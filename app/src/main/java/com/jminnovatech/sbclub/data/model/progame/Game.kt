@@ -261,3 +261,69 @@ data class GameGroupResponse(
     val status: Boolean,
     val data: List<GameGroup>
 )
+
+data class LatestResultsResponse(
+
+    val status: Boolean,
+
+    val date: String? = null,
+
+    val latest_result_id: Int? = null,
+
+    val groups: List<ResultGroup> = emptyList()
+
+)
+
+
+data class ResultGroup(
+
+    val group_id: Int,
+
+    val group_name: String,
+
+    val baji_no: Int,
+
+    val title: String? = null,
+
+    val result_date: String? = null,
+
+    val start_time: String? = null,
+
+    val end_time: String? = null,
+
+    val result_time: String? = null,
+
+    val results: List<ResultGame> = emptyList()
+
+)
+
+
+data class ResultGame(
+
+    val result_id: Int,
+
+    val game_id: Int,
+
+    val game_name: String,
+
+    val game_code: String,
+
+    val result_number: String,
+
+    val schedule_id: Int,
+
+    val baji_no: Int,
+
+    val title: String? = null,
+
+    val start_time: String? = null,
+
+    val end_time: String? = null,
+
+    val result_time: String? = null,
+
+    val result_date: String? = null,
+
+    val declared_at: String? = null
+
+)

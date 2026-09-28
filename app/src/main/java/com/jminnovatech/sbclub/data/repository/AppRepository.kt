@@ -1643,6 +1643,37 @@ class AppRepository(private val context: Context) {
 
         }
     }
+
+    suspend fun getLatestResults(): ApiState<LatestResultsResponse> {
+
+        return try {
+
+            val res = api.getLatestResults()
+
+            if (res.status) {
+
+                ApiState.Success(res)
+
+            } else {
+
+                ApiState.Error("No Result")
+
+            }
+
+        } catch (e: Exception) {
+
+            e.printStackTrace()
+
+            ApiState.Error(
+                NetworkErrorHandler.getMessage(e)
+            )
+
+        }
+
+    }
+
+
+
 }
 
 

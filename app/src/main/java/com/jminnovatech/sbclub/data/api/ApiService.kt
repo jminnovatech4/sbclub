@@ -256,7 +256,8 @@ interface ApiService {
         @Query("group_id") groupId: Int = 1
     ): ResultResponse
 
-
+    @GET("pro-game/latest-results")
+    suspend fun getLatestResults(): LatestResultsResponse
     @GET("pro-game/bethistory")
     suspend fun getBetHistory(
         @Query("game_id") gameId: Int,

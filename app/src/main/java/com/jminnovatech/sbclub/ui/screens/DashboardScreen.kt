@@ -2,6 +2,7 @@ package com.jminnovatech.sbclub.ui.screens.progame
 
 import android.content.Context
 import android.os.Build
+import android.util.Log
 import androidx.annotation.RequiresApi
 import androidx.compose.animation.core.LinearEasing
 import androidx.compose.animation.core.RepeatMode
@@ -71,7 +72,10 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
 import com.jminnovatech.sbclub.R
+import androidx.compose.material.icons.filled.Notifications
+import com.jminnovatech.sbclub.data.model.progame.LatestResultsResponse
 
+import com.jminnovatech.sbclub.ui.components.ResultNotificationPopup
 @RequiresApi(Build.VERSION_CODES.O)
 @Composable
 fun DashboardScreen(
@@ -86,6 +90,8 @@ fun DashboardScreen(
 
     vm: ProGameVM = remember { ProGameVM() }
 ) {
+
+
     val drawerState = rememberDrawerState(DrawerValue.Closed)
     var showTransactions by remember { mutableStateOf(false) }
     val walletVM = remember {
@@ -110,6 +116,21 @@ fun DashboardScreen(
     var showDeposit by remember {
         mutableStateOf(false)
     }
+    var showResultPopup by remember {
+        mutableStateOf(false)
+    }
+
+    var hasNewResult by remember {
+        mutableStateOf(false)
+    }
+
+    var latestResultData by remember {
+        mutableStateOf<LatestResultsResponse?>(null)
+    }
+
+    var lastResultId by remember {
+        mutableStateOf<Int?>(null)
+    }
     LaunchedEffect(openDeposit, sharedAmount, sharedUtr) {
 
         if (
@@ -130,6 +151,65 @@ fun DashboardScreen(
 
         authVM.loadMessage(context)
         vm.loadGroups(context)
+    }
+    LaunchedEffect(Unit) {
+
+        while (true) {
+
+            try {
+
+                val response =
+                    AppRepository(context)
+                        .getLatestResults()
+
+                if (
+                    response is ApiState.Success
+                ) {
+
+                    val data =
+                        response.data
+
+                    latestResultData =
+                        data
+
+                    val newId =
+                        data.latest_result_id
+
+                    if (
+                        newId != null &&
+                        newId != lastResultId
+                    ) {
+
+                        if (lastResultId != null) {
+
+                            hasNewResult = true
+                            showResultPopup = true
+
+                        }
+
+                        lastResultId = newId
+
+                    }
+
+                }
+
+            } catch (
+                e: Exception
+            ) {
+
+                Log.e(
+                    "RESULT_NOTIFY",
+                    e.message ?: "Result check failed"
+                )
+
+            }
+
+            kotlinx.coroutines.delay(
+                15000
+            )
+
+        }
+
     }
     ModalNavigationDrawer(
 
@@ -622,7 +702,29 @@ fun DashboardScreen(
                 }
 
             }
+            ResultNotificationBell(
 
+                hasNewResult = hasNewResult,
+
+                onClick = {
+
+                    latestResultData?.let {
+
+                        if (
+                            it.groups.isNotEmpty()
+                        ) {
+
+                            showResultPopup = true
+
+                            hasNewResult = false
+
+                        }
+
+                    }
+
+                }
+
+            )
 
             Spacer(Modifier.height(10.dp))
 
@@ -1114,6 +1216,27 @@ fun DashboardScreen(
         }
 
     }
+    // =====================================================
+// RESULT NOTIFICATION POPUP
+// =====================================================
+
+    if (
+        showResultPopup &&
+        latestResultData != null &&
+        latestResultData!!.groups.isNotEmpty()
+    ) {
+
+        ResultNotificationPopup(
+
+            groups = latestResultData!!.groups,
+
+            onClose = {
+                showResultPopup = false
+                hasNewResult = false
+            }
+
+        )
+    }
 }
 @Composable
 fun DiceIcon(dots: Int) {
@@ -1513,4 +1636,57 @@ private fun GameGroupButton(
             )
         }
     }
+}
+
+@Composable
+fun ResultNotificationBell(
+
+    hasNewResult: Boolean,
+
+    onClick: () -> Unit
+
+) {
+
+    Box {
+
+        IconButton(
+            onClick = onClick
+        ) {
+
+            Icon(
+
+                imageVector =
+                    Icons.Default.Notifications,
+
+                contentDescription =
+                    "Results",
+
+                tint = Color.White,
+
+                modifier =
+                    Modifier.size(27.dp)
+
+            )
+
+        }
+
+
+        if (hasNewResult) {
+
+            Box(
+
+                modifier = Modifier
+                    .size(10.dp)
+                    .background(
+                        Color.Red,
+                        RoundedCornerShape(50)
+                    )
+                    .align(Alignment.TopEnd)
+
+            )
+
+        }
+
+    }
+
 }
