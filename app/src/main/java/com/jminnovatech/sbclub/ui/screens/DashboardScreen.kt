@@ -152,6 +152,10 @@ fun DashboardScreen(
         authVM.loadMessage(context)
         vm.loadGroups(context)
     }
+    // =====================================================
+// RESULT NOTIFICATION POLLING
+// =====================================================
+
     LaunchedEffect(Unit) {
 
         while (true) {
@@ -162,51 +166,76 @@ fun DashboardScreen(
                     AppRepository(context)
                         .getLatestResults()
 
-                if (
-                    response is ApiState.Success
-                ) {
+                if (response is ApiState.Success) {
 
-                    val data =
-                        response.data
+                    val data = response.data
 
-                    latestResultData =
-                        data
+                    // Always keep latest result data
+                    latestResultData = data
 
                     val newId =
                         data.latest_result_id
 
+
+                    // =================================================
+                    // RESULT AVAILABLE
+                    // =================================================
+
                     if (
                         newId != null &&
-                        newId != lastResultId
+                        data.groups.isNotEmpty()
                     ) {
 
-                        if (lastResultId != null) {
+                        // ---------------------------------------------
+                        // FIRST LOAD
+                        // ---------------------------------------------
+                        // Screen open করার সময় যদি already result
+                        // available থাকে, তাহলে popup দেখাবে।
+                        // ---------------------------------------------
+
+                        if (lastResultId == null) {
+
+                            lastResultId = newId
 
                             hasNewResult = true
+
                             showResultPopup = true
 
                         }
 
-                        lastResultId = newId
+                        // ---------------------------------------------
+                        // NEW RESULT AFTER SCREEN ALREADY OPEN
+                        // ---------------------------------------------
+
+                        else if (
+                            newId != lastResultId
+                        ) {
+
+                            lastResultId = newId
+
+                            hasNewResult = true
+
+                            showResultPopup = true
+
+                        }
 
                     }
 
                 }
 
-            } catch (
-                e: Exception
-            ) {
+            } catch (e: Exception) {
 
                 Log.e(
                     "RESULT_NOTIFY",
-                    e.message ?: "Result check failed"
+                    "Result check failed: ${e.message}",
+                    e
                 )
 
             }
 
-            kotlinx.coroutines.delay(
-                15000
-            )
+
+            // Check every 15 seconds
+            kotlinx.coroutines.delay(15000)
 
         }
 
