@@ -1,0 +1,1680 @@
+package com.sbclub.sbclub.repository
+
+import android.content.Context
+import android.util.Log
+import com.sbclub.sbclub.data.api.RetrofitClient
+import com.sbclub.sbclub.utils.ApiState
+import retrofit2.HttpException
+import com.sbclub.sbclub.data.api.*
+import com.sbclub.sbclub.data.api.LoginResponse
+import com.sbclub.sbclub.data.model.DepositRequest
+import com.sbclub.sbclub.data.model.LedgerItem
+import com.sbclub.sbclub.data.model.MessageResponse
+import com.sbclub.sbclub.data.model.ProfileResponse
+import com.sbclub.sbclub.data.model.ProfitDay
+import com.sbclub.sbclub.data.model.ResultWithBetResponse
+import com.sbclub.sbclub.data.model.RoundItem
+import com.sbclub.sbclub.data.model.RoundItemUI
+import com.sbclub.sbclub.data.model.SummaryResponse
+import com.sbclub.sbclub.data.model.WalletRequest
+import com.sbclub.sbclub.data.model.WithdrawItem
+import com.sbclub.sbclub.data.model.admin.MasterReportResponse
+import com.sbclub.sbclub.data.model.admin.PendingResponse
+import com.sbclub.sbclub.data.model.admin.Transaction
+import com.sbclub.sbclub.data.model.admin.game.AdminDashboardResponse
+import com.sbclub.sbclub.data.model.admin.game.AdminGameItem
+import com.sbclub.sbclub.data.model.admin.game.AdminRateResponse
+import com.sbclub.sbclub.data.model.admin.game.AdminScheduleResponse
+import com.sbclub.sbclub.data.model.admin.game.PublishAllRequest
+import com.sbclub.sbclub.data.model.admin.game.PublishResultRequest
+import com.sbclub.sbclub.data.model.admin.game.ResultPreviewRequest
+import com.sbclub.sbclub.data.model.admin.game.ResultReportResponse
+import com.sbclub.sbclub.data.model.admin.game.UpdateRateRequest
+import com.sbclub.sbclub.data.model.admin.game.UpdateScheduleRequest
+import com.sbclub.sbclub.data.model.master.MasterUser
+import com.sbclub.sbclub.data.model.master.TransferRequest
+
+import com.sbclub.sbclub.data.model.user.BetItem.BetItem
+import com.sbclub.sbclub.data.model.user.BetItem.BetRequest
+import com.sbclub.sbclub.model.UserNew
+import com.sbclub.sbclub.utils.NetworkErrorHandler
+import com.sbclub.sbclub.data.model.progame.*
+
+class AppRepository(private val context: Context) {
+
+    private val api = RetrofitClient.getApi(context)
+
+    // 🔐 LOGIN
+    suspend fun login(phone:String, pass:String): ApiState<LoginResponse> {
+        return try {
+
+            val res = api.login(
+                mapOf("phone" to phone, "password" to pass)
+            )
+
+            if(res.status){
+                ApiState.Success(res)
+            }else{
+                ApiState.Error("Invalid login")
+            }
+
+        } catch (e: HttpException){
+            ApiState.Error("Server ${e.code()}")
+        } catch (e: Exception){
+            ApiState.Error(NetworkErrorHandler.getMessage(e))
+        }
+    }
+
+    // 👑 CREATE MASTER
+    suspend fun createMaster(name:String, phone:String, pass:String): ApiState<String> {
+        return try {
+
+            val res = api.createMaster(
+                mapOf(
+                    "name" to name,
+                    "phone" to phone,
+                    "password" to pass
+                )
+            )
+
+            if(res.status){
+                ApiState.Success(res.msg)
+            }else{
+                ApiState.Error(res.msg)
+            }
+
+        } catch (e: Exception){
+            e.printStackTrace()   // 🔥 LOG
+            ApiState.Error(NetworkErrorHandler.getMessage(e))
+        }
+    }
+
+    // 📊 PROFIT GRAPH
+    suspend fun profitGraph(): ApiState<List<ProfitGraphItem>> {
+        return try {
+            ApiState.Success(api.profitGraph())
+        } catch (e: Exception){
+            ApiState.Error(NetworkErrorHandler.getMessage(e))
+        }
+    }
+
+    // 🔁 CREATE ROUNDS
+    suspend fun createRounds(): ApiState<String> {
+        return try {
+            val res = api.createRounds()
+            ApiState.Success(res.msg)
+        } catch (e: Exception){
+            ApiState.Error(NetworkErrorHandler.getMessage(e))
+        }
+    }
+
+    // 💰 WALLET ADD
+    suspend fun walletAdd(userId: Int, amount: Int): ApiState<String> {
+        return try {
+
+            val res = api.walletAdd(
+                mapOf(
+                    "user_id" to userId.toString(),   // ✅ FIX
+                    "amount" to amount.toString()     // ✅ FIX
+                )
+            )
+
+            if(res.status){
+                ApiState.Success(res.msg)
+            }else{
+                ApiState.Error(res.msg)
+            }
+
+        } catch (e: Exception){
+            ApiState.Error(NetworkErrorHandler.getMessage(e)?: "Transfer failed")
+        }
+    }
+    // 🤖 AUTO RESULT
+
+
+    // 🎯 MANUAL RESULT
+    suspend fun manualResult(round:Int, number:String): ApiState<String> {
+        return try {
+            val res = api.manualResult(
+                mapOf("round_id" to "$round", "number" to number)
+            )
+            ApiState.Success(res.msg)
+        } catch (e: Exception){
+            ApiState.Error(NetworkErrorHandler.getMessage(e))
+        }
+    }
+
+    // 🔴🟢🔵 PROFIT REPORT
+    suspend fun profit(round:Int): ApiState<ProfitResponse> {
+        return try {
+            ApiState.Success(api.profit(round, "1no"))
+        } catch (e: Exception){
+            ApiState.Error(NetworkErrorHandler.getMessage(e))
+        }
+    }
+
+
+    suspend fun getRounds(): ApiState<List<RoundItemUI>> {
+        return try {
+
+            val completed = api.resultHistory()   // completed
+            val running = api.currentRound()      // running
+
+            val list = mutableListOf<RoundItemUI>()
+
+            // ✅ completed
+            completed.forEach {
+                list.add(
+                    RoundItemUI(
+                        id = it.id,
+                        start_time = it.start_time,
+                        result_time = it.result_time,
+                        result_number = it.result_number,
+                        status = "completed"
+                    )
+                )
+            }
+
+            // ✅ running
+            list.add(
+                RoundItemUI(
+                    id = running.id,
+                    start_time = running.start_time,
+                    result_time = running.result_time,
+                    result_number = null,
+                    status = "running"
+                )
+            )
+
+            ApiState.Success(list)
+
+        } catch (e: Exception) {
+            ApiState.Error(NetworkErrorHandler.getMessage(e))
+        }
+    }
+
+
+    suspend fun currentPreview(): ApiState<CurrentPreviewResponse>{
+        return try {
+            val res = api.currentRoundPreview()
+            ApiState.Success(res)
+        } catch (e: Exception){
+            ApiState.Error(NetworkErrorHandler.getMessage(e))
+        }
+    }
+    suspend fun getUsers(search:String, type:String): ApiState<List<UserNew>>{
+        return try{
+            val res = api.getUsers(search, type)
+            ApiState.Success(res)
+        }catch (e:Exception){
+            ApiState.Error(NetworkErrorHandler.getMessage(e))
+        }
+    }
+
+    suspend fun getTransactions(): ApiState<List<Transaction>>{
+        return try{
+            val res = api.getTransactions()
+            ApiState.Success(res)
+        }catch (e:Exception){
+            ApiState.Error(NetworkErrorHandler.getMessage(e))
+        }
+    }
+
+
+
+    suspend fun getCurrentRound(): ApiState<RoundItem> {
+        return try {
+            val res = api.currentRound()
+            ApiState.Success(res)
+        } catch (e: Exception) {
+            ApiState.Error(NetworkErrorHandler.getMessage(e))
+        }
+    }
+
+    suspend fun placeBet(body: BetRequest): ApiState<String> {
+        return try {
+
+            val res = api.placeBet(body)
+
+            if (res.status) {
+                ApiState.Success(res.msg)
+            } else {
+                ApiState.Error(res.msg)
+            }
+
+        } catch (e: Exception) {
+            ApiState.Error(NetworkErrorHandler.getMessage(e))
+        }
+    }
+
+
+
+    suspend fun getCurrentBets(): ApiState<List<BetItem>> {
+        return try {
+            val res = api.currentBets()
+            ApiState.Success(res)
+        } catch (e: Exception) {
+            ApiState.Error(NetworkErrorHandler.getMessage(e))
+        }
+    }
+    suspend fun getSummary(): ApiState<SummaryResponse> {
+        return try {
+            val res = api.getSummary()
+            println("🔥 API SUCCESS: $res")
+            ApiState.Success(res)
+        } catch (e: Exception) {
+            println("❌ API ERROR: ${e.message}")
+            ApiState.Error(NetworkErrorHandler.getMessage(e))
+        }
+    }
+
+//    suspend fun getLedger(): ApiState<List<LedgerItem>> {
+//        return try {
+//            ApiState.Success(api.getLedger())
+//        } catch (e: Exception) {
+//            ApiState.Error("Ledger error")
+//        }
+//    }
+
+    suspend fun getUserResults(): ApiState<ResultWithBetResponse> {
+        return try {
+            ApiState.Success(api.getUserResults())
+        } catch (e: Exception) {
+            ApiState.Error(NetworkErrorHandler.getMessage(e))
+        }
+    }
+    suspend fun getLedger(): ApiState<List<LedgerItem>> {
+        return try {
+            val res = api.getLedger()
+            ApiState.Success(res)
+        } catch (e: Exception) {
+            e.printStackTrace()
+            ApiState.Error(NetworkErrorHandler.getMessage(e))
+        }
+    }
+
+    suspend fun getPendingUsers(): ApiState<PendingResponse> {
+        return try {
+            val res = api.getPendingUsers()
+            ApiState.Success(res)
+        } catch (e: Exception){
+            ApiState.Error(NetworkErrorHandler.getMessage(e))
+        }
+    }
+    suspend fun transferPending(): ApiState<String> {
+        return try {
+            val res = api.transferPending()
+            ApiState.Success(res.msg)
+        } catch (e: Exception){
+            ApiState.Error("Transfer failed")
+        }
+    }
+    suspend fun manualPattiResult(number:String): ApiState<String>{
+        return try {
+            val res = api.manualPattiResult(
+                mapOf("number" to number)
+            )
+            if(res.status){
+                ApiState.Success(res.msg)
+            }else{
+                ApiState.Error(res.msg)
+            }
+        } catch (e: Exception){
+            ApiState.Error(NetworkErrorHandler.getMessage(e))
+        }
+    }
+
+    suspend fun getMyUsers(search:String): ApiState<List<MasterUser>>{
+        return try{
+            val res = api.myUsers(search)
+            ApiState.Success(res.data)
+        }catch (e: Exception){
+            e.printStackTrace()
+            ApiState.Error(NetworkErrorHandler.getMessage(e))
+        }
+    }
+
+    suspend fun createUser(name:String, phone:String, pass:String): ApiState<String>{
+        return try{
+            val res = api.createUser(
+                mapOf(
+                    "name" to name,
+                    "phone" to phone,
+                    "password" to pass
+                )
+            )
+            if(res.status) ApiState.Success(res.msg)
+            else ApiState.Error(res.msg)
+        }catch (e: Exception){
+            e.printStackTrace()
+            ApiState.Error(NetworkErrorHandler.getMessage(e))
+        }
+    }
+    suspend fun transfer(code: String, amount: Int): ApiState<String> {
+        return try {
+
+            val req = TransferRequest(code, amount)
+
+            val res = api.transfer(req)
+
+            if (res.status) {
+                ApiState.Success(res.msg)
+            } else {
+                ApiState.Error(res.msg)
+            }
+
+        } catch (e: Exception) {
+            ApiState.Error(NetworkErrorHandler.getMessage(e))
+        }
+    }
+    // 💸 WITHDRAW WITH PAYMENT
+    suspend fun withdrawWithPayment(
+        amount: Double,
+        type: String,
+        acc: String,
+        holder: String,   // ✅ required
+        ifsc: String
+    ): ApiState<String> {
+
+        return try {
+
+            val res: CommonResponse = api.withdrawWithPayment(
+                mapOf(
+                    "amount" to amount.toString(),
+                    "payment_type" to type,
+                    "account_number" to acc,
+                    "holder_name" to holder,   // ✅ correct
+                    "ifsc_code" to ifsc
+                )
+            )
+
+            if (res.status) {
+                ApiState.Success(res.msg)
+            } else {
+                ApiState.Error(res.msg)
+            }
+
+        } catch (e: Exception) {
+            ApiState.Error(NetworkErrorHandler.getMessage(e))
+        }
+    }
+
+    suspend fun getPendingWithdraws(): ApiState<List<WithdrawItem>> {
+        return try {
+
+            val res = api.getPendingWithdraws()
+
+            if(res.status){
+                ApiState.Success(res.data)
+            }else{
+                ApiState.Error("No data")
+            }
+
+        } catch (e: Exception){
+            ApiState.Error(NetworkErrorHandler.getMessage(e))
+        }
+    }
+
+    suspend fun approveWithdraw(id:Int): ApiState<String> {
+        return try {
+
+            val res = api.approveWithdraw(id)   // ✅ token remove
+
+            if(res.status){
+                ApiState.Success(res.msg)
+            }else{
+                ApiState.Error(res.msg)
+            }
+
+        } catch (e: Exception){
+            ApiState.Error(NetworkErrorHandler.getMessage(e))
+        }
+    }
+    suspend fun rejectWithdraw(id:Int): ApiState<String> {
+        return try {
+
+            val res = api.rejectWithdraw(id)
+
+            if(res.status){
+                ApiState.Success(res.msg)
+            }else{
+                ApiState.Error(res.msg)
+            }
+
+        } catch (e: Exception){
+            ApiState.Error(NetworkErrorHandler.getMessage(e))
+        }
+    }
+    suspend fun getWithdrawHistory(): ApiState<List<WithdrawItem>> {
+        return try {
+            val res = api.getWithdrawHistory()
+
+            if(res.status){
+                ApiState.Success(res.data)
+            }else{
+                ApiState.Error("No data")
+            }
+
+        } catch (e: Exception){
+            ApiState.Error(NetworkErrorHandler.getMessage(e))
+        }
+    }
+
+
+    suspend fun getProfile(): ApiState<ProfileResponse> {
+        return try {
+            val res = api.getProfileDetails()
+            ApiState.Success(res)
+        } catch (e: Exception) {
+            ApiState.Error(e.message ?: "Profile load failed")
+        }
+    }
+    suspend fun getProfitList(
+        from:String? = null,
+        to:String? = null
+    ): ApiState<List<ProfitDay>> {
+
+        return try {
+
+            val res = api.getProfitList(from, to)
+
+            if(res.status){
+                ApiState.Success(res.data)
+            }else{
+                ApiState.Error("No data")
+            }
+
+        } catch (e: Exception){
+            ApiState.Error(NetworkErrorHandler.getMessage(e))
+        }
+    }
+    suspend fun changePassword(
+        oldPass: String,
+        newPass: String
+    ): ApiState<String> {
+
+        return try {
+
+            val res = api.changePassword(
+                mapOf(
+                    "old_password" to oldPass,
+                    "new_password" to newPass
+                )
+            )
+
+            if (res.status) {
+                ApiState.Success(res.msg)
+            } else {
+                ApiState.Error(res.msg)
+            }
+
+        } catch (e: Exception) {
+            ApiState.Error(NetworkErrorHandler.getMessage(e))
+        }
+    }
+    suspend fun getAppMessage(): MessageResponse {
+        return api.getAppMessage()
+    }
+
+    suspend fun updateMessage(message: String): ApiState<String> {
+        return try {
+
+            val res = api.updateAppMessage(
+                mapOf("message" to message)
+            )
+
+            if (res.status) {
+                ApiState.Success(res.message)
+            } else {
+                ApiState.Error(res.message)
+            }
+
+        } catch (e: Exception) {
+            ApiState.Error(NetworkErrorHandler.getMessage(e))
+        }
+    }
+
+    suspend fun masterTeamReport(
+        from: String? = null,
+        to: String? = null
+    ): MasterReportResponse {
+
+        return RetrofitClient
+            .getApi(context)
+            .masterTeamReport(from, to)
+    }
+
+
+//pro game start
+
+
+
+    suspend fun getSchedules(gameId:Int): ApiState<ScheduleResponse> {
+
+        return try {
+
+            val res = api.getSchedules(gameId)
+
+            ApiState.Success(res)
+
+        } catch (e: Exception){
+
+            ApiState.Error(NetworkErrorHandler.getMessage(e))
+
+        }
+
+    }
+
+
+
+    suspend fun placeProBet(
+        body: ProBetRequest
+    ): ApiState<String> {
+
+        return try {
+
+            val res = api.placeProBet(body)
+            android.util.Log.d("PRO_BET", "status=${res.status}, msg=${res.msg}")
+            if(res.status){
+
+                ApiState.Success(res.msg)
+
+            }else{
+
+                ApiState.Error(res.msg)
+
+            }
+
+        } catch (e: Exception){
+
+            ApiState.Error(NetworkErrorHandler.getMessage(e))
+
+        }
+
+    }
+
+// ============================================================
+// PRO GAME GROUPS
+// ============================================================
+
+    suspend fun getGameGroups(): ApiState<List<GameGroup>> {
+
+        return try {
+
+            val res = api.getGameGroups()
+
+            if (res.status) {
+
+                ApiState.Success(res.data)
+
+            } else {
+
+                ApiState.Error("No Game Groups")
+
+            }
+
+        } catch (e: Exception) {
+
+            e.printStackTrace()
+
+            ApiState.Error(
+                NetworkErrorHandler.getMessage(e)
+            )
+
+        }
+    }
+
+    suspend fun getGroupGames(
+        groupId: Int
+    ): ApiState<List<Game>> {
+
+        return try {
+
+            val res = api.getGroupGames(groupId)
+
+            if (res.status) {
+
+                ApiState.Success(res.data)
+
+            } else {
+
+                ApiState.Error("No Games")
+
+            }
+
+        } catch (e: Exception) {
+
+            e.printStackTrace()
+
+            ApiState.Error(
+                NetworkErrorHandler.getMessage(e)
+            )
+
+        }
+    }
+
+    suspend fun gameResults(
+        gameId:Int
+    ): ApiState<ResultResponse> {
+
+        return try {
+
+            val res = api.getProResults(gameId)
+
+            ApiState.Success(res)
+
+        } catch (e: Exception){
+
+            ApiState.Error(NetworkErrorHandler.getMessage(e))
+
+        }
+
+    }
+
+    suspend fun getProGames(): ApiState<List<Game>> {
+
+        return try {
+
+            val res = api.getGames()
+
+            if (res.status) {
+                ApiState.Success(res.data)
+            } else {
+                ApiState.Error("Game not found")
+            }
+
+        } catch (e: Exception) {
+
+            e.printStackTrace()
+
+            ApiState.Error(NetworkErrorHandler.getMessage(e))
+
+        }
+
+    }
+
+    suspend fun getProSchedules(
+        gameId: Int,
+        groupId: Int = 1
+    ): ApiState<ScheduleResponse> {
+
+        return try {
+
+            val res = api.getSchedules(
+                gameId,
+                groupId
+            )
+
+            if (res.status) {
+
+                ApiState.Success(res)
+
+            } else {
+
+                ApiState.Error("Schedule not found")
+
+            }
+
+        } catch (e: Exception) {
+
+            e.printStackTrace()
+
+            android.util.Log.e(
+                "PRO_GAME_ERROR",
+                e.stackTraceToString()
+            )
+
+            ApiState.Error(
+                e.message ?: "Unknown Error"
+            )
+        }
+    }
+
+    suspend fun getCurrentProSchedule(
+        gameId: Int,
+        groupId: Int = 1
+    ): ApiState<CurrentScheduleResponse> {
+
+        return try {
+
+            val res = api.getCurrentSchedule(
+                gameId = gameId,
+                groupId = groupId
+            )
+
+            if (res.status) {
+
+                ApiState.Success(res)
+
+            } else {
+
+                ApiState.Error(
+                    "Game Closed"
+                )
+
+            }
+
+        } catch (e: Exception) {
+
+            e.printStackTrace()
+
+            ApiState.Error(
+                NetworkErrorHandler.getMessage(e)
+            )
+
+        }
+    }
+
+
+
+    suspend fun getProHistory(
+        gameId: Int,
+        scheduleId: Int? = null,
+        groupId: Int = 1
+    ): ApiState<HistoryResponse> {
+
+        return try {
+
+            val res = api.getProHistory(
+                gameId = gameId,
+                scheduleId = scheduleId,
+                groupId = groupId
+            )
+
+            if (res.status) {
+
+                ApiState.Success(res)
+
+            } else {
+
+                ApiState.Error(
+                    "History not found"
+                )
+
+            }
+
+        } catch (e: Exception) {
+
+            e.printStackTrace()
+
+            ApiState.Error(
+                NetworkErrorHandler.getMessage(e)
+            )
+        }
+    }
+
+    suspend fun getProResults(
+        gameId: Int,
+        groupId: Int = 1
+    ): ApiState<ResultResponse> {
+
+        return try {
+
+            val res = api.getProResults(
+                gameId = gameId,
+                groupId = groupId
+            )
+
+            if (res.status) {
+
+                ApiState.Success(res)
+
+            } else {
+
+                ApiState.Error("No Result")
+
+            }
+
+        } catch (e: Exception) {
+
+            e.printStackTrace()
+
+            ApiState.Error(
+                NetworkErrorHandler.getMessage(e)
+            )
+
+        }
+    }
+
+    suspend fun getBetHistory(
+        gameId: Int,
+        scheduleId: Int,
+        groupId: Int = 1
+    ): ApiState<BetHistoryResponse> {
+
+        return try {
+
+            val res = api.getBetHistory(
+                gameId = gameId,
+                scheduleId = scheduleId,
+                groupId = groupId
+            )
+
+            android.util.Log.d(
+                "BET_HISTORY",
+                "status=${res.status}"
+            )
+
+            android.util.Log.d(
+                "BET_HISTORY",
+                "data=${res.data}"
+            )
+
+            if (res.status) {
+
+                ApiState.Success(res)
+
+            } else {
+
+                ApiState.Error("No Bet History")
+
+            }
+
+        } catch (e: Exception) {
+
+            android.util.Log.e(
+                "BET_HISTORY",
+                e.stackTraceToString()
+            )
+
+            ApiState.Error(
+                NetworkErrorHandler.getMessage(e)
+            )
+
+        }
+    }
+
+    suspend fun runningBets(
+        gameId: Int,
+        scheduleId: Int,
+        groupId: Int = 1
+    ): RunningBetResponse {
+
+        return api.runningBets(
+            gameId = gameId,
+            scheduleId = scheduleId,
+            groupId = groupId
+        )
+    }
+
+    // ==============================
+// ADMIN GAME
+// ==============================
+
+    suspend fun adminGameDashboard(): ApiState<AdminDashboardResponse> {
+
+        return try {
+
+            android.util.Log.d(
+                "ADMIN_GAME_API",
+                "GET -> admin/game/dashboard"
+            )
+
+            val res = api.adminGameDashboard()
+
+            android.util.Log.d(
+                "ADMIN_GAME_API",
+                "Dashboard Response = $res"
+            )
+
+            ApiState.Success(res)
+
+        } catch (e: Exception) {
+
+            android.util.Log.e(
+                "ADMIN_GAME_API",
+                e.stackTraceToString()
+            )
+
+            ApiState.Error(NetworkErrorHandler.getMessage(e))
+
+        }
+    }
+
+    suspend fun adminGames(): ApiState<List<AdminGameItem>> {
+
+        return try {
+
+            android.util.Log.d(
+                "ADMIN_GAME_API",
+                "GET -> admin/game/games"
+            )
+
+            val res = api.adminGames()
+
+            android.util.Log.d(
+                "ADMIN_GAME_API",
+                "Games Response = $res"
+            )
+
+            if(res.status){
+
+                ApiState.Success(res.games)
+
+            }else{
+
+                ApiState.Error("No Games")
+
+            }
+
+        }catch(e:Exception){
+
+            android.util.Log.e(
+                "ADMIN_GAME_API",
+                e.stackTraceToString()
+            )
+
+            ApiState.Error(NetworkErrorHandler.getMessage(e))
+
+        }
+
+    }
+
+    suspend fun adminSchedules(
+        gameId:Int
+    ):ApiState<AdminScheduleResponse>{
+
+        return try{
+
+            android.util.Log.d(
+                "ADMIN_GAME_API",
+                "GET -> admin/game/schedules"
+            )
+
+            android.util.Log.d(
+                "ADMIN_GAME_API",
+                "gameId=$gameId"
+            )
+
+            val res = api.adminSchedules(gameId)
+
+            android.util.Log.d(
+                "ADMIN_GAME_API",
+                "Schedule Response=$res"
+            )
+
+            if(res.status){
+
+                ApiState.Success(res)
+
+            }else{
+
+                ApiState.Error("No Schedule")
+
+            }
+
+        }catch(e:Exception){
+
+            android.util.Log.e(
+                "ADMIN_GAME_API",
+                e.stackTraceToString()
+            )
+
+            ApiState.Error(NetworkErrorHandler.getMessage(e))
+
+        }
+
+    }
+
+    suspend fun adminRates(
+        gameId:Int
+    ):ApiState<AdminRateResponse>{
+
+        return try{
+
+            android.util.Log.d(
+                "ADMIN_GAME_API",
+                "GET -> admin/game/rates"
+            )
+
+            android.util.Log.d(
+                "ADMIN_GAME_API",
+                "gameId=$gameId"
+            )
+
+            val res = api.adminRates(gameId)
+
+            android.util.Log.d(
+                "ADMIN_GAME_API",
+                "Rate Response=$res"
+            )
+
+            if(res.status){
+
+                ApiState.Success(res)
+
+            }else{
+
+                ApiState.Error("No Rates")
+
+            }
+
+        }catch(e:Exception){
+
+            android.util.Log.e(
+                "ADMIN_GAME_API",
+                e.stackTraceToString()
+            )
+
+            ApiState.Error(NetworkErrorHandler.getMessage(e))
+
+        }
+
+    }
+
+    suspend fun updateSchedule(
+        body: UpdateScheduleRequest
+    ):ApiState<String>{
+
+        return try{
+
+            android.util.Log.d(
+                "ADMIN_GAME_API",
+                "POST -> admin/game/update-schedule"
+            )
+
+            android.util.Log.d(
+                "ADMIN_GAME_API",
+                body.toString()
+            )
+
+            val res = api.updateSchedule(body)
+
+            android.util.Log.d(
+                "ADMIN_GAME_API",
+                "Response=$res"
+            )
+
+            if(res.status){
+
+                ApiState.Success(res.msg)
+
+            }else{
+
+                ApiState.Error(res.msg)
+
+            }
+
+        }catch(e:Exception){
+
+            android.util.Log.e(
+                "ADMIN_GAME_API",
+                e.stackTraceToString()
+            )
+
+            ApiState.Error(NetworkErrorHandler.getMessage(e))
+
+        }
+
+    }
+
+    suspend fun updateRate(
+        body: UpdateRateRequest
+    ):ApiState<String>{
+
+        return try{
+
+            android.util.Log.d(
+                "ADMIN_GAME_API",
+                "POST -> admin/game/update-rate"
+            )
+
+            android.util.Log.d(
+                "ADMIN_GAME_API",
+                body.toString()
+            )
+
+            val res = api.updateRate(body)
+
+            android.util.Log.d(
+                "ADMIN_GAME_API",
+                "Response=$res"
+            )
+
+            if(res.status){
+
+                ApiState.Success(res.msg)
+
+            }else{
+
+                ApiState.Error(res.msg)
+
+            }
+
+        }catch(e:Exception){
+
+            android.util.Log.e(
+                "ADMIN_GAME_API",
+                e.stackTraceToString()
+            )
+
+            ApiState.Error(NetworkErrorHandler.getMessage(e))
+
+        }
+
+    }
+
+    suspend fun publishResult(
+        body: PublishResultRequest
+    ):ApiState<String>{
+
+        return try{
+
+            android.util.Log.d(
+                "ADMIN_GAME_API",
+                "POST -> admin/game/result"
+            )
+
+            android.util.Log.d(
+                "ADMIN_GAME_API",
+                body.toString()
+            )
+
+            val res = api.publishResult(body)
+
+            android.util.Log.d(
+                "ADMIN_GAME_API",
+                "Response=$res"
+            )
+
+            if(res.status){
+
+                ApiState.Success(res.msg)
+
+            }else{
+
+                ApiState.Error(res.msg)
+
+            }
+
+        }catch(e:Exception){
+
+            android.util.Log.e(
+                "ADMIN_GAME_API",
+                e.stackTraceToString()
+            )
+
+            ApiState.Error(NetworkErrorHandler.getMessage(e))
+
+        }
+
+    }
+    suspend fun resultReport(
+
+        gameId: Int,
+
+        scheduleId: Int,
+
+        number: String? = null
+
+    ): ApiState<ResultReportResponse>{
+
+        return try{
+
+            val res = api.resultReport(
+
+                gameId,
+
+                scheduleId,
+
+                number
+
+            )
+
+            ApiState.Success(res)
+
+        }catch(e:Exception){
+
+            ApiState.Error(
+
+                NetworkErrorHandler.getMessage(e)
+
+            )
+
+        }
+
+    }
+
+    //======================================
+// RESULT PANEL
+//======================================
+
+    suspend fun resultPanel(
+        groupId: Int = 1
+    ) =
+        api.resultPanel(groupId)
+
+//======================================
+// RESULT PREVIEW
+//======================================
+
+    suspend fun resultPreview(
+
+        request: ResultPreviewRequest
+
+    ) =
+
+        api.resultPreview(request)
+
+//======================================
+// PUBLISH ALL
+//======================================
+
+    suspend fun publishAll(
+
+        request: PublishAllRequest
+
+    ) =
+
+        api.publishAll(request)
+
+    suspend fun depositRequest(
+        amount: Double,
+        transactionId: String
+    ): ApiState<String> {
+
+        return try {
+
+            val res = api.depositRequest(
+
+                DepositRequest(
+
+                    amount = amount,
+
+                    utr_no = transactionId,
+
+                    payment_method = "UPI"
+
+                )
+
+            )
+
+            if (res.status) {
+
+                ApiState.Success(res.message)
+
+            } else {
+
+                ApiState.Error(res.message)
+
+            }
+
+        } catch (e: retrofit2.HttpException) {
+
+            val errorBody = e.response()?.errorBody()?.string()
+
+            android.util.Log.e(
+                "DEPOSIT_API",
+                errorBody ?: "No Error Body"
+            )
+
+            ApiState.Error(
+                errorBody ?: "HTTP ${e.code()}"
+            )
+
+        } catch (e: Exception) {
+
+            android.util.Log.e(
+                "DEPOSIT_API",
+                e.stackTraceToString()
+            )
+
+            ApiState.Error(
+                e.message ?: "Unknown Error"
+            )
+
+        }
+
+    }
+    suspend fun getDepositHistory(): ApiState<List<WalletRequest>> {
+
+        return try {
+
+            val res = api.getDepositHistory()
+
+            if (res.status) {
+
+                ApiState.Success(res.data)
+
+            } else {
+
+                ApiState.Error("No Deposit History")
+
+            }
+
+        } catch (e: Exception) {
+
+            ApiState.Error(
+                NetworkErrorHandler.getMessage(e)
+            )
+
+        }
+
+    }
+
+// =====================================
+// ADMIN DEPOSIT PENDING
+// =====================================
+
+    suspend fun getAdminPendingDeposits():
+            ApiState<List<WalletRequest>> {
+
+        return try {
+
+            val res =
+                api.getAdminPendingDeposits()
+
+            if (res.status) {
+
+                ApiState.Success(res.data)
+
+            } else {
+
+                ApiState.Error(
+                    "Unable to load pending deposits"
+                )
+
+            }
+
+        } catch (e: Exception) {
+
+            ApiState.Error(
+                NetworkErrorHandler.getMessage(e)
+            )
+
+        }
+    }
+
+
+// =====================================
+// ADMIN DEPOSIT HISTORY
+// =====================================
+
+    suspend fun getAdminDepositHistory():
+            ApiState<List<WalletRequest>> {
+
+        return try {
+
+            val res =
+                api.getAdminDepositHistory()
+
+            if (res.status) {
+
+                ApiState.Success(res.data)
+
+            } else {
+
+                ApiState.Error(
+                    "Unable to load deposit history"
+                )
+
+            }
+
+        } catch (e: Exception) {
+
+            ApiState.Error(
+                NetworkErrorHandler.getMessage(e)
+            )
+
+        }
+    }
+
+
+// =====================================
+// APPROVE DEPOSIT
+// =====================================
+
+    suspend fun approveDeposit(
+        id: Int,
+        amount: Double
+    ): ApiState<String> {
+
+        return try {
+
+            Log.d(
+                "DEPOSIT_APPROVE",
+                "======================================"
+            )
+
+            Log.d(
+                "DEPOSIT_APPROVE",
+                "APPROVE START"
+            )
+
+            Log.d(
+                "DEPOSIT_APPROVE",
+                "ID = $id"
+            )
+
+            Log.d(
+                "DEPOSIT_APPROVE",
+                "AMOUNT = $amount"
+            )
+
+            Log.d(
+                "DEPOSIT_APPROVE",
+                "ENDPOINT = admin/deposit/$id/approve"
+            )
+
+            val requestBody = mapOf(
+                "amount" to amount
+            )
+
+            Log.d(
+                "DEPOSIT_APPROVE",
+                "REQUEST BODY = $requestBody"
+            )
+
+            val res = api.approveDeposit(
+                id,
+                requestBody
+            )
+
+            Log.d(
+                "DEPOSIT_APPROVE",
+                "========== RESPONSE =========="
+            )
+
+            Log.d(
+                "DEPOSIT_APPROVE",
+                "STATUS = ${res.status}"
+            )
+
+            Log.d(
+                "DEPOSIT_APPROVE",
+                "MSG = ${res.msg}"
+            )
+
+            Log.d(
+                "DEPOSIT_APPROVE",
+                "FULL RESPONSE = $res"
+            )
+
+            Log.d(
+                "DEPOSIT_APPROVE",
+                "APPROVE END"
+            )
+
+            Log.d(
+                "DEPOSIT_APPROVE",
+                "======================================"
+            )
+
+            if (res.status) {
+
+                ApiState.Success(
+                    res.msg
+                )
+
+            } else {
+
+                ApiState.Error(
+                    res.msg
+                )
+            }
+
+        } catch (e: retrofit2.HttpException) {
+
+            Log.e(
+                "DEPOSIT_APPROVE",
+                "======================================"
+            )
+
+            Log.e(
+                "DEPOSIT_APPROVE",
+                "HTTP ERROR"
+            )
+
+            Log.e(
+                "DEPOSIT_APPROVE",
+                "HTTP CODE = ${e.code()}"
+            )
+
+            Log.e(
+                "DEPOSIT_APPROVE",
+                "HTTP MESSAGE = ${e.message()}"
+            )
+
+            Log.e(
+                "DEPOSIT_APPROVE",
+                "URL = ${e.response()?.raw()?.request?.url}"
+            )
+
+            val errorBody =
+                e.response()
+                    ?.errorBody()
+                    ?.string()
+
+            Log.e(
+                "DEPOSIT_APPROVE",
+                "ERROR BODY ="
+            )
+
+            Log.e(
+                "DEPOSIT_APPROVE",
+                errorBody ?: "NULL"
+            )
+
+            Log.e(
+                "DEPOSIT_APPROVE",
+                "======================================"
+            )
+
+            ApiState.Error(
+                "HTTP ${e.code()}: ${errorBody ?: e.message()}"
+            )
+
+        } catch (e: Exception) {
+
+            Log.e(
+                "DEPOSIT_APPROVE",
+                "======================================"
+            )
+
+            Log.e(
+                "DEPOSIT_APPROVE",
+                "GENERAL ERROR"
+            )
+
+            Log.e(
+                "DEPOSIT_APPROVE",
+                "TYPE = ${e.javaClass.name}"
+            )
+
+            Log.e(
+                "DEPOSIT_APPROVE",
+                "MESSAGE = ${e.message}"
+            )
+
+            Log.e(
+                "DEPOSIT_APPROVE",
+                "STACK TRACE:"
+            )
+
+            Log.e(
+                "DEPOSIT_APPROVE",
+                e.stackTraceToString()
+            )
+
+            Log.e(
+                "DEPOSIT_APPROVE",
+                "======================================"
+            )
+
+            ApiState.Error(
+                e.message ?: "Approve failed"
+            )
+        }
+    }
+
+
+// =====================================
+// REJECT DEPOSIT
+// =====================================
+
+    suspend fun rejectDeposit(
+        id: Int
+    ): ApiState<String> {
+
+        return try {
+
+            val res =
+                api.rejectDeposit(id)
+
+            if (res.status) {
+
+                ApiState.Success(
+                    res.msg
+                )
+
+            } else {
+
+                ApiState.Error(
+                    res.msg
+                )
+
+            }
+
+        } catch (e: Exception) {
+
+            ApiState.Error(
+                NetworkErrorHandler.getMessage(e)
+            )
+
+        }
+    }
+
+    suspend fun getLatestResults(): ApiState<LatestResultsResponse> {
+
+        return try {
+
+            val res = api.getLatestResults()
+
+            if (res.status) {
+
+                ApiState.Success(res)
+
+            } else {
+
+                ApiState.Error("No Result")
+
+            }
+
+        } catch (e: Exception) {
+
+            e.printStackTrace()
+
+            ApiState.Error(
+                NetworkErrorHandler.getMessage(e)
+            )
+
+        }
+
+    }
+
+
+
+}
+
+
+

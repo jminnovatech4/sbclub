@@ -19,6 +19,8 @@ inkBrush = "1.0.0"
 uiText = "1.10.6"
 animationVersion = "1.11.0"
 playServicesMlkitTextRecognitionCommon = "19.1.0"
+googleServices = "4.5.0"
+firebaseBom = "34.19.0"
 
 [libraries]
 androidx-core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "coreKtx" }
@@ -51,4 +53,4 @@ play-services-mlkit-text-recognition-common = { group = "com.google.android.gms"
 android-application = { id = "com.android.application", version.ref = "agp" }
 kotlin-android = { id = "org.jetbrains.kotlin.android", version.ref = "kotlin" }
 kotlin-compose = { id = "org.jetbrains.kotlin.plugin.compose", version.ref = "kotlin" }
-
+google-services = { id = "com.google.gms.google-services", version.ref = "googleServices" }

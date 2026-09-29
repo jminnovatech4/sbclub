@@ -1,0 +1,1762 @@
+package com.sbclub.sbclub.ui.screens.progame
+
+import android.content.Context
+import android.os.Build
+import android.util.Log
+import androidx.annotation.RequiresApi
+import androidx.compose.animation.core.LinearEasing
+import androidx.compose.animation.core.RepeatMode
+import androidx.compose.animation.core.animateFloat
+import androidx.compose.animation.core.infiniteRepeatable
+import androidx.compose.animation.core.rememberInfiniteTransition
+import androidx.compose.animation.core.tween
+import androidx.compose.foundation.Canvas
+import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.gestures.detectTapGestures
+import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.verticalScroll
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.AccountBalanceWallet
+import androidx.compose.material.icons.filled.AddCircle
+import androidx.compose.material.icons.filled.Close
+import androidx.compose.material.icons.filled.Menu
+import androidx.compose.material.icons.filled.Message
+import androidx.compose.material.icons.filled.Refresh
+import androidx.compose.material.icons.filled.Visibility
+import androidx.compose.material.icons.filled.VisibilityOff
+import androidx.compose.material3.*
+import androidx.compose.runtime.*
+import androidx.compose.runtime.getValue
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.graphics.Brush
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
+import androidx.navigation.NavController
+import com.sbclub.sbclub.data.model.progame.Game
+import com.sbclub.sbclub.R
+import com.sbclub.sbclub.utils.ApiState
+import com.sbclub.sbclub.viewmodel.ProGameVM
+import kotlinx.coroutines.launch
+import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.ui.draw.clipToBounds
+import androidx.compose.ui.input.pointer.pointerInput
+import androidx.compose.ui.layout.onGloballyPositioned
+import androidx.compose.ui.text.TextStyle
+import androidx.compose.ui.text.input.PasswordVisualTransformation
+import androidx.compose.ui.text.input.VisualTransformation
+import androidx.compose.ui.unit.IntOffset
+import androidx.compose.ui.window.Dialog
+import androidx.lifecycle.ViewModel
+import androidx.lifecycle.viewmodel.compose.viewModel
+import com.sbclub.sbclub.data.model.progame.GameGroup
+import com.sbclub.sbclub.ui.screens.Transactions
+import com.sbclub.sbclub.viewmodel.WalletVM
+import com.sbclub.sbclub.repository.AppRepository
+import com.sbclub.sbclub.ui.screens.DepositScreen
+
+import com.sbclub.sbclub.utils.SessionManager
+import com.sbclub.sbclub.viewmodel.AuthVM
+import androidx.compose.foundation.Image
+
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.res.painterResource
+import androidx.compose.material.icons.filled.Notifications
+import com.sbclub.sbclub.data.model.progame.LatestResultsResponse
+
+import com.sbclub.sbclub.ui.components.ResultNotificationPopup
+@RequiresApi(Build.VERSION_CODES.O)
+@Composable
+fun DashboardScreen(
+    nav: NavController,
+    context: Context,
+
+    openDeposit: Boolean = false,
+
+    sharedAmount: String = "",
+
+    sharedUtr: String = "",
+
+    vm: ProGameVM = remember { ProGameVM() }
+) {
+
+
+    val drawerState = rememberDrawerState(DrawerValue.Closed)
+    var showTransactions by remember { mutableStateOf(false) }
+    val walletVM = remember {
+
+        WalletVM(
+
+            AppRepository(context)
+
+        )
+
+    }
+    var showLogoutDialog by remember {
+
+        mutableStateOf(false)
+
+    }
+    var showFullMsg by remember { mutableStateOf(false) }
+    val authVM: AuthVM = viewModel()
+    var showChangePass by remember { mutableStateOf(false) }
+    var showChangePassword by remember { mutableStateOf(false) }
+    val scope = rememberCoroutineScope()
+    var showDeposit by remember {
+        mutableStateOf(false)
+    }
+    var showResultPopup by remember {
+        mutableStateOf(false)
+    }
+
+    var hasNewResult by remember {
+        mutableStateOf(false)
+    }
+
+    var latestResultData by remember {
+        mutableStateOf<LatestResultsResponse?>(null)
+    }
+
+    var lastResultId by remember {
+        mutableStateOf<Int?>(null)
+    }
+    var readResultId by remember {
+        mutableStateOf<Int?>(null)
+    }
+    LaunchedEffect(openDeposit, sharedAmount, sharedUtr) {
+
+        if (
+            openDeposit ||
+            sharedAmount.isNotBlank() ||
+            sharedUtr.isNotBlank()
+        ) {
+
+            showDeposit = true
+
+        }
+
+    }
+    LaunchedEffect(Unit) {
+        vm.loadGroups(context)
+        vm.loadGames(context)
+        vm.loadWallet(context)
+
+        authVM.loadMessage(context)
+        vm.loadGroups(context)
+    }
+    // =====================================================
+// RESULT NOTIFICATION POLLING
+// =====================================================
+
+    // =====================================================
+// RESULT NOTIFICATION POLLING
+// =====================================================
+
+    LaunchedEffect(Unit) {
+
+        while (true) {
+
+            try {
+
+                val response =
+                    AppRepository(context)
+                        .getLatestResults()
+
+                if (response is ApiState.Success) {
+
+                    val data = response.data
+
+                    // Always keep latest result data
+                    latestResultData = data
+
+                    val newId = data.latest_result_id
+
+                    if (
+                        newId != null &&
+                        data.groups.isNotEmpty()
+                    ) {
+
+                        // =========================================
+                        // FIRST LOAD
+                        // =========================================
+
+                        if (lastResultId == null) {
+
+                            lastResultId = newId
+
+                            // First load-এ notification দেখাবে
+                            if (readResultId != newId) {
+
+                                hasNewResult = true
+                                showResultPopup = true
+                            }
+                        }
+
+                        // =========================================
+                        // NEW RESULT
+                        // =========================================
+
+                        else if (newId != lastResultId) {
+
+                            // নতুন result এসেছে
+                            lastResultId = newId
+
+                            // নতুন result অবশ্যই unread
+                            readResultId = null
+
+                            hasNewResult = true
+                            showResultPopup = true
+                        }
+
+                        // =========================================
+                        // SAME RESULT
+                        // =========================================
+
+                        else {
+
+                            // X চাপলে readResultId change হবে না
+                            // তাই একই result আবার popup হবে
+
+                            if (
+                                readResultId != newId &&
+                                !showResultPopup
+                            ) {
+
+                                hasNewResult = true
+                                showResultPopup = true
+                            }
+                        }
+                    }
+                }
+
+            } catch (e: Exception) {
+
+                Log.e(
+                    "RESULT_NOTIFY",
+                    "Result check failed: ${e.message}",
+                    e
+                )
+            }
+
+            kotlinx.coroutines.delay(15000)
+        }
+    }
+    ModalNavigationDrawer(
+
+        drawerState = drawerState,
+
+        drawerContent = {
+
+            ModalDrawerSheet {
+
+                Spacer(Modifier.height(20.dp))
+
+                Text(
+
+                    text = "SB CLUB",
+
+                    modifier = Modifier.padding(20.dp),
+
+                    style = MaterialTheme.typography.titleLarge,
+
+                    fontWeight = FontWeight.Bold
+
+                )
+
+                HorizontalDivider()
+
+                NavigationDrawerItem(
+
+                    label = { Text("🎯 Play Game") },
+
+                    selected = false,
+
+                    onClick = {
+
+                        scope.launch {
+
+                            drawerState.close()
+
+                        }
+
+                    }
+
+                )
+
+//                NavigationDrawerItem(
+//
+//                    label = { Text("📊 Summary") },
+//
+//                    selected = false,
+//
+//                    onClick = {
+//
+//                        scope.launch {
+//
+//                            drawerState.close()
+//
+//                        }
+//
+//                    }
+//
+//                )
+
+//                NavigationDrawerItem(
+//
+//                    label = { Text("🏆 Bet History") },
+//
+//                    selected = false,
+//
+//                    onClick = {
+//
+//                        scope.launch {
+//
+//                            drawerState.close()
+//
+//                        }
+//
+//                    }
+//
+//                )
+                NavigationDrawerItem(
+
+                    label = { Text("💰 Deposit Money") },
+
+                    selected = false,
+
+                    onClick = {
+
+                        showDeposit = true
+
+                        scope.launch {
+                            drawerState.close()
+                        }
+
+                    }
+
+                )
+                NavigationDrawerItem(
+
+                    label = { Text("📜 Transactions") },
+
+                    selected = false,
+
+                    onClick = {
+
+                        showTransactions = true
+
+                        scope.launch {
+
+                            drawerState.close()
+
+                        }
+
+                    }
+
+                )
+
+                NavigationDrawerItem(
+
+                    label = { Text("💸 Withdrawal") },
+
+                    selected = false,
+
+                    onClick = {
+
+                        nav.navigate("withdraw")
+
+                    }
+
+                )
+
+                NavigationDrawerItem(
+
+                    label = { Text("🔐 Change Password") },
+
+                    selected = false,
+
+                    onClick = {
+
+                        showChangePass = true
+
+                        scope.launch {
+
+                            drawerState.close()
+
+                        }
+
+                    }
+                )
+
+                Spacer(Modifier.weight(1f))
+
+                HorizontalDivider()
+
+                NavigationDrawerItem(
+
+                    label = {
+
+                        Text(
+
+                            "🚪 Logout",
+
+                            color = Color.Red
+
+                        )
+
+                    },
+
+                    selected = false,
+
+                    onClick = {
+
+                        showLogoutDialog = true
+
+                        scope.launch {
+
+                            drawerState.close()
+
+                        }
+
+                    }
+
+                )
+
+            }
+
+        }
+
+    ) {
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .background(
+                    Brush.verticalGradient(
+                        listOf(
+                            Color(0xFF0F172A),
+                            Color(0xFF1E293B)
+                        )
+                    )
+                )
+                .padding(16.dp)
+        ) {
+
+            Spacer(Modifier.height(20.dp))
+
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+
+                IconButton(
+
+                    onClick = {
+
+                        scope.launch {
+
+                            drawerState.open()
+
+                        }
+
+                    }
+
+                ) {
+
+                    Icon(
+
+                        Icons.Default.Menu,
+
+                        contentDescription = null,
+
+                        tint = Color.White
+
+                    )
+
+                }
+
+                Spacer(Modifier.width(8.dp))
+
+                Column(
+                    modifier = Modifier.weight(1f)
+                ) {
+
+                    Text(
+                        text = "SB CLUB",
+                        color = Color.White,
+                        fontSize = 25.sp,
+                        fontWeight = FontWeight.Bold
+                    )
+
+
+
+
+
+                }
+                Card(
+
+                    shape = RoundedCornerShape(50.dp),
+
+                    colors = CardDefaults.cardColors(
+
+                        containerColor = Color.White
+
+                    )
+
+                ) {
+
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+
+                        Button(
+                            onClick = {
+
+                                showDeposit = true
+
+                                scope.launch {
+                                    drawerState.close()
+                                }
+
+                            },
+
+                            shape = RoundedCornerShape(50.dp),
+
+                            colors = ButtonDefaults.buttonColors(
+                                containerColor = Color(0xFF3AB43F),
+                                contentColor = Color.White
+                            ),
+
+                            elevation = ButtonDefaults.buttonElevation(
+                                defaultElevation = 6.dp
+                            ),
+
+                            contentPadding = PaddingValues(0.dp),
+
+                            modifier = Modifier
+                                .size(42.dp)
+                        ) {
+
+                            Icon(
+                                imageVector = Icons.Default.AddCircle,
+                                contentDescription = "Add Money",
+                                modifier = Modifier.size(20.dp)
+                            )
+                        }
+
+                        Row(
+
+                            modifier = Modifier.padding(
+                                horizontal = 10.dp,
+                                vertical = 8.dp
+                            ),
+
+                            verticalAlignment = Alignment.CenterVertically
+
+                        ) {
+
+                            Icon(
+                                Icons.Default.AccountBalanceWallet,
+                                contentDescription = null,
+                                tint = Color(0xFF2563EB),
+                                modifier = Modifier.size(18.dp)
+                            )
+
+                            Spacer(Modifier.width(6.dp))
+
+                            Text(
+
+                                text = "₹ %.2f".format(vm.walletBalance),
+
+                                color = Color.Black,
+
+                                fontWeight = FontWeight.Bold
+
+                            )
+
+                        }
+                    }
+                }
+            }
+            Spacer(Modifier.height(10.dp))
+            Card(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .clickable {
+                        showFullMsg = true
+                    },
+                shape = RoundedCornerShape(10.dp),
+                colors = CardDefaults.cardColors(
+                    containerColor = Color(0xFFF6FF0D)
+                )
+            ) {
+
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(horizontal = 10.dp, vertical = 8.dp),
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+
+
+
+
+
+                    NewsTicker(
+                        text = authVM.message,
+                        modifier = Modifier.weight(1f)
+                    )
+                    Spacer(Modifier.width(8.dp))
+                    Icon(
+                        Icons.Default.Message,
+                        contentDescription = null,
+                        tint = Color.Blue
+                    )
+                }
+            }
+            Spacer(Modifier.height(20.dp))
+            @Composable
+            fun GameGroupCard(
+                group: GameGroup,
+                onClick: () -> Unit
+            ) {
+
+                Card(
+
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(105.dp)
+                        .clickable {
+                            onClick()
+                        },
+
+                    shape = RoundedCornerShape(18.dp),
+
+                    colors = CardDefaults.cardColors(
+                        containerColor = Color(0xFF2563EB)
+                    ),
+
+                    elevation = CardDefaults.cardElevation(
+                        defaultElevation = 8.dp
+                    )
+
+                ) {
+
+                    Column(
+
+                        modifier = Modifier.fillMaxSize(),
+
+                        horizontalAlignment = Alignment.CenterHorizontally,
+
+                        verticalArrangement = Arrangement.Center
+
+                    ) {
+
+                        Box(
+
+                            modifier = Modifier
+                                .size(42.dp)
+                                .background(
+                                    Color.White,
+                                    RoundedCornerShape(12.dp)
+                                ),
+
+                            contentAlignment = Alignment.Center
+
+                        ) {
+
+                            Text(
+                                text = "🎯",
+                                fontSize = 24.sp
+                            )
+                        }
+
+                        Spacer(
+                            Modifier.height(8.dp)
+                        )
+
+                        Text(
+
+                            text = group.name,
+
+                            color = Color.White,
+
+                            fontSize = 15.sp,
+
+                            fontWeight = FontWeight.Bold,
+
+                            maxLines = 1
+
+                        )
+                    }
+                }
+            }
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(vertical = 10.dp),
+                horizontalArrangement = Arrangement.Center,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+
+                // =========================
+                // REFRESH BUTTON
+                // =========================
+
+                Button(
+                    onClick = {
+
+                        vm.loadGames(context)
+                        vm.loadWallet(context)
+
+                    },
+                    shape = RoundedCornerShape(50.dp),
+                    colors = ButtonDefaults.buttonColors(
+                        containerColor = Color(0xFF2563EB),
+                        contentColor = Color.White
+                    ),
+                    elevation = ButtonDefaults.buttonElevation(
+                        defaultElevation = 8.dp
+                    ),
+                    modifier = Modifier.height(52.dp)
+                ) {
+
+                    Icon(
+                        imageVector = Icons.Default.Refresh,
+                        contentDescription = "Refresh",
+                        modifier = Modifier.size(20.dp)
+                    )
+
+                    Spacer(Modifier.width(8.dp))
+
+                    Text(
+                        text = "Refresh",
+                        fontWeight = FontWeight.Bold
+                    )
+                }
+
+                Spacer(
+                    modifier = Modifier.width(18.dp)
+                )
+
+                // =========================
+                // BIG RESULT BELL
+                // =========================
+
+                ResultNotificationBell(
+                    hasNewResult = hasNewResult,
+                    onClick = {
+
+                        latestResultData?.let { data ->
+
+                            if (
+                                data.latest_result_id != null &&
+                                data.groups.isNotEmpty()
+                            ) {
+
+                                showResultPopup = true
+
+                                // Bell click করলে read হবে না
+                                hasNewResult = false
+                            }
+                        }
+                    }
+                )
+            }
+
+            Spacer(Modifier.height(10.dp))
+
+            // ============================================================
+// GAME GROUPS
+// ============================================================
+
+            val groupsState = vm.groupsState
+
+            when (groupsState) {
+
+                ApiState.Idle,
+                ApiState.Loading -> {
+
+                    Box(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .height(150.dp),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        CircularProgressIndicator()
+                    }
+                }
+
+                is ApiState.Error -> {
+
+                    Text(
+                        text = groupsState.message,
+                        color = Color.Red
+                    )
+                }
+
+                is ApiState.Success -> {
+
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(horizontal = 12.dp),
+                        horizontalArrangement = Arrangement.spacedBy(12.dp)
+                    ) {
+
+                        groupsState.data.forEach { group ->
+
+                            GameGroupButton(
+                                group = group,
+                                modifier = Modifier.weight(1f),
+                                onClick = {
+
+                                    nav.navigate(
+                                        "pro_game_group/${group.id}"
+                                    )
+                                }
+                            )
+                        }
+                    }
+                }
+            }
+
+        }
+    }
+    if (showTransactions) {
+
+        Dialog(
+
+            onDismissRequest = {
+
+                showTransactions = false
+
+            }
+
+        ) {
+
+            Surface(
+
+                modifier = Modifier.fillMaxSize(),
+
+                color = Color(0xFFF5F5F5)
+
+            ) {
+
+                Column(
+
+                    modifier = Modifier.fillMaxSize()
+
+                ) {
+
+                    Surface(
+
+                        modifier = Modifier.fillMaxWidth(),
+
+                        color = Color(0xFF2563EB),
+
+                        shadowElevation = 8.dp
+
+                    ) {
+
+                        Row(
+
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(
+                                    horizontal = 10.dp,
+                                    vertical = 12.dp
+                                ),
+
+                            verticalAlignment = Alignment.CenterVertically
+
+                        ) {
+
+                            Text(
+
+                                text = "Transactions",
+
+                                modifier = Modifier.weight(1f),
+
+                                color = Color.White,
+
+                                style = MaterialTheme.typography.titleLarge
+
+                            )
+
+                            IconButton(
+
+                                onClick = {
+
+                                    showTransactions = false
+
+                                }
+
+                            ) {
+
+                                Icon(
+
+                                    Icons.Default.Close,
+
+                                    contentDescription = null,
+
+                                    tint = Color.White
+
+                                )
+
+                            }
+
+                        }
+
+                    }
+
+                    Box(
+
+                        modifier = Modifier
+                            .fillMaxSize()
+
+                    ) {
+
+                        Transactions(walletVM)
+
+                    }
+
+                }
+
+            }
+
+        }
+
+    }
+    if (showChangePass) {
+
+        val vm: AuthVM.ProfileVM = viewModel(
+            factory = object : androidx.lifecycle.ViewModelProvider.Factory {
+                override fun <T : ViewModel> create(modelClass: Class<T>): T {
+                    return AuthVM.ProfileVM(AppRepository(context)) as T
+                }
+            }
+        )
+
+        val session = SessionManager(context)
+
+        var oldPass by remember { mutableStateOf("") }
+        var newPass by remember { mutableStateOf("") }
+
+        var confirmPass by remember { mutableStateOf("") }
+        var showOld by remember { mutableStateOf(false) }
+        var showNew by remember { mutableStateOf(false) }
+        var showConfirm by remember { mutableStateOf(false) }
+
+        fun passwordStrength(pass: String): String {
+            return when {
+                pass.length < 6 -> "Weak"
+                pass.length in 6..8 -> "Medium"
+                pass.length > 8 -> "Strong"
+                else -> ""
+            }
+        }
+
+        Dialog(onDismissRequest = { showChangePass = false }) {
+
+            Surface(
+                shape = RoundedCornerShape(16.dp),
+                color = Color.White
+            ) {
+
+                Column(Modifier.padding(20.dp)) {
+
+                    Text("🔐 Change Password",
+                        style = MaterialTheme.typography.titleLarge)
+
+                    Spacer(Modifier.height(16.dp))
+
+                    // OLD PASSWORD
+                    OutlinedTextField(
+                        value = oldPass,
+                        onValueChange = { oldPass = it },
+                        label = { Text("Old Password") },
+                        modifier = Modifier.fillMaxWidth(),
+                        visualTransformation = if (showOld) VisualTransformation.None else PasswordVisualTransformation(),
+                        trailingIcon = {
+                            IconButton(onClick = { showOld = !showOld }) {
+                                Icon(
+                                    if (showOld) Icons.Default.VisibilityOff else Icons.Default.Visibility,
+                                    contentDescription = null
+                                )
+                            }
+                        }
+                    )
+
+                    Spacer(Modifier.height(10.dp))
+
+                    // NEW PASSWORD
+                    OutlinedTextField(
+                        value = newPass,
+                        onValueChange = { newPass = it },
+                        label = { Text("New Password") },
+                        modifier = Modifier.fillMaxWidth(),
+                        visualTransformation = if (showNew) VisualTransformation.None else PasswordVisualTransformation(),
+                        trailingIcon = {
+                            IconButton(onClick = { showNew = !showNew }) {
+                                Icon(
+                                    if (showNew) Icons.Default.VisibilityOff else Icons.Default.Visibility,
+                                    contentDescription = null
+                                )
+                            }
+                        }
+                    )
+
+                    // 🔥 Strength
+                    Text(
+                        "Strength: ${passwordStrength(newPass)}",
+                        color = when (passwordStrength(newPass)) {
+                            "Weak" -> Color.Red
+                            "Medium" -> Color(0xFFFFA500)
+                            "Strong" -> Color.Green
+                            else -> Color.Gray
+                        },
+                        fontSize = 12.sp
+                    )
+
+                    Spacer(Modifier.height(10.dp))
+
+                    // CONFIRM PASSWORD
+                    OutlinedTextField(
+                        value = confirmPass,
+                        onValueChange = { confirmPass = it },
+                        label = { Text("Confirm Password") },
+                        modifier = Modifier.fillMaxWidth(),
+                        visualTransformation = if (showConfirm) VisualTransformation.None else PasswordVisualTransformation(),
+                        trailingIcon = {
+                            IconButton(onClick = { showConfirm = !showConfirm }) {
+                                Icon(
+                                    if (showConfirm) Icons.Default.VisibilityOff else Icons.Default.Visibility,
+                                    contentDescription = null
+                                )
+                            }
+                        }
+                    )
+
+                    Spacer(Modifier.height(20.dp))
+
+                    Button(
+                        onClick = {
+
+                            // 🔴 VALIDATION
+                            if (newPass != confirmPass) {
+                                vm.state = ApiState.Error("Password mismatch")
+                                return@Button
+                            }
+
+                            if (newPass.length < 6) {
+                                vm.state = ApiState.Error("Password too short")
+                                return@Button
+                            }
+
+                            vm.changePassword(oldPass, newPass)
+                        },
+                        modifier = Modifier.fillMaxWidth()
+                    ) {
+                        Text("Update Password")
+                    }
+
+                    Spacer(Modifier.height(10.dp))
+
+                    when (val state = vm.state) {
+
+                        is ApiState.Loading -> {
+                            CircularProgressIndicator()
+                        }
+
+                        is ApiState.Success -> {
+
+                            Text(state.data, color = Color.Green)
+
+                            // 🔥 SHOW MESSAGE → THEN LOGOUT
+                            LaunchedEffect(Unit) {
+
+                                kotlinx.coroutines.delay(1500)
+
+                                // logout
+                                val session = SessionManager(context)
+                                session.clear()
+
+                                nav.navigate("login") {
+                                    popUpTo(0) { inclusive = true }
+                                }
+                            }
+                        }
+
+                        is ApiState.Error -> {
+                            Text(state.message, color = Color.Red)
+                        }
+
+                        else -> {}
+                    }
+                }
+            }
+        }
+    }
+    if (showLogoutDialog) {
+
+        AlertDialog(
+
+            onDismissRequest = {
+
+                showLogoutDialog = false
+
+            },
+
+            icon = {
+
+                Text(
+                    "🚪",
+                    style = MaterialTheme.typography.headlineMedium
+                )
+
+            },
+
+            title = {
+
+                Text(
+                    "Logout"
+                )
+
+            },
+
+            text = {
+
+                Text(
+                    "Are you sure you want to logout?"
+                )
+
+            },
+
+            confirmButton = {
+
+                Button(
+
+                    onClick = {
+
+                        showLogoutDialog = false
+
+                        val session = SessionManager(context)
+
+                        session.clear()
+
+                        nav.navigate("login") {
+
+                            popUpTo(0) {
+
+                                inclusive = true
+
+                            }
+
+                        }
+
+                    }
+
+                ) {
+
+                    Text("Logout")
+
+                }
+
+            },
+
+            dismissButton = {
+
+                OutlinedButton(
+
+                    onClick = {
+
+                        showLogoutDialog = false
+
+                    }
+
+                ) {
+
+                    Text("Cancel")
+
+                }
+
+            }
+
+        )
+
+    }
+
+    if (showFullMsg) {
+
+        AlertDialog(
+            onDismissRequest = { showFullMsg = false },
+
+            title = {
+                Text("📢 Full Message")
+            },
+
+            text = {
+
+                Column(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .verticalScroll(rememberScrollState())
+                ) {
+                    Text(
+                        text = authVM.message,
+                        fontSize = 15.sp
+                    )
+                }
+            },
+
+            confirmButton = {
+                Button(onClick = { showFullMsg = false }) {
+                    Text("Close")
+                }
+            }
+        )
+    }
+    if (showDeposit) {
+
+        Dialog(
+            onDismissRequest = {
+                showDeposit = false
+            }
+        ) {
+
+            Surface(
+
+                modifier = Modifier.fillMaxSize(),
+
+                color = Color(0xFFF4F6FA)
+
+            ) {
+
+                DepositScreen(
+
+                    context = context,
+
+                    amount = sharedAmount,
+
+                    transactionId = sharedUtr,
+
+                    onClose = {
+
+                        showDeposit = false
+
+                    }
+
+                )
+
+            }
+
+        }
+
+    }
+    // =====================================================
+// RESULT NOTIFICATION POPUP
+// =====================================================
+
+    if (
+        showResultPopup &&
+        latestResultData != null &&
+        latestResultData!!.groups.isNotEmpty()
+    ) {
+
+        ResultNotificationPopup(
+
+            groups = latestResultData!!.groups,
+
+            // X BUTTON
+            onDismiss = {
+
+                // শুধু popup বন্ধ
+                // READ হবে না
+                showResultPopup = false
+
+                // তাই badge থাকবে
+                hasNewResult = true
+            },
+
+            // CLOSE BUTTON
+            onRead = {
+
+                // Current result READ
+                readResultId =
+                    latestResultData!!.latest_result_id
+
+                showResultPopup = false
+
+                // Badge remove
+                hasNewResult = false
+            }
+        )
+    }
+}
+@Composable
+fun DiceIcon(dots: Int) {
+
+    Box(
+        modifier = Modifier
+            .size(34.dp)
+            .background(
+                Color.White,
+                RoundedCornerShape(6.dp)
+            ),
+        contentAlignment = Alignment.Center
+    ) {
+
+        Canvas(
+            modifier = Modifier.fillMaxSize().padding(5.dp)
+        ) {
+
+            val r = size.minDimension / 10f
+
+            val left = Offset(size.width * .25f, size.height * .25f)
+            val center = Offset(size.width * .5f, size.height * .5f)
+            val right = Offset(size.width * .75f, size.height * .75f)
+
+            val topRight = Offset(size.width * .75f, size.height * .25f)
+            val bottomLeft = Offset(size.width * .25f, size.height * .75f)
+            val topLeft = Offset(size.width * .25f, size.height * .25f)
+            val bottomRight = Offset(size.width * .75f, size.height * .75f)
+            val middleLeft = Offset(size.width * .25f, size.height * .5f)
+            val middleRight = Offset(size.width * .75f, size.height * .5f)
+
+            fun dot(p: Offset) {
+                drawCircle(
+                    color = Color(0xFF2563EB),
+                    radius = r,
+                    center = p
+                )
+            }
+
+            when (dots) {
+
+                1 -> {
+                    dot(center)
+                }
+
+                2 -> {
+                    dot(topRight)
+                    dot(bottomLeft)
+                }
+
+                3 -> {
+                    dot(topRight)
+                    dot(center)
+                    dot(bottomLeft)
+                }
+
+                5 -> {
+                    dot(topLeft)
+                    dot(topRight)
+                    dot(center)
+                    dot(bottomLeft)
+                    dot(bottomRight)
+                }
+            }
+        }
+    }
+}
+@Composable
+fun GameCard(
+
+    game: Game,
+
+    onClick:()->Unit
+
+){
+    val diceIcon = when (game.digit_length) {
+        1 -> "\u2680"   // ⚀
+        2 -> "\u2681"   // ⚁
+        3 -> "\u2682"   // ⚂
+        4 -> "\u2683"   // ⚃
+        5 -> "\u2684"   // ⚄
+        6 -> "\u2685"   // ⚅
+        else -> "\u2680"
+    }
+    Card(
+
+        modifier = Modifier
+            .fillMaxWidth()
+            .height(80.dp)
+            .clickable { onClick() },
+
+        shape = RoundedCornerShape(18.dp),
+
+        colors = CardDefaults.cardColors(
+
+            containerColor = Color(0xFF2563EB)
+
+        )
+
+    ){
+
+        Row(
+
+            modifier = Modifier.fillMaxSize(),
+
+            verticalAlignment = Alignment.CenterVertically,
+
+            horizontalArrangement = Arrangement.Center
+
+        ){
+
+            Row(
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+
+//                Text(
+//                    text = diceIcon,
+//                    fontSize = 28.sp,
+//                    color = Color.White
+//                )
+                DiceIcon(game.digit_length)
+
+                Spacer(modifier = Modifier.width(12.dp))
+
+                Text(
+                    text = game.game_name,
+                    color = Color.White,
+                    fontSize = 20.sp,
+                    fontWeight = FontWeight.Bold
+                )
+            }
+
+            Spacer(Modifier.width(10.dp))
+
+//            Text(
+//
+//                game.game_name,
+//
+//                color = Color.White,
+//
+//                fontSize = 20.sp,
+//
+//                fontWeight = FontWeight.Bold
+//
+//            )
+
+        }
+
+    }
+
+}
+@Composable
+fun NewsTicker(
+    text: String,
+    modifier: Modifier = Modifier,
+    speedMs: Int = 16000 // বেশি = ধীরে
+) {
+    if (text.isEmpty()) return
+
+    var textWidth by remember { mutableStateOf(0f) }
+    var boxWidth by remember { mutableStateOf(0f) }
+    var paused by remember { mutableStateOf(false) }
+
+    val ready = textWidth > 0f
+
+    val transition = rememberInfiniteTransition()
+
+    val offsetX by transition.animateFloat(
+        initialValue = -textWidth,   // 🔥 LEFT START
+        targetValue = boxWidth,      // 🔥 RIGHT END
+        animationSpec = infiniteRepeatable(
+            animation = tween(
+                durationMillis = speedMs,
+                easing = LinearEasing
+            ),
+            repeatMode = RepeatMode.Restart
+        ),
+        label = ""
+    )
+
+    Box(
+        modifier = modifier
+            .fillMaxWidth()
+            .height(26.dp)
+            .clipToBounds()
+            .onGloballyPositioned {
+                boxWidth = it.size.width.toFloat()
+            }
+            .pointerInput(Unit) {
+                detectTapGestures(
+                    onPress = {
+                        paused = true
+                        tryAwaitRelease()
+                        paused = false
+                    }
+                )
+            }
+    ) {
+
+        // 🔥 FADE EDGES (left & right)
+        Box(
+            Modifier
+                .matchParentSize()
+                .background(
+                    Brush.horizontalGradient(
+                        colors = listOf(
+                            Color.White,
+                            Color.Transparent,
+                            Color.Transparent,
+                            Color.White
+                        ),
+                        startX = 0f,
+                        endX = boxWidth
+                    )
+                )
+        )
+
+        // 🔥 LOOP TEXT (continuous)
+        Row(
+            modifier = Modifier.offset {
+                IntOffset(
+                    x = if (!ready || paused) 0 else -offsetX.toInt(),
+                    y = 0
+                )
+            }
+        ) {
+
+            Text(
+                text = "$text     ", // gap for smooth loop
+                fontSize = 16.sp,
+                fontWeight = FontWeight.Bold,
+                maxLines = 1,
+                style = TextStyle(
+                    brush = Brush.horizontalGradient(
+                        colors = listOf(
+                            Color.Red,
+                            Color.Magenta,
+                            Color.Green
+                        )
+                    )
+                ),
+                onTextLayout = {
+                    textWidth = it.size.width.toFloat()
+                }
+            )
+
+            Text(
+                text = text,
+                fontSize = 22.sp,
+                fontWeight = FontWeight.Bold,
+                maxLines = 1,
+                style = TextStyle(
+                    brush = Brush.horizontalGradient(
+                        colors = listOf(
+                            Color.Red,
+                            Color.Magenta,
+                            Color.Green
+                        )
+                    )
+                )
+            )
+        }
+    }
+}
+
+@Composable
+fun GameGroupCard(
+    group: GameGroup,
+    modifier: Modifier = Modifier,
+    onClick: () -> Unit
+) {
+
+    Card(
+
+        modifier = modifier
+            .height(105.dp)
+            .clickable {
+                onClick()
+            },
+
+        shape = RoundedCornerShape(18.dp),
+
+        colors = CardDefaults.cardColors(
+            containerColor = Color(0xFF2563EB)
+        ),
+
+        elevation = CardDefaults.cardElevation(
+            defaultElevation = 8.dp
+        )
+
+    ) {
+
+        Column(
+
+            modifier = Modifier.fillMaxSize(),
+
+            horizontalAlignment = Alignment.CenterHorizontally,
+
+            verticalArrangement = Arrangement.Center
+
+        ) {
+
+            Box(
+
+                modifier = Modifier
+                    .size(42.dp)
+                    .background(
+                        Color.White,
+                        RoundedCornerShape(12.dp)
+                    ),
+
+                contentAlignment = Alignment.Center
+
+            ) {
+
+                Text(
+                    text = "🎯",
+                    fontSize = 24.sp
+                )
+            }
+
+            Spacer(
+                Modifier.height(8.dp)
+            )
+
+            Text(
+                text = group.name,
+                color = Color.White,
+                fontSize = 15.sp,
+                fontWeight = FontWeight.Bold,
+                maxLines = 1
+            )
+        }
+    }
+}
+
+@Composable
+private fun GameGroupButton(
+    group: GameGroup,
+    modifier: Modifier = Modifier,
+    onClick: () -> Unit
+) {
+
+    val logo = when (group.id) {
+
+        1 -> R.drawable.kolkatafatafat_logo
+
+        2 -> R.drawable.mainbazar
+
+        else -> R.drawable.logo
+    }
+
+    Card(
+        modifier = modifier
+            .height(170.dp)
+            .clickable {
+                onClick()
+            },
+        shape = RoundedCornerShape(22.dp),
+        elevation = CardDefaults.cardElevation(
+            defaultElevation = 8.dp
+        ),
+        colors = CardDefaults.cardColors(
+            containerColor = Color.White
+        )
+    ) {
+
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(10.dp),
+            horizontalAlignment = Alignment.CenterHorizontally,
+            verticalArrangement = Arrangement.Center
+        ) {
+
+            Image(
+                painter = painterResource(id = logo),
+                contentDescription = group.name,
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(105.dp)
+                    .clip(
+                        RoundedCornerShape(16.dp)
+                    ),
+                contentScale = ContentScale.Fit
+            )
+
+            Spacer(
+                modifier = Modifier.height(8.dp)
+            )
+
+            Text(
+                text = group.name,
+                style = MaterialTheme.typography.titleSmall,
+                fontWeight = FontWeight.Bold,
+                color = Color(0xFF111827)
+            )
+        }
+    }
+}
+
+@Composable
+fun ResultNotificationBell(
+    hasNewResult: Boolean,
+    onClick: () -> Unit
+) {
+
+    Box(
+        modifier = Modifier
+            .size(58.dp)
+    ) {
+
+        // =========================
+        // BELL BUTTON
+        // =========================
+
+        IconButton(
+            onClick = onClick,
+            modifier = Modifier
+                .size(58.dp)
+                .background(
+                    color = Color(0xFF3F51B5),
+                    shape = RoundedCornerShape(18.dp)
+                )
+        ) {
+
+            Icon(
+                imageVector = Icons.Default.Notifications,
+                contentDescription = "Results",
+                tint = Color.White,
+                modifier = Modifier.size(32.dp)
+            )
+        }
+
+        // =========================
+        // RED BADGE
+        // =========================
+
+        if (hasNewResult) {
+
+            Box(
+                modifier = Modifier
+                    .size(20.dp)
+                    .background(
+                        color = Color.Red,
+                        shape = RoundedCornerShape(50.dp)
+                    )
+                    .align(Alignment.TopEnd),
+                contentAlignment = Alignment.Center
+            ) {
+
+                Text(
+                    text = "!",
+                    color = Color.White,
+                    fontSize = 12.sp,
+                    fontWeight = FontWeight.Bold
+                )
+            }
+        }
+    }
+}

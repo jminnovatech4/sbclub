@@ -2,16 +2,17 @@ plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.android)
     alias(libs.plugins.kotlin.compose)
+    alias(libs.plugins.google.services)
 }
 
 android {
-    namespace = "com.jminnovatech.sbclub"
+    namespace = "com.sbclub.sbclub"
     compileSdk {
         version = release(36)
     }
 
     defaultConfig {
-        applicationId = "com.jminnovatech.sbclub"
+        applicationId = "com.sbclub.sbclub"
         minSdk = 24
         targetSdk = 36
         versionCode = 1
@@ -80,7 +81,8 @@ dependencies {
     implementation("io.coil-kt:coil-compose:2.7.0")
     implementation("io.coil-kt:coil-compose:2.7.0")
     implementation("com.google.mlkit:text-recognition:16.0.1")
-
+    implementation(platform("com.google.firebase:firebase-bom:34.19.0"))
+    implementation("com.google.firebase:firebase-messaging")
 // 🔥 Material 3
 
 

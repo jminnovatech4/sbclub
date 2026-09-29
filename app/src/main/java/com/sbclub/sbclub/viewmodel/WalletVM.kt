@@ -1,0 +1,262 @@
+package com.sbclub.sbclub.viewmodel
+
+import android.content.Context
+import android.util.Log
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.setValue
+import androidx.lifecycle.ViewModel
+import androidx.lifecycle.viewModelScope
+import com.sbclub.sbclub.data.model.LedgerItem
+import com.sbclub.sbclub.data.model.Payment
+import com.sbclub.sbclub.data.model.ProfileResponse
+import com.sbclub.sbclub.data.model.ResultWithBetResponse
+import com.sbclub.sbclub.data.model.SummaryResponse
+import com.sbclub.sbclub.data.model.WalletRequest
+import com.sbclub.sbclub.data.model.WithdrawItem
+import com.sbclub.sbclub.repository.AppRepository
+import com.sbclub.sbclub.utils.ApiState
+import kotlinx.coroutines.launch
+
+
+class WalletVM(private val repo: AppRepository) : ViewModel() {
+
+    var summaryState by mutableStateOf<ApiState<SummaryResponse>>(ApiState.Loading)
+    var ledgerState by mutableStateOf<ApiState<List<LedgerItem>>>(ApiState.Loading)
+
+    fun loadSummary() {
+        viewModelScope.launch {
+            summaryState = repo.getSummary()
+        }
+    }
+
+    fun loadLedger() {
+        viewModelScope.launch {
+            ledgerState = repo.getLedger()
+        }
+    }
+    var resultState by mutableStateOf<ApiState<ResultWithBetResponse>>(ApiState.Loading)
+
+    fun loadResults(context: Context) {
+        viewModelScope.launch {
+            resultState = repo.getUserResults()
+        }
+    }
+    var withdrawState by mutableStateOf<ApiState<String>?>(null)
+
+    // 🔥 FIX 2: correct type
+    var pendingState by mutableStateOf<ApiState<List<WithdrawItem>>>(ApiState.Loading)
+
+    // 🔥 withdraw API call
+    fun withdraw(
+        amount: Double,
+        type: String,
+        acc: String,
+        ifsc: String,
+        holder: String
+    ) {
+        viewModelScope.launch {
+            withdrawState = repo.withdrawWithPayment(
+                amount,
+                type,
+                acc,
+                holder,
+                ifsc
+            )
+        }
+    }
+
+    // 🔥 pending API call
+    fun loadPending() {
+        viewModelScope.launch {
+            pendingState = repo.getPendingWithdraws()
+        }
+    }
+
+    // 🔥 approve
+    fun approve(id: Int) {
+        viewModelScope.launch {
+
+            withdrawState = ApiState.Loading   // 🔥 ADD
+
+            val res = repo.approveWithdraw(id)
+            Log.d("APPROVE_RES", res.toString())
+            withdrawState = res   // 🔥 RESULT STORE
+
+            if (res is ApiState.Success) {
+                loadPending()
+
+                loadProfile()
+            }
+        }
+    }
+
+    // 🔥 reject
+    fun reject(id: Int) {
+        viewModelScope.launch {
+
+            withdrawState = ApiState.Loading   // 🔥 add
+
+            val res = repo.rejectWithdraw(id)
+            Log.d("REJECT_RES", res.toString())
+            withdrawState = res   // 🔥 result set
+
+            if (res is ApiState.Success) {
+                loadPending()
+                loadProfile()   // 🔥 balance update
+            }
+        }
+    }
+    var historyState by mutableStateOf<ApiState<List<WithdrawItem>>>(ApiState.Loading)
+
+    fun loadHistory(){
+        viewModelScope.launch {
+            historyState = repo.getWithdrawHistory()
+        }
+    }
+    var paymentState by mutableStateOf<ApiState<Payment?>>(ApiState.Loading)
+
+
+    var profileState by mutableStateOf<ApiState<ProfileResponse>>(ApiState.Loading)
+
+    fun loadProfile(){
+        viewModelScope.launch {
+            profileState = repo.getProfile()
+        }
+    }
+
+    // ======================================
+// DEPOSIT HISTORY
+// ======================================
+// =====================================
+// ADMIN DEPOSIT
+// =====================================
+
+    var adminDepositPendingState by mutableStateOf<
+            ApiState<List<WalletRequest>>
+            >(ApiState.Loading)
+
+    var adminDepositHistoryState by mutableStateOf<
+            ApiState<List<WalletRequest>>
+            >(ApiState.Loading)
+
+    var depositActionState by mutableStateOf<
+            ApiState<String>?
+            >(null)
+
+
+// =====================================
+// LOAD PENDING
+// =====================================
+
+    fun loadAdminDepositPending() {
+
+        viewModelScope.launch {
+
+            adminDepositPendingState =
+                repo.getAdminPendingDeposits()
+
+        }
+    }
+
+
+// =====================================
+// LOAD HISTORY
+// =====================================
+
+    fun loadAdminDepositHistory() {
+
+        viewModelScope.launch {
+
+            adminDepositHistoryState =
+                repo.getAdminDepositHistory()
+
+        }
+    }
+
+
+// =====================================
+// APPROVE
+// =====================================
+
+    fun approveDeposit(
+        id: Int,
+        amount: Double
+    ) {
+
+        viewModelScope.launch {
+
+            Log.d(
+                "DEPOSIT_APPROVE",
+                "START id=$id amount=$amount"
+            )
+
+            depositActionState =
+                ApiState.Loading
+
+            val result = repo.approveDeposit(
+                id,
+                amount
+            )
+
+            Log.d(
+                "DEPOSIT_APPROVE",
+                "RESULT=$result"
+            )
+
+            depositActionState = result
+
+            if (result is ApiState.Success) {
+
+                Log.d(
+                    "DEPOSIT_APPROVE",
+                    "SUCCESS -> reload"
+                )
+
+                loadAdminDepositPending()
+
+                loadAdminDepositHistory()
+
+            } else if (result is ApiState.Error) {
+
+                Log.e(
+                    "DEPOSIT_APPROVE",
+                    "ERROR=${result.message}"
+                )
+            }
+        }
+    }
+
+
+// =====================================
+// REJECT
+// =====================================
+
+    fun rejectDeposit(id: Int) {
+
+        viewModelScope.launch {
+
+            depositActionState =
+                ApiState.Loading
+
+            val result =
+                repo.rejectDeposit(id)
+
+            depositActionState = result
+
+            if (result is ApiState.Success) {
+
+                loadAdminDepositPending()
+
+                loadAdminDepositHistory()
+
+            }
+
+        }
+    }
+    fun clearDepositActionState() {
+
+        depositActionState = null
+
+    }
+}
