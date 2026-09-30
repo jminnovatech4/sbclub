@@ -14,12 +14,18 @@ import android.content.Intent
 import android.net.Uri
 import android.widget.Toast
 import com.sbclub.sbclub.data.model.WalletRequest
-
+import com.google.firebase.messaging.FirebaseMessaging
+import android.util.Log
 class AuthVM : ViewModel() {
 
     var state by mutableStateOf<ApiState<LoginResponse>?>(null)
 
-    fun login(context: Context, nav: NavController, phone:String, pass:String){
+    fun login(
+        context: Context,
+        nav: NavController,
+        phone: String,
+        pass: String
+    ) {
 
         val repo = AppRepository(context)
         val session = SessionManager(context)
@@ -28,11 +34,15 @@ class AuthVM : ViewModel() {
 
             state = ApiState.Loading
 
-            when(val result = repo.login(phone, pass)){
+            when (val result = repo.login(phone, pass)) {
 
                 is ApiState.Success -> {
 
                     val data = result.data
+
+                    // =========================================
+                    // SAVE LOGIN SESSION
+                    // =========================================
 
                     session.saveUser(
                         token = data.token,
@@ -42,14 +52,77 @@ class AuthVM : ViewModel() {
                         balance = data.balance.toString()
                     )
 
-                    when(data.role){
-                        "admin" -> nav.navigate("admin")
-                        "master" -> nav.navigate("master")
-                        else -> nav.navigate("dashboard")
+
+                    // =========================================
+                    // REGISTER FCM TOKEN
+                    // =========================================
+
+                    FirebaseMessaging
+                        .getInstance()
+                        .token
+                        .addOnSuccessListener { fcmToken ->
+
+                            Log.d(
+                                "SBCLUB_FCM",
+                                "Login FCM Token = $fcmToken"
+                            )
+
+                            viewModelScope.launch {
+
+                                try {
+
+                                    val tokenResult =
+                                        repo.registerFcmToken(
+                                            fcmToken
+                                        )
+
+                                    Log.d(
+                                        "SBCLUB_FCM",
+                                        "Token registration = $tokenResult"
+                                    )
+
+                                } catch (e: Exception) {
+
+                                    Log.e(
+                                        "SBCLUB_FCM",
+                                        "Token registration failed",
+                                        e
+                                    )
+                                }
+                            }
+                        }
+                        .addOnFailureListener { e ->
+
+                            Log.e(
+                                "SBCLUB_FCM",
+                                "Unable to get FCM token",
+                                e
+                            )
+                        }
+
+
+                    // =========================================
+                    // EXISTING NAVIGATION
+                    // =========================================
+
+                    when (data.role) {
+
+                        "admin" -> {
+                            nav.navigate("admin")
+                        }
+
+                        "master" -> {
+                            nav.navigate("master")
+                        }
+
+                        else -> {
+                            nav.navigate("dashboard")
+                        }
                     }
                 }
 
                 is ApiState.Error -> {
+
                     state = result
                 }
 

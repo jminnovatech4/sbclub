@@ -9,6 +9,12 @@ import com.sbclub.sbclub.navigation.AppNav
 import com.sbclub.sbclub.utils.NetworkMonitor
 import com.sbclub.sbclub.utils.SessionManager
 
+import android.Manifest
+import android.content.pm.PackageManager
+import android.os.Build
+import androidx.core.app.ActivityCompat
+import androidx.core.content.ContextCompat
+
 class MainActivity : ComponentActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -16,6 +22,9 @@ class MainActivity : ComponentActivity() {
         super.onCreate(savedInstanceState)
 
         NetworkMonitor.start(this)
+
+        // Android 13+ notification permission
+        requestNotificationPermission()
 
         openScreen(intent)
     }
@@ -75,10 +84,51 @@ class MainActivity : ComponentActivity() {
 
 
         // =========================================
+        // FCM ADMIN MESSAGE NOTIFICATION
+        // =========================================
+
+        val openMessage =
+            intent?.getBooleanExtra(
+                "open_message",
+                false
+            ) ?: false
+
+        val messageId =
+            intent?.getStringExtra(
+                "message_id"
+            )
+
+
+        // =========================================
         // SESSION
         // =========================================
 
         val session = SessionManager(this)
+
+        val role = session.getRole()
+
+
+        // =========================================
+        // START DESTINATION
+        // =========================================
+        //
+        // Logged out  -> Login
+        // User        -> Dashboard
+        // Master      -> Master
+        // Admin       -> Admin
+        //
+        // =========================================
+
+        val startDestination = when (role) {
+
+            "admin" -> "admin"
+
+            "master" -> "master"
+
+            "user" -> "dashboard"
+
+            else -> "login"
+        }
 
 
         // =========================================
@@ -91,7 +141,11 @@ class MainActivity : ComponentActivity() {
 
                 context = this,
 
-                startDestination = "dashboard",
+                startDestination = startDestination,
+
+                // =========================================
+                // DEPOSIT / UPI
+                // =========================================
 
                 openDeposit = openDeposit,
 
@@ -103,15 +157,53 @@ class MainActivity : ComponentActivity() {
 
                 upiApp = upiApp,
 
+                // =========================================
+                // FCM RESULT
+                // =========================================
+
                 openResult = openResult,
 
                 resultId = resultId,
 
                 resultGroupId = resultGroupId,
 
-                resultBajiNo = resultBajiNo
+                resultBajiNo = resultBajiNo,
 
+                // =========================================
+                // FCM MESSAGE
+                // =========================================
+
+                openMessage = openMessage,
+
+                messageId = messageId
             )
+        }
+    }
+
+
+    // =========================================
+    // ANDROID 13+ NOTIFICATION PERMISSION
+    // =========================================
+
+    private fun requestNotificationPermission() {
+
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+
+            if (
+                ContextCompat.checkSelfPermission(
+                    this,
+                    Manifest.permission.POST_NOTIFICATIONS
+                ) != PackageManager.PERMISSION_GRANTED
+            ) {
+
+                ActivityCompat.requestPermissions(
+                    this,
+                    arrayOf(
+                        Manifest.permission.POST_NOTIFICATIONS
+                    ),
+                    1001
+                )
+            }
         }
     }
 }

@@ -1672,6 +1672,71 @@ class AppRepository(private val context: Context) {
 
     }
 
+    // =========================================
+    // FCM TOKEN
+    // =========================================
+
+    suspend fun registerFcmToken(
+        token: String
+    ): ApiState<String> {
+
+        return try {
+
+            val res = api.registerFcmToken(
+                mapOf(
+                    "token" to token,
+                    "device_type" to "android"
+                )
+            )
+
+            if (res.status) {
+
+                ApiState.Success(res.msg)
+
+            } else {
+
+                ApiState.Error(res.msg)
+            }
+
+        } catch (e: Exception) {
+
+            ApiState.Error(
+                NetworkErrorHandler.getMessage(e)
+            )
+        }
+    }
+
+
+    suspend fun removeFcmToken(
+        token: String
+    ): ApiState<String> {
+
+        return try {
+
+            val res = api.removeFcmToken(
+                mapOf(
+                    "token" to token
+                )
+            )
+
+            if (res.status) {
+
+                ApiState.Success(res.msg)
+
+            } else {
+
+                ApiState.Error(res.msg)
+            }
+
+        } catch (e: Exception) {
+
+            ApiState.Error(
+                NetworkErrorHandler.getMessage(e)
+            )
+        }
+    }
+
+
 
 
 }

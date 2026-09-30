@@ -74,6 +74,7 @@ import com.sbclub.sbclub.data.model.progame.LatestResultsResponse
 import com.sbclub.sbclub.ui.components.ResultNotificationPopup
 @RequiresApi(Build.VERSION_CODES.O)
 @Composable
+
 fun DashboardScreen(
     nav: NavController,
     context: Context,
@@ -83,6 +84,26 @@ fun DashboardScreen(
     sharedAmount: String = "",
 
     sharedUtr: String = "",
+
+    // =========================================
+    // FCM RESULT NOTIFICATION
+    // =========================================
+
+    openResult: Boolean = false,
+
+    resultId: String? = null,
+
+    resultGroupId: String? = null,
+
+    resultBajiNo: String? = null,
+
+    // =========================================
+    // FCM ADMIN MESSAGE NOTIFICATION
+    // =========================================
+
+    openMessage: Boolean = false,
+
+    messageId: String? = null,
 
     vm: ProGameVM = remember { ProGameVM() }
 ) {
@@ -130,6 +151,9 @@ fun DashboardScreen(
     var readResultId by remember {
         mutableStateOf<Int?>(null)
     }
+    var pendingOpenResult by remember {
+        mutableStateOf(openResult)
+    }
     LaunchedEffect(openDeposit, sharedAmount, sharedUtr) {
 
         if (
@@ -150,6 +174,54 @@ fun DashboardScreen(
 
         authVM.loadMessage(context)
         vm.loadGroups(context)
+    }
+    // =====================================================
+// FCM NOTIFICATION OPEN
+// =====================================================
+
+    LaunchedEffect(openResult, openMessage) {
+
+        // -----------------------------------------
+        // RESULT NOTIFICATION
+        // -----------------------------------------
+
+        if (openResult) {
+
+            // Result polling latestResultData load করার
+            // পরে popup automatically open করবে।
+            //
+            // এখানে শুধু notification intent থেকে
+            // result open করার request মনে রাখছি।
+
+            if (
+                latestResultData != null &&
+                latestResultData!!.groups.isNotEmpty()
+            ) {
+                showResultPopup = true
+                hasNewResult = false
+            }
+        }
+
+
+        // -----------------------------------------
+        // ADMIN MESSAGE NOTIFICATION
+        // -----------------------------------------
+
+        if (openMessage) {
+
+            // Existing marquee message dialog
+            showFullMsg = true
+        }
+    }
+    // =====================================================
+// FCM NOTIFICATION OPEN
+// =====================================================
+
+    LaunchedEffect(openMessage) {
+
+        if (openMessage) {
+            showFullMsg = true
+        }
     }
     // =====================================================
 // RESULT NOTIFICATION POLLING
@@ -178,6 +250,14 @@ fun DashboardScreen(
 
                     val newId = data.latest_result_id
 
+                    if (
+                        pendingOpenResult &&
+                        data.groups.isNotEmpty()
+                    ) {
+                        showResultPopup = true
+                        hasNewResult = false
+                        pendingOpenResult = false
+                    }
                     if (
                         newId != null &&
                         data.groups.isNotEmpty()

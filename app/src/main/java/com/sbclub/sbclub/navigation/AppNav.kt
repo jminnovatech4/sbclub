@@ -224,7 +224,27 @@ fun AppNav(
 
                 sharedAmount = sharedAmount,
 
-                sharedUtr = sharedUtr
+                sharedUtr = sharedUtr,
+
+                // =========================================
+                // FCM RESULT
+                // =========================================
+
+                openResult = openResult,
+
+                resultId = resultId,
+
+                resultGroupId = resultGroupId,
+
+                resultBajiNo = resultBajiNo,
+
+                // =========================================
+                // FCM ADMIN MESSAGE
+                // =========================================
+
+                openMessage = openMessage,
+
+                messageId = messageId
 
             )
         }

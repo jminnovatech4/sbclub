@@ -174,6 +174,20 @@ interface ApiService {
     suspend fun changePassword(
         @Body body: Map<String, String>
     ): CommonResponse
+// =========================================
+// FCM TOKEN
+// =========================================
+
+    @POST("fcm-token")
+    suspend fun registerFcmToken(
+        @Body body: Map<String, String>
+    ): CommonResponse
+
+    @POST("fcm-token/remove")
+    suspend fun removeFcmToken(
+        @Body body: Map<String, String>
+    ): CommonResponse
+
 
     @GET("app-message")
     suspend fun getAppMessage(): MessageResponse
